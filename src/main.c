@@ -1,6 +1,7 @@
 #include <event2/event.h>
 
 #include "log.h"
+#include "version.h"
 #include "server_mc.h"
 #include "server_gizwits.h"
 
@@ -9,6 +10,8 @@ int main(int argc, char **argv)
     struct event_base *base = NULL;
 
     setvbuf(stdout, NULL, _IONBF, 0);
+
+    printf("Electrombile Server V%s\n", VERSION_STR);
 
     base = event_base_new();
     if (!base)
