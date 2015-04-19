@@ -3,9 +3,9 @@
 #include "server_mc.h"
 #include "server_gizwits.h"
 
-int main(int c, char **v)
+int main(int argc, char **argv)
 {
-    struct event_base *base;
+    struct event_base *base = NULL;
 
     setvbuf(stdout, NULL, _IONBF, 0);
 
@@ -18,5 +18,8 @@ int main(int c, char **v)
     server_gizwits_start(base);
 
     event_base_dispatch(base);
+
+    zlog_fini();
+
     return 0;
 }

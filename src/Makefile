@@ -2,7 +2,7 @@
 CC= gcc -std=gnu99
 CFLAGS= -O2 -Wall -Wextra 
 LDFLAGS= 
-LIBS= -levent
+LIBS= -levent -lzlog
 
 
 RM= rm -f
