@@ -12,6 +12,22 @@
 
 #include "msg_sch_mc.h"
 
+#define LOG_DEBUG(...) \
+	zlog(cat[MOD_SERVER_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_DEBUG, __VA_ARGS__)
+
+#define LOG_INFO(...) \
+	zlog(cat[MOD_SERVER_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_INFO, __VA_ARGS__)
+
+#define LOG_WARNNING(...) \
+	zlog(cat[MOD_SERVER_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_WARNNING, __VA_ARGS__)
+
+#define LOG_ERROR(...) \
+	zlog(cat[MOD_SERVER_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_ERROR, __VA_ARGS__)
+
+#define LOG_FATAL(...) \
+	zlog(cat[MOD_SERVER_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_FATAL, __VA_ARGS__)
+
+
 static void send_msg(struct bufferevent* bev, const void* buf, size_t n)
 {
 	bufferevent_write(bev, buf, n);
@@ -47,11 +63,11 @@ static void event_cb(struct bufferevent *bev, short events, void *ctx)
 {
 	if (events & BEV_EVENT_CONNECTED)
 	{
-		 printf("Connect okay.\n");
+		LOG_DEBUG("Connect okay.\n");
 	}
 	else if (events & BEV_EVENT_ERROR)
 	{
-		perror("Error from bufferevent");
+		LOG_ERROR("Error from bufferevent");
 	}
 	else if (events & (BEV_EVENT_EOF | BEV_EVENT_ERROR))
 	{
@@ -61,10 +77,10 @@ static void event_cb(struct bufferevent *bev, short events, void *ctx)
 			 int err = bufferevent_socket_get_dns_error(bev);
 			 if (err)
 			 {
-				 printf("DNS error: %s\n", evutil_gai_strerror(err));
+				 LOG_ERROR("DNS error: %s\n", evutil_gai_strerror(err));
 			 }
 		}
-		printf("Closing\n");
+		LOG_INFO("Closing");
 		bufferevent_free(bev);
 	}
 }

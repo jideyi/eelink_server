@@ -14,7 +14,8 @@ enum
 {
 	MOD_MAIN,
 	MOD_SERVER_MC,
-	MOD_SERVER_GIZ,
+	MOD_SCH_MC,
+	MOD_PROC_MC,
 	MOD_MAX
 };
 

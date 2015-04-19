@@ -5,6 +5,8 @@
  *      Author: jk
  */
 
+#include <string.h>
+
 #include "log.h"
 
 
@@ -14,7 +16,8 @@ static const char* all_modules[] =
 {
 		"MAIN",
 		"SERVER_MC",
-		"SERV_GIZ",
+		"SCH_MC",
+		"PROC_MC",
 };
 
 int log_init()

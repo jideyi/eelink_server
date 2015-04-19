@@ -11,11 +11,35 @@
 #include "msg_mc.h"
 #include "object_mc.h"
 
+#include "log.h"
+
+#define LOG_DEBUG(...) \
+	zlog(cat[MOD_PROC_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_DEBUG, __VA_ARGS__)
+
+#define LOG_INFO(...) \
+	zlog(cat[MOD_PROC_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_INFO, __VA_ARGS__)
+
+#define LOG_WARNNING(...) \
+	zlog(cat[MOD_PROC_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_WARNNING, __VA_ARGS__)
+
+#define LOG_ERROR(...) \
+	zlog(cat[MOD_PROC_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_ERROR, __VA_ARGS__)
+
+#define LOG_FATAL(...) \
+	zlog(cat[MOD_PROC_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_FATAL, __VA_ARGS__)
+
+#define LOG_DEBUG_HEX(buf, buf_len) \
+	hzlog(cat[MOD_PROC_MC], __FILE__, sizeof(__FILE__)-1, __func__, sizeof(__func__)-1, __LINE__, \
+	ZLOG_LEVEL_DEBUG, buf, buf_len)
+
 int mc_msg_send(const void* msg, size_t len, CB_CTX* ctx)
 {
 	MSG_SEND pfn = ctx->pSendMsg;
 
 	pfn(ctx->bev, msg, len);
+
+	LOG_INFO("send response msg of cmd(%d)", get_msg_cmd(msg));
+	LOG_DEBUG_HEX(msg, len);
 
 	free(msg);
 
@@ -26,8 +50,9 @@ int mc_login(short seq,const char* msg, short len, CB_CTX* ctx)
 {
 	MC_MSG_LOGIN_REQ* req = msg;
 
-	assert(sizeof(MC_MSG_LOGIN_REQ) < len);
+	assert(sizeof(MC_MSG_LOGIN_REQ) <= len);
 
+	LOG_DEBUG("handle login cmd");
 
 	OBJ_MC* obj = ctx->obj;
 	if (!obj)

@@ -6,6 +6,9 @@
 #include "server_gizwits.h"
 #include "object_mc.h"
 
+#define LOG(...) \
+	zlog(cat[MOD_MAIN], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_DEBUG, __VA_ARGS__)
+
 int main(int argc, char **argv)
 {
     struct event_base *base = NULL;
@@ -28,7 +31,7 @@ int main(int argc, char **argv)
 
     server_mc_start(base);
     
-    zlog_info(cat[MOD_MAIN], "start mc server sucessfully");
+    LOG("start mc server sucessfully");
 
     server_gizwits_start(base);
 

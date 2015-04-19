@@ -31,7 +31,7 @@ typedef struct
 	char cmd;
 	short length;
 	short seq;
-	char data[0];
+	char data[];
 }MC_MSG_HEADER;
 
 
@@ -44,6 +44,11 @@ inline void fill_msg_header(MC_MSG_HEADER* msg)
 inline void set_msg_cmd(MC_MSG_HEADER* msg, char cmd)
 {
 	msg->cmd = cmd;
+}
+
+inline char get_msg_cmd(MC_MSG_HEADER* msg)
+{
+	return msg->cmd;
 }
 
 inline void set_msg_len(MC_MSG_HEADER* msg, short length)
