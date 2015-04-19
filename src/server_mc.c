@@ -7,24 +7,57 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include "log.h"
 #include "server_mc.h"
 
-static void echo_read_cb(struct bufferevent *bev, void *ctx)
+static void read_cb(struct bufferevent *bev, void *ctx)
 {
+	char buf[1024];
+	int n;
 	/* This callback is invoked when there is data to read on bev. */
 	struct evbuffer *input = bufferevent_get_input(bev);
 	struct evbuffer *output = bufferevent_get_output(bev);
 
+    size_t len = evbuffer_get_length(input);
+
+    while ((n = bufferevent_read(bev, buf, sizeof(buf))) > 0)
+    {
+    	hzlog_debug(cat[MOD_SERVER_MC], buf, n);
+    	bufferevent_write(bev, buf, n);
+    }
+
 	/* Copy all the data from the input buffer to the output buffer. */
-	evbuffer_add_buffer(output, input);
+	//evbuffer_add_buffer(output, input);
 }
 
-static void echo_event_cb(struct bufferevent *bev, short events, void *ctx)
+static void write_cb(struct bufferevent* bev, void *ctx)
 {
-	if (events & BEV_EVENT_ERROR)
-			perror("Error from bufferevent");
-	if (events & (BEV_EVENT_EOF | BEV_EVENT_ERROR)) {
-			bufferevent_free(bev);
+	return;
+}
+
+static void event_cb(struct bufferevent *bev, short events, void *ctx)
+{
+	if (events & BEV_EVENT_CONNECTED)
+	{
+		 printf("Connect okay.\n");
+	}
+	else if (events & BEV_EVENT_ERROR)
+	{
+		perror("Error from bufferevent");
+	}
+	else if (events & (BEV_EVENT_EOF | BEV_EVENT_ERROR))
+	{
+		struct event_base *base = ctx;
+		if (events & BEV_EVENT_ERROR)
+		{
+			 int err = bufferevent_socket_get_dns_error(bev);
+			 if (err)
+			 {
+				 printf("DNS error: %s\n", evutil_gai_strerror(err));
+			 }
+		}
+		printf("Closing\n");
+		bufferevent_free(bev);
 	}
 }
 
@@ -33,10 +66,10 @@ static void accept_conn_cb(struct evconnlistener *listener,
 {
 	/* We got a new connection! Set up a bufferevent for it. */
 	struct event_base *base = evconnlistener_get_base(listener);
-	struct bufferevent *bev = bufferevent_socket_new(
-			base, fd, BEV_OPT_CLOSE_ON_FREE);
+	struct bufferevent *bev = bufferevent_socket_new(base, fd, BEV_OPT_CLOSE_ON_FREE);
 
-	bufferevent_setcb(bev, echo_read_cb, NULL, echo_event_cb, NULL);
+	//TODO: set the water-mark and timeout
+	bufferevent_setcb(bev, read_cb, write_cb, event_cb, NULL);
 
 	bufferevent_enable(bev, EV_READ|EV_WRITE);
 }
