@@ -30,3 +30,7 @@
 
 # Debug files
 *.dSYM/
+
+#eclipse project file
+.project
+.cproject
