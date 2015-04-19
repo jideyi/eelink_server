@@ -29,6 +29,10 @@ int mc_login(short seq, char* m, short len)
 
 	return 0;
 }
+int mc_gps(short seq, char* msg, short len)
+{
+	return 0;
+}
 
 int mc_ping(short seq, char* m, short len)
 {

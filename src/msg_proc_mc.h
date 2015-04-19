@@ -9,6 +9,7 @@
 #define SRC_MSG_PROC_MC_H_
 
 int mc_login(short seq, char* msg, short len);
+int mc_gps(short seq, char* msg, short len);
 int mc_ping(short seq, char* msg, short len);
 int mc_alarm(short seq, char* msg, short len);
 int mc_status(short seq, char* msg, short len);

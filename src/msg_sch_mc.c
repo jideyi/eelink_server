@@ -21,7 +21,7 @@ typedef struct
 static MC_MSG_PROC msgProcs[] =
 {
 		{CMD_LOGIN,	mc_login},
-		{CMD_GPS,	mc_ping},
+		{CMD_GPS,	mc_gps},
 		{CMD_PING,	mc_ping},
 		{CMD_ALARM, mc_alarm},
 		{CMD_STATUS,mc_status},
