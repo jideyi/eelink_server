@@ -8,7 +8,7 @@ LIBS= -levent -lzlog
 RM= rm -f
 
 
-OBJS= main.o server_mc.o server_gizwits.o log.o
+OBJS= main.o server_mc.o server_gizwits.o log.o msg_sch_mc.o msg_proc_mc.o
 TARGET= ../bin/server
 
 all: $(TARGET)
@@ -28,3 +28,5 @@ main.o: main.c server_gizwits.h server_mc.h
 server_mc.o: server_mc.c server_mc.h
 server_gizwits.o: server_gizwits.c server_gizwits.h
 log.o: log.c log.h
+msg_sch_mc.o: msg_sch_mc.c msg_sch_mc.h msg_proc_mc.h msg_mc.h
+msg_proc_mc.o: msg_proc_mc.c msg_proc_mc.h

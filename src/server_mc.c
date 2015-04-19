@@ -10,6 +10,8 @@
 #include "log.h"
 #include "server_mc.h"
 
+#include "msg_sch_mc.h"
+
 static void read_cb(struct bufferevent *bev, void *ctx)
 {
 	char buf[1024];
@@ -23,6 +25,7 @@ static void read_cb(struct bufferevent *bev, void *ctx)
     while ((n = bufferevent_read(bev, buf, sizeof(buf))) > 0)
     {
     	hzlog_debug(cat[MOD_SERVER_MC], buf, n);
+    	handle_mc_msg(buf, n, ctx);
     	bufferevent_write(bev, buf, n);
     }
 
