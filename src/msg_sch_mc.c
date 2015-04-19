@@ -5,11 +5,13 @@
  *      Author: jk
  */
 #include <stdio.h>
+#include <assert.h>
 
 #include "msg_mc.h"
+#include "msg_sch_mc.h"
 #include "msg_proc_mc.h"
 
-typedef int (*MSG_PROC)(short seq, char* msg, short length);
+typedef int (*MSG_PROC)(short seq, const char* msg, short length, CB_CTX* ctx);
 typedef struct
 {
 	char cmd;
@@ -30,15 +32,19 @@ static MC_MSG_PROC msgProcs[] =
 		{CMD_DATA,	mc_data},
 };
 
-int handle_mc_msg(char* m, int msgLen, void* ctx)
+int handle_mc_msg(const char* m, size_t msgLen, CB_CTX* ctx)
 {
 	MC_MSG_HEADER* msg = (MC_MSG_HEADER*)m;
+
+	assert(msgLen > sizeof(MC_MSG_HEADER));
 
 	//check the msg header
 	if (msg->header[0] != 0x67 || msg->header[1] != 0x67)
 	{
 		return -1;
 	}
+
+	assert(msgLen > sizeof(MC_MSG_HEADER) - sizeof(msg->seq) + msg->length);
 
 	for (size_t i = 0; i < sizeof(msgProcs) / sizeof(msgProcs[0]); i++)
 	{
@@ -47,7 +53,7 @@ int handle_mc_msg(char* m, int msgLen, void* ctx)
 			MSG_PROC pfn = msgProcs[i].pfn;
 			if (pfn)
 			{
-				return pfn(msg->seq, msg->data, msg->length - sizeof(msg->seq));
+				return pfn(msg->seq, msg->data, msg->length - sizeof(msg->seq), ctx);
 			}
 		}
 	}

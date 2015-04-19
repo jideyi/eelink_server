@@ -4,6 +4,7 @@
 #include "version.h"
 #include "server_mc.h"
 #include "server_gizwits.h"
+#include "object_mc.h"
 
 int main(int argc, char **argv)
 {
@@ -22,6 +23,8 @@ int main(int argc, char **argv)
     {
     	return ret;
     }
+
+    mc_obj_initial();
 
     server_mc_start(base);
     

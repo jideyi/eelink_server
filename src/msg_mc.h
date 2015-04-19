@@ -8,6 +8,11 @@
 #ifndef SRC_MSG_MC_H_
 #define SRC_MSG_MC_H_
 
+#include <stdlib.h>
+
+#include "macro_mc.h"
+
+
 enum PROTOCOL
 {
 	CMD_LOGIN 	= 0x01,
@@ -22,17 +27,54 @@ enum PROTOCOL
 
 typedef struct
 {
-	char header[2];
+	char header[MSG_SIGNATURE_LENGTH];
 	char cmd;
 	short length;
 	short seq;
 	char data[0];
 }MC_MSG_HEADER;
 
+
+inline void fill_msg_header(MC_MSG_HEADER* msg)
+{
+	msg->header[0] = 0x67;
+	msg->header[1] = 0x67;
+}
+
+inline void set_msg_cmd(MC_MSG_HEADER* msg, char cmd)
+{
+	msg->cmd = cmd;
+}
+
+inline void set_msg_len(MC_MSG_HEADER* msg, short length)
+{
+	msg->length = length;
+}
+
+inline void set_msg_seq(MC_MSG_HEADER* msg, short seq)
+{
+	msg->seq = seq;
+}
+
+inline MC_MSG_HEADER* alloc_msg(char cmd, short length, short seq)
+{
+	MC_MSG_HEADER* msg = malloc(sizeof(MC_MSG_HEADER) + length);
+	fill_msg_header(msg);
+	set_msg_cmd(msg, cmd);
+	set_msg_len(msg, sizeof(msg->seq) + length);
+	set_msg_seq(msg,seq);
+
+	return msg;
+}
+
+inline void free_msg(MC_MSG_HEADER* msg)
+{
+	free(msg);
+}
 //Login message structure
 typedef struct
 {
-	char devID[8];
+	char IMEI[IMEI_LENGTH];
 	char language;
 	char locale;
 }MC_MSG_LOGIN_REQ;
@@ -43,25 +85,18 @@ typedef MC_MSG_HEADER MC_MSG_LOGIN_RSP;
 //GPS message structure
 typedef struct
 {
-	short mcc;
-	short mnc;
-	short lac;
-	char ci[3];
-}CELL;
-typedef struct
-{
 	int timestamp;
 	int lat;
 	int lon;
 	char speed;
 	short course;
-	CELL cell;
+	CGI cell;
 	char location;
 	short status;
 	short voltage;
 	short rxl;
-	short anlog1;
-	short anlog2;
+	short analog1;
+	short analog2;
 }MC_MSG_GPS_REQ;
 //GPS message requires no response
 
@@ -82,7 +117,7 @@ typedef struct
 	int lon;
 	char speed;
 	short course;
-	CELL cell;
+	CGI cell;
 	char location;
 	char type;
 }MC_MSG_ALARM_REQ;
@@ -108,7 +143,7 @@ typedef struct
 	int lon;
 	char speed;
 	short course;
-	CELL cell;
+	CGI cell;
 	char location;
 	char type;
 	short status;

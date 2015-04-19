@@ -12,15 +12,20 @@
 
 #include "msg_sch_mc.h"
 
+static void send_msg(struct bufferevent* bev, const void* buf, size_t n)
+{
+	bufferevent_write(bev, buf, n);
+}
+
 static void read_cb(struct bufferevent *bev, void *ctx)
 {
 	char buf[1024];
-	int n;
+	size_t n;
 	/* This callback is invoked when there is data to read on bev. */
-	struct evbuffer *input = bufferevent_get_input(bev);
-	struct evbuffer *output = bufferevent_get_output(bev);
+//	struct evbuffer *input = bufferevent_get_input(bev);
+//	struct evbuffer *output = bufferevent_get_output(bev);
 
-    size_t len = evbuffer_get_length(input);
+//    size_t len = evbuffer_get_length(input);
 
     while ((n = bufferevent_read(bev, buf, sizeof(buf))) > 0)
     {
@@ -71,8 +76,13 @@ static void accept_conn_cb(struct evconnlistener *listener,
 	struct event_base *base = evconnlistener_get_base(listener);
 	struct bufferevent *bev = bufferevent_socket_new(base, fd, BEV_OPT_CLOSE_ON_FREE);
 
+	CB_CTX* cb_ctx = malloc(sizeof(CB_CTX));
+	cb_ctx->bev = bev;
+	cb_ctx->obj = 0;
+	cb_ctx->pSendMsg = send_msg;
+
 	//TODO: set the water-mark and timeout
-	bufferevent_setcb(bev, read_cb, write_cb, event_cb, NULL);
+	bufferevent_setcb(bev, read_cb, write_cb, event_cb, cb_ctx);
 
 	bufferevent_enable(bev, EV_READ|EV_WRITE);
 }

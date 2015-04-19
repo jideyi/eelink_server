@@ -8,6 +8,8 @@
 #ifndef SRC_MSG_SCH_MC_H_
 #define SRC_MSG_SCH_MC_H_
 
-int handle_mc_msg(char* msg, int msgLen, void* ctx);
+#include "cb_ctx_mc.h"
+
+int handle_mc_msg(const char* msg, size_t msgLen, CB_CTX* ctx);
 
 #endif /* SRC_MSG_SCH_MC_H_ */
