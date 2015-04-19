@@ -68,15 +68,14 @@ int handle_mc_msg(const char* m, size_t msgLen, CB_CTX* ctx)
 
 	LOG_DEBUG("sizeof(MC_MSG_HEADER) = %d", sizeof(MC_MSG_HEADER));
 
-	if (msgLen < sizeof(MC_MSG_HEADER) -1 - sizeof(msg->seq) + msg->length)
+	if (msgLen < sizeof(MC_MSG_HEADER) - sizeof(msg->seq) + ntohs(msg->length))
 	{
-		LOG_ERROR("msg len unright: %d", msgLen);
+		LOG_ERROR("msg len not right: %d, body len = %d", msgLen, ntohs(msg->length));
 		return -1;
 	}
 
 	for (size_t i = 0; i < sizeof(msgProcs) / sizeof(msgProcs[0]); i++)
 	{
-		LOG_DEBUG("iterate %d", i);
 		if (msgProcs[i].cmd == msg->cmd)
 		{
 			MSG_PROC pfn = msgProcs[i].pfn;

@@ -25,6 +25,7 @@ enum PROTOCOL
 	CMD_DATA	= 0x81,
 };
 
+#pragma pack(push,1)
 typedef struct
 {
 	char header[MSG_SIGNATURE_LENGTH];
@@ -32,8 +33,8 @@ typedef struct
 	short length;
 	short seq;
 	char data[];
-}MC_MSG_HEADER;
-
+}__attribute__((__packed__)) MC_MSG_HEADER;
+#pragma pack(pop)
 
 inline void fill_msg_header(MC_MSG_HEADER* msg)
 {
