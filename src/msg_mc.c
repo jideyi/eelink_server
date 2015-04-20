@@ -27,7 +27,7 @@ inline void set_msg_cmd(MC_MSG_HEADER* msg, char cmd)
 	msg->cmd = cmd;
 }
 
-inline char get_msg_cmd(MC_MSG_HEADER* msg)
+inline char get_msg_cmd(const MC_MSG_HEADER* msg)
 {
 	return msg->cmd;
 }

@@ -163,7 +163,7 @@ typedef struct
 typedef MC_MSG_OPERATOR_REQ MC_MSG_OPERATOR_RSP;
 
 
-char get_msg_cmd(MC_MSG_HEADER* msg);
+char get_msg_cmd(const MC_MSG_HEADER* msg);
 
 MC_MSG_HEADER* alloc_msg(char cmd, short length, short seq);
 void free_msg(MC_MSG_HEADER* msg);
