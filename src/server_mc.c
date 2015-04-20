@@ -30,6 +30,7 @@
 
 static void send_msg(struct bufferevent* bev, const void* buf, size_t n)
 {
+	LOG_DEBUG("Send msg rsp %#x(len=%d)", buf, n);
 	bufferevent_write(bev, buf, n);
 }
 
@@ -47,7 +48,6 @@ static void read_cb(struct bufferevent *bev, void *ctx)
     {
     	hzlog_debug(cat[MOD_SERVER_MC], buf, n);
     	handle_mc_msg(buf, n, ctx);
-    	bufferevent_write(bev, buf, n);
     }
 
 	/* Copy all the data from the input buffer to the output buffer. */
