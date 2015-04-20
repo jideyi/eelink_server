@@ -30,7 +30,7 @@
 
 static void send_msg(struct bufferevent* bev, const void* buf, size_t n)
 {
-	LOG_DEBUG("Send msg rsp %#x(len=%d)", buf, n);
+	LOG_DEBUG("Send msg rsp %p(len=%zu)", buf, n);
 	bufferevent_write(bev, buf, n);
 }
 
@@ -43,6 +43,8 @@ static void read_cb(struct bufferevent *bev, void *ctx)
 //	struct evbuffer *output = bufferevent_get_output(bev);
 
 //    size_t len = evbuffer_get_length(input);
+
+	LOG_DEBUG("Receive message");
 
     while ((n = bufferevent_read(bev, buf, sizeof(buf))) > 0)
     {

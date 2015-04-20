@@ -55,7 +55,7 @@ int mc_login(short seq,const char* msg, short len, CB_CTX* ctx)
 	char IMEI[IMEI_LENGTH * 2 + 1];
 	for (int i = 0; i < IMEI_LENGTH; i++)
 	{
-		sprintf(IMEI + i * 2, "%02x", req->IMEI[i]);	//FIXME: fix the format flag: when 0x89 output 0xffffff89
+		sprintf(IMEI + i * 2, "%02x", req->IMEI[i]);
 	}
 	IMEI[IMEI_LENGTH * 2] = 0;
 
@@ -84,7 +84,19 @@ int mc_gps(short seq __attribute__((unused)),const const  char* msg, short len, 
 {
 	MC_MSG_GPS_REQ* req = msg;
 
-	assert(sizeof(MC_MSG_LOGIN_REQ) < len);
+	if (!req)
+	{
+		LOG_ERROR("msg handle empty");
+		return -1;
+	}
+
+	if (len < sizeof(MC_MSG_LOGIN_REQ))
+	{
+		LOG_ERROR("message length not enough");
+		return -1;
+	}
+
+	LOG_DEBUG("GPS: lat(%d), lon(%d), speed(%d), course(%d)", req->lat, req->lon, req->speed, req->course);
 
 	OBJ_MC* obj = ctx->obj;
 	if (obj)

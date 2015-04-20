@@ -54,19 +54,19 @@ int handle_mc_msg(const char* m, size_t msgLen, CB_CTX* ctx)
 {
 	MC_MSG_HEADER* msg = (MC_MSG_HEADER*)m;
 
-	assert(msgLen > sizeof(MC_MSG_HEADER));
+	if (msgLen < sizeof(MC_MSG_HEADER))
+	{
+		LOG_DEBUG("receive message length not enough: %zu(at least(%zu)", msgLen, sizeof(MC_MSG_HEADER));
 
-	LOG_DEBUG("receive msg");
-	//hdzlog_debug(msg, msgLen);
-
+		return -1;
+	}
 	//check the msg header
 	if (msg->header[0] != 0x67 || msg->header[1] != 0x67)
 	{
+		LOG_DEBUG("receive message header signature error: %x%x)", msg->header[0], msg->header[1]);
+
 		return -1;
 	}
-
-
-	LOG_DEBUG("sizeof(MC_MSG_HEADER) = %ld", sizeof(MC_MSG_HEADER));
 
 	if (msgLen < sizeof(MC_MSG_HEADER) - sizeof(msg->seq) + ntohs(msg->length))
 	{
