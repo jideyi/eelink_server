@@ -21,7 +21,7 @@ enum PROTOCOL
 	CMD_ALARM	= 0x04,
 	CMD_STATUS	= 0x05,
 	CMD_SMS		= 0x06,
-	CMD_MSG		= 0x80,
+	CMD_OPERAT	= 0x80,
 	CMD_DATA	= 0x81,
 };
 
@@ -110,7 +110,7 @@ typedef struct
 typedef struct
 {
 	short status;
-}PING_REQ;
+}MC_MSG_PING_REQ;
 
 typedef MC_MSG_HEADER MC_MSG_PING_RSP;
 
@@ -141,6 +141,12 @@ enum ALARM_TYPE
 	FENCE_OUT		= 0x84,
 };
 
+typedef struct
+{
+	MC_MSG_HEADER header;
+	char sms[];
+}__attribute__((__packed__)) MC_MSG_ALARM_RSP;
+
 //status message structure
 typedef struct
 {
@@ -163,5 +169,39 @@ enum STATUS_TYPE
 };
 
 typedef MC_MSG_HEADER MC_MSG_STATUS_RSP;
+
+//sms message structure
+typedef struct
+{
+	int timestamp;
+	int lat;
+	int lon;
+	char speed;
+	short course;
+	CGI cell;
+	char location;
+
+	char telphone[21];
+	char sms[];
+}__attribute__((__packed__)) MC_MSG_SMS_REQ;
+
+typedef struct
+{
+	MC_MSG_HEADER header;
+	char telphone[21];
+	char sms[];
+}__attribute__((__packed__)) MC_MSG_SMS_RSP;
+
+
+//the following message is from Server to MC
+typedef struct
+{
+	char type;
+	int token;
+	char data[];
+}__attribute__((__packed__)) MC_MSG_OPERATOR_REQ;
+
+typedef MC_MSG_OPERATOR_REQ MC_MSG_OPERATOR_RSP;
+
 
 #endif /* SRC_MSG_MC_H_ */
