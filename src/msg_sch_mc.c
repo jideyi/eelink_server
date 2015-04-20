@@ -46,7 +46,7 @@ static MC_MSG_PROC msgProcs[] =
 		{CMD_ALARM, mc_alarm},
 		{CMD_STATUS,mc_status},
 		{CMD_SMS, 	mc_sms},
-		{CMD_MSG,	mc_msg},
+		{CMD_OPERAT,mc_operator},
 		{CMD_DATA,	mc_data},
 };
 

@@ -1,5 +1,5 @@
 
-CC= gcc -std=gnu99
+CC= gcc -std=c11
 CFLAGS= -O2 -Wall -Wextra 
 LDFLAGS= 
 LIBS= -levent -lzlog
