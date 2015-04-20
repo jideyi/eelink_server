@@ -39,7 +39,7 @@ typedef struct
 //Login message structure
 typedef struct
 {
-	char IMEI[IMEI_LENGTH];
+	unsigned char IMEI[IMEI_LENGTH];
 	char language;
 	char locale;
 }MC_MSG_LOGIN_REQ;
