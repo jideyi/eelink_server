@@ -26,23 +26,26 @@ enum PROTOCOL
 };
 
 #pragma pack(push,1)
+
+//Message header definitation
 typedef struct
 {
 	char header[MSG_SIGNATURE_LENGTH];
 	char cmd;
 	short length;
 	short seq;
-	char data[];
 }__attribute__((__packed__)) MC_MSG_HEADER;
-#pragma pack(pop)
+
+#define MC_MSG_HEADER_LEN (sizeof(MC_MSG_HEADER) - sizeof(short))
 
 //Login message structure
 typedef struct
 {
+	MC_MSG_HEADER header;
 	unsigned char IMEI[IMEI_LENGTH];
 	char language;
 	char locale;
-}MC_MSG_LOGIN_REQ;
+}__attribute__((__packed__))MC_MSG_LOGIN_REQ;
 
 typedef MC_MSG_HEADER MC_MSG_LOGIN_RSP;
 
@@ -50,6 +53,7 @@ typedef MC_MSG_HEADER MC_MSG_LOGIN_RSP;
 //GPS message structure
 typedef struct
 {
+	MC_MSG_HEADER header;
 	int timestamp;
 	int lat;
 	int lon;
@@ -62,12 +66,13 @@ typedef struct
 	short rxl;
 	short analog1;
 	short analog2;
-}MC_MSG_GPS_REQ;
+}__attribute__((__packed__)) MC_MSG_GPS_REQ;
 //GPS message requires no response
 
 //PING message structure
 typedef struct
 {
+	MC_MSG_HEADER header;
 	short status;
 }MC_MSG_PING_REQ;
 
@@ -77,6 +82,7 @@ typedef MC_MSG_HEADER MC_MSG_PING_RSP;
 //alarm message structure
 typedef struct
 {
+	MC_MSG_HEADER header;
 	int timestamp;
 	int lat;
 	int lon;
@@ -85,7 +91,7 @@ typedef struct
 	CGI cell;
 	char location;
 	char type;
-}MC_MSG_ALARM_REQ;
+}__attribute__((__packed__)) MC_MSG_ALARM_REQ;
 enum ALARM_TYPE
 {
 	POWER_FAILURE 	= 0x01,
@@ -109,6 +115,7 @@ typedef struct
 //status message structure
 typedef struct
 {
+	MC_MSG_HEADER header;
 	int timestamp;
 	int lat;
 	int lon;
@@ -118,7 +125,7 @@ typedef struct
 	char location;
 	char type;
 	short status;
-}MC_MSG_STATUS_REQ;
+}__attribute__((__packed__)) MC_MSG_STATUS_REQ;
 
 enum STATUS_TYPE
 {
@@ -132,6 +139,7 @@ typedef MC_MSG_HEADER MC_MSG_STATUS_RSP;
 //sms message structure
 typedef struct
 {
+	MC_MSG_HEADER header;
 	int timestamp;
 	int lat;
 	int lon;
@@ -155,6 +163,7 @@ typedef struct
 //the following message is from Server to MC
 typedef struct
 {
+	MC_MSG_HEADER header;
 	char type;
 	int token;
 	char data[];
@@ -162,10 +171,14 @@ typedef struct
 
 typedef MC_MSG_OPERATOR_REQ MC_MSG_OPERATOR_RSP;
 
+#pragma pack(pop)
+
 
 char get_msg_cmd(const MC_MSG_HEADER* msg);
 
-MC_MSG_HEADER* alloc_msg(char cmd, short length, short seq);
+//MC_MSG_HEADER* alloc_msg(char cmd, short length);
+MC_MSG_HEADER* alloc_rspMsg(const MC_MSG_HEADER* pMsg);
+
 void free_msg(MC_MSG_HEADER* msg);
 
 #endif /* SRC_MSG_MC_H_ */

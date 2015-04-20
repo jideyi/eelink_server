@@ -22,15 +22,21 @@ inline void fill_msg_header(MC_MSG_HEADER* msg)
 	msg->header[1] = 0x67;
 }
 
+inline char get_msg_cmd(const MC_MSG_HEADER* msg)
+{
+	return msg->cmd;
+}
+
+inline const short get_msg_seq(const MC_MSG_HEADER* msg)
+{
+	return msg->seq;
+}
+
 inline void set_msg_cmd(MC_MSG_HEADER* msg, char cmd)
 {
 	msg->cmd = cmd;
 }
 
-inline char get_msg_cmd(const MC_MSG_HEADER* msg)
-{
-	return msg->cmd;
-}
 
 inline void set_msg_len(MC_MSG_HEADER* msg, short length)
 {
@@ -43,16 +49,31 @@ inline void set_msg_seq(MC_MSG_HEADER* msg, short seq)
 	msg->seq = seq;
 }
 
-MC_MSG_HEADER* alloc_msg(char cmd, short length, short seq)
+MC_MSG_HEADER* alloc_rspMsg(const MC_MSG_HEADER* pMsg)
 {
-	MC_MSG_HEADER* msg = malloc(sizeof(MC_MSG_HEADER) + length);
+	size_t msgLen = 0;
+	switch (pMsg->cmd)
+	{
+	case CMD_LOGIN:
+		msgLen = sizeof(MC_MSG_LOGIN_RSP);
+		break;
+	case CMD_PING:
+		msgLen = sizeof(MC_MSG_PING_RSP);
+		break;
+	default:
+		return NULL;
+	}
+
+	MC_MSG_HEADER* msg = malloc(msgLen);
+
 	fill_msg_header(msg);
-	set_msg_cmd(msg, cmd);
-	set_msg_len(msg, sizeof(msg->seq) + length);
-	set_msg_seq(msg,seq);
+	set_msg_cmd(msg, pMsg->cmd);
+	set_msg_len(msg, msgLen - sizeof(MC_MSG_HEADER) + sizeof(msg->seq));
+	set_msg_seq(msg, get_msg_seq(pMsg));
 
 	return msg;
 }
+
 
 void free_msg(MC_MSG_HEADER* msg)
 {

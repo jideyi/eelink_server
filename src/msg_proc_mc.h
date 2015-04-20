@@ -10,13 +10,13 @@
 
 #include "cb_ctx_mc.h"
 
-int mc_login(short seq, const char* msg, short len, CB_CTX* ctx);
-int mc_gps(short seq, const char* msg, short len, CB_CTX* ctx);
-int mc_ping(short seq, const char* msg, short len, CB_CTX* ctx);
-int mc_alarm(short seq, const char* msg, short len, CB_CTX* ctx);
-int mc_status(short seq, const char* msg, short len, CB_CTX* ctx);
-int mc_sms(short seq, const char* msg, short len, CB_CTX* ctx);
-int mc_operator(short seq, const char* msg, short len, CB_CTX* ctx);
-int mc_data(short seq, const char* msg, short len, CB_CTX* ctx);
+int mc_login(const void* msg, CB_CTX* ctx);
+int mc_gps(const void* msg, CB_CTX* ctx);
+int mc_ping(const void* msg, CB_CTX* ctx);
+int mc_alarm(const void* msg, CB_CTX* ctx);
+int mc_status(const void* msg, CB_CTX* ctx);
+int mc_sms(const void* msg, CB_CTX* ctx);
+int mc_operator(const void* msg, CB_CTX* ctx);
+int mc_data(const void* msg, CB_CTX* ctx);
 
 #endif /* SRC_MSG_PROC_MC_H_ */

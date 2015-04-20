@@ -38,7 +38,7 @@ int mc_msg_send(const void* msg, size_t len, CB_CTX* ctx)
 
 	pfn(ctx->bev, msg, len);
 
-	LOG_INFO("send response msg of cmd(%d), leng(%ld - %ld)", get_msg_cmd(msg), len, htons(len));
+	LOG_INFO("send response msg of cmd(%d), length(%ld)", get_msg_cmd(msg), len);
 	LOG_DEBUG_HEX(msg, len);
 
 	free(msg);
@@ -46,11 +46,10 @@ int mc_msg_send(const void* msg, size_t len, CB_CTX* ctx)
 	return 0;
 }
 
-int mc_login(short seq,const char* msg, short len, CB_CTX* ctx)
+int mc_login(const void* msg, CB_CTX* ctx)
 {
 	MC_MSG_LOGIN_REQ* req = msg;
 
-	assert(sizeof(MC_MSG_LOGIN_REQ) <= len);
 
 	char IMEI[IMEI_LENGTH * 2 + 1];
 	for (int i = 0; i < IMEI_LENGTH; i++)
@@ -73,14 +72,17 @@ int mc_login(short seq,const char* msg, short len, CB_CTX* ctx)
 		ctx->obj = obj;
 	}
 
-	MC_MSG_LOGIN_RSP *rsp = alloc_msg(CMD_LOGIN, 0, seq);
-
-	mc_msg_send(rsp, sizeof(MC_MSG_LOGIN_RSP), ctx);
+	MC_MSG_LOGIN_RSP *rsp = alloc_rspMsg(msg);
+	if (rsp)
+	{
+		mc_msg_send(rsp, sizeof(MC_MSG_LOGIN_RSP), ctx);
+	}
 
 	return 0;
 }
 
-int mc_gps(short seq __attribute__((unused)),const const  char* msg, short len, CB_CTX* ctx __attribute__((unused)))
+//int mc_gps(short seq __attribute__((unused)),const const  char* msg, short len, CB_CTX* ctx __attribute__((unused)))
+int mc_gps(const void* msg, CB_CTX* ctx)
 {
 	MC_MSG_GPS_REQ* req = msg;
 
@@ -90,21 +92,22 @@ int mc_gps(short seq __attribute__((unused)),const const  char* msg, short len, 
 		return -1;
 	}
 
-	if (len < sizeof(MC_MSG_LOGIN_REQ))
+	if (req->header.length < sizeof(MC_MSG_LOGIN_REQ) - MC_MSG_HEADER_LEN)
 	{
 		LOG_ERROR("message length not enough");
 		return -1;
 	}
 
-	LOG_DEBUG("GPS: lat(%d), lon(%d), speed(%d), course(%d)", req->lat, req->lon, req->speed, req->course);
+	LOG_INFO("GPS: lat(%d), lon(%d), speed(%d), course(%d)",
+			ntohl(req->lat), ntohl(req->lon), req->speed, ntohs(req->course));
 
 	OBJ_MC* obj = ctx->obj;
 	if (obj)
 	{
-		obj->lat = req->lat;
-		obj->lon = req->lon;
+		obj->lat = ntohl(req->lat);
+		obj->lon = ntohl(req->lon);
 		obj->speed = req->speed;
-		obj->course = req->course;
+		obj->course = ntohs(req->course);
 		obj->cell = req->cell;
 	}
 
@@ -113,47 +116,54 @@ int mc_gps(short seq __attribute__((unused)),const const  char* msg, short len, 
 	return 0;
 }
 
-int mc_ping(short seq,const  char* msg, short len, CB_CTX* ctx)
+int mc_ping(const void* msg, CB_CTX* ctx)
 {
 	MC_MSG_PING_REQ *req = msg;
 
-	MC_MSG_PING_RSP* rsp = alloc_msg(CMD_PING, 0, seq);
-	mc_msg_send(rsp, sizeof(MC_MSG_PING_RSP), ctx);
+	short status = ntohs(req->status);
+
+	LOG_INFO("GPS located:%s", (status & 1) ? "YES" : "NO");
+
+	MC_MSG_PING_RSP* rsp = alloc_rspMsg(msg);
+	if (rsp)
+	{
+		mc_msg_send(rsp, sizeof(MC_MSG_PING_RSP), ctx);
+	}
 
 	return 0;
 }
 
-int mc_alarm(short seq,const  char* msg, short len, CB_CTX* ctx)
+int mc_alarm(const void* msg, CB_CTX* ctx)
 {
 	MC_MSG_ALARM_REQ* req = msg;
 
-	MC_MSG_ALARM_RSP* rsp = alloc_msg(CMD_ALARM, 0,seq);
+	MC_MSG_ALARM_RSP* rsp = alloc_rspMsg(msg);
 	mc_msg_send(rsp, sizeof(MC_MSG_PING_RSP), ctx);
 
 	return 0;
 }
 
-int mc_status(short seq,const  char* msg, short len, CB_CTX* ctx)
+int mc_status(const void* msg, CB_CTX* ctx)
 {
 	MC_MSG_STATUS_REQ* req = msg;
 
-	MC_MSG_STATUS_RSP* rsp = alloc_msg(CMD_STATUS, 0, seq);
+	MC_MSG_STATUS_RSP* rsp = alloc_rspMsg(msg);
 	mc_msg_send(rsp, sizeof(MC_MSG_STATUS_RSP), ctx);
 
 	return 0;
 }
 
-int mc_sms(short seq, const  char* msg, short len, CB_CTX* ctx)
+int mc_sms(const void* msg, CB_CTX* ctx)
 {
 	MC_MSG_SMS_REQ* req = msg;
 
-	MC_MSG_SMS_RSP* rsp = alloc_msg(CMD_SMS, 0, seq);
+	MC_MSG_SMS_RSP* rsp = alloc_rspMsg(msg);
 	mc_msg_send(rsp, sizeof(MC_MSG_SMS_RSP), ctx);
 
 	return 0;
 }
 
-int mc_operator(short seq,const  char* msg, short len, CB_CTX* ctx)
+int mc_operator(const void* msg, CB_CTX* ctx)
 {
 	MC_MSG_OPERATOR_RSP* req = msg;
 
@@ -162,7 +172,7 @@ int mc_operator(short seq,const  char* msg, short len, CB_CTX* ctx)
 	return 0;
 }
 
-int mc_data(short seq,const  char* msg, short len, CB_CTX* ctx)
+int mc_data(const void* msg, CB_CTX* ctx)
 {
 	return 0;
 }

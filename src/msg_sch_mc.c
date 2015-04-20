@@ -29,7 +29,7 @@
 	zlog(cat[MOD_SCH_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_FATAL, __VA_ARGS__)
 
 
-typedef int (*MSG_PROC)(short seq, const char* msg, short length, CB_CTX* ctx);
+typedef int (*MSG_PROC)(const void* msg, CB_CTX* ctx);
 typedef struct
 {
 	char cmd;
@@ -70,7 +70,7 @@ int handle_mc_msg(const char* m, size_t msgLen, CB_CTX* ctx)
 
 	if (msgLen < sizeof(MC_MSG_HEADER) - sizeof(msg->seq) + ntohs(msg->length))
 	{
-		LOG_ERROR("msg len not right: %ld, body len = %d", msgLen, ntohs(msg->length));
+		LOG_ERROR("message length not enough: %zu, body length = %d", msgLen, ntohs(msg->length));
 		return -1;
 	}
 
@@ -81,7 +81,7 @@ int handle_mc_msg(const char* m, size_t msgLen, CB_CTX* ctx)
 			MSG_PROC pfn = msgProcs[i].pfn;
 			if (pfn)
 			{
-				return pfn(msg->seq, msg->data, msg->length - sizeof(msg->seq), ctx);
+				return pfn(msg, ctx);
 			}
 		}
 	}
