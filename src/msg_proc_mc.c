@@ -32,7 +32,7 @@
 	hzlog(cat[MOD_PROC_MC], __FILE__, sizeof(__FILE__)-1, __func__, sizeof(__func__)-1, __LINE__, \
 	ZLOG_LEVEL_DEBUG, buf, buf_len)
 
-int mc_msg_send(const void* msg, size_t len, CB_CTX* ctx)
+int mc_msg_send(void* msg, size_t len, CB_CTX* ctx)
 {
 	MSG_SEND pfn = ctx->pSendMsg;
 
@@ -48,17 +48,10 @@ int mc_msg_send(const void* msg, size_t len, CB_CTX* ctx)
 
 int mc_login(const void* msg, CB_CTX* ctx)
 {
-	MC_MSG_LOGIN_REQ* req = msg;
+	const MC_MSG_LOGIN_REQ* req = msg;
 
 
-	char IMEI[IMEI_LENGTH * 2 + 1];
-	for (int i = 0; i < IMEI_LENGTH; i++)
-	{
-		sprintf(IMEI + i * 2, "%02x", req->IMEI[i]);
-	}
-	IMEI[IMEI_LENGTH * 2] = 0;
-
-	LOG_DEBUG("mc login: IMEI=%s", IMEI);
+	LOG_DEBUG("mc login: IMEI=%s", get_IMEI_STRING(req->IMEI));
 
 	OBJ_MC* obj = ctx->obj;
 	if (!obj)
@@ -81,10 +74,9 @@ int mc_login(const void* msg, CB_CTX* ctx)
 	return 0;
 }
 
-//int mc_gps(short seq __attribute__((unused)),const const  char* msg, short len, CB_CTX* ctx __attribute__((unused)))
-int mc_gps(const void* msg, CB_CTX* ctx)
+int mc_gps(const void* msg, CB_CTX* ctx __attribute__((unused)))
 {
-	MC_MSG_GPS_REQ* req = msg;
+	const MC_MSG_GPS_REQ* req = msg;
 
 	if (!req)
 	{
@@ -118,7 +110,7 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 
 int mc_ping(const void* msg, CB_CTX* ctx)
 {
-	MC_MSG_PING_REQ *req = msg;
+	const MC_MSG_PING_REQ *req = msg;
 
 	short status = ntohs(req->status);
 
@@ -135,37 +127,88 @@ int mc_ping(const void* msg, CB_CTX* ctx)
 
 int mc_alarm(const void* msg, CB_CTX* ctx)
 {
-	MC_MSG_ALARM_REQ* req = msg;
+	const MC_MSG_ALARM_REQ* req = msg;
 
-	MC_MSG_ALARM_RSP* rsp = alloc_rspMsg(msg);
-	mc_msg_send(rsp, sizeof(MC_MSG_PING_RSP), ctx);
+	switch (req->type)
+	{
+	case FENCE_IN:
+		LOG_INFO("FENCE_IN Alarm");
+		break;
+	case FENCE_OUT:
+		LOG_INFO("FENCE_OUT Alarm");
+		break;
 
+	default:
+		LOG_INFO("Alarm type = %#x", req->type);
+	}
+
+	OBJ_MC* obj = ctx->obj;
+	if (obj)
+	{
+		obj->lat = ntohl(req->lat);
+		obj->lon = ntohl(req->lon);
+		obj->speed = req->speed;
+		obj->course = ntohs(req->course);
+		obj->cell = req->cell;
+	}
+
+	size_t rspMsgLength = sizeof(MC_MSG_ALARM_RSP) + 0; //TODO: currently without any message content
+	MC_MSG_ALARM_RSP* rsp = alloc_msg(req->header.cmd, rspMsgLength);
+	if (rsp)
+	{
+		set_msg_seq(rsp, get_msg_seq(req));
+
+		mc_msg_send(rsp, rspMsgLength, ctx);
+	}
 	return 0;
 }
 
 int mc_status(const void* msg, CB_CTX* ctx)
 {
-	MC_MSG_STATUS_REQ* req = msg;
+	const MC_MSG_STATUS_REQ* req = msg;
+
+	OBJ_MC* obj = ctx->obj;
+	if (obj)
+	{
+		LOG_INFO("MC(%s) Status %x", req->status);
+	}
+	else
+	{
+		LOG_INFO("MC Status %x", req->status);
+	}
+
+	if (obj)
+	{
+		obj->lat = ntohl(req->lat);
+		obj->lon = ntohl(req->lon);
+		obj->speed = req->speed;
+		obj->course = ntohs(req->course);
+		obj->cell = req->cell;
+	}
 
 	MC_MSG_STATUS_RSP* rsp = alloc_rspMsg(msg);
-	mc_msg_send(rsp, sizeof(MC_MSG_STATUS_RSP), ctx);
-
+	if (rsp)
+	{
+		mc_msg_send(rsp, sizeof(MC_MSG_PING_RSP), ctx);
+	}
 	return 0;
 }
 
 int mc_sms(const void* msg, CB_CTX* ctx)
 {
-	MC_MSG_SMS_REQ* req = msg;
+	const MC_MSG_SMS_REQ* req = msg;
 
 	MC_MSG_SMS_RSP* rsp = alloc_rspMsg(msg);
-	mc_msg_send(rsp, sizeof(MC_MSG_SMS_RSP), ctx);
-
+	if (rsp)
+	{
+		mc_msg_send(rsp, sizeof(MC_MSG_PING_RSP), ctx);
+	}
 	return 0;
 }
 
 int mc_operator(const void* msg, CB_CTX* ctx)
 {
-	MC_MSG_OPERATOR_RSP* req = msg;
+	const MC_MSG_OPERATOR_RSP* req = msg;
 
 	LOG_DEBUG("MC response %s", req->data);
 

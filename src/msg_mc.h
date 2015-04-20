@@ -173,12 +173,23 @@ typedef MC_MSG_OPERATOR_REQ MC_MSG_OPERATOR_RSP;
 
 #pragma pack(pop)
 
+inline void set_msg_seq(MC_MSG_HEADER* msg, short seq)
+{
+	msg->seq = seq;
+}
+
+inline short get_msg_seq(const MC_MSG_HEADER* msg)
+{
+	return msg->seq;
+}
 
 char get_msg_cmd(const MC_MSG_HEADER* msg);
 
-//MC_MSG_HEADER* alloc_msg(char cmd, short length);
+MC_MSG_HEADER* alloc_msg(char cmd, size_t length);
 MC_MSG_HEADER* alloc_rspMsg(const MC_MSG_HEADER* pMsg);
 
 void free_msg(MC_MSG_HEADER* msg);
+
+const char* get_IMEI_STRING(char* IMEI);
 
 #endif /* SRC_MSG_MC_H_ */

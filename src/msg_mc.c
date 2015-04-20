@@ -27,10 +27,6 @@ inline char get_msg_cmd(const MC_MSG_HEADER* msg)
 	return msg->cmd;
 }
 
-inline const short get_msg_seq(const MC_MSG_HEADER* msg)
-{
-	return msg->seq;
-}
 
 inline void set_msg_cmd(MC_MSG_HEADER* msg, char cmd)
 {
@@ -44,9 +40,20 @@ inline void set_msg_len(MC_MSG_HEADER* msg, short length)
 	//msg->length = local_htons(length);
 }
 
-inline void set_msg_seq(MC_MSG_HEADER* msg, short seq)
+
+
+MC_MSG_HEADER* alloc_msg(char cmd, size_t length)
 {
-	msg->seq = seq;
+	MC_MSG_HEADER* msg = malloc(length);
+
+	if (msg)
+	{
+		fill_msg_header(msg);
+		set_msg_cmd(msg, cmd);
+		set_msg_len(msg, length - MC_MSG_HEADER_LEN);
+	}
+
+	return msg;
 }
 
 MC_MSG_HEADER* alloc_rspMsg(const MC_MSG_HEADER* pMsg)
@@ -57,9 +64,11 @@ MC_MSG_HEADER* alloc_rspMsg(const MC_MSG_HEADER* pMsg)
 	case CMD_LOGIN:
 		msgLen = sizeof(MC_MSG_LOGIN_RSP);
 		break;
+
 	case CMD_PING:
 		msgLen = sizeof(MC_MSG_PING_RSP);
 		break;
+
 	default:
 		return NULL;
 	}
@@ -68,7 +77,7 @@ MC_MSG_HEADER* alloc_rspMsg(const MC_MSG_HEADER* pMsg)
 
 	fill_msg_header(msg);
 	set_msg_cmd(msg, pMsg->cmd);
-	set_msg_len(msg, msgLen - sizeof(MC_MSG_HEADER) + sizeof(msg->seq));
+	set_msg_len(msg, msgLen - MC_MSG_HEADER_LEN);
 	set_msg_seq(msg, get_msg_seq(pMsg));
 
 	return msg;
@@ -78,4 +87,17 @@ MC_MSG_HEADER* alloc_rspMsg(const MC_MSG_HEADER* pMsg)
 void free_msg(MC_MSG_HEADER* msg)
 {
 	free(msg);
+}
+
+
+const char* get_IMEI_STRING(char* IMEI)
+{
+	static char strIMEI[IMEI_LENGTH * 2 + 1];
+	for (int i = 0; i < IMEI_LENGTH; i++)
+	{
+		sprintf(strIMEI + i * 2, "%02x", IMEI[i]);
+	}
+	strIMEI[IMEI_LENGTH * 2] = 0;
+
+	return strIMEI;
 }
