@@ -1,5 +1,5 @@
 
-CC= gcc -std=c11
+CC= gcc -std=gnu99
 CFLAGS= -O2 -Wall -Wextra 
 LDFLAGS= 
 LIBS= -levent -lzlog
@@ -8,7 +8,7 @@ LIBS= -levent -lzlog
 RM= rm -f
 
 
-OBJS= main.o server_mc.o server_gizwits.o log.o msg_sch_mc.o msg_proc_mc.o object_mc.o
+OBJS= main.o server_mc.o server_gizwits.o log.o msg_sch_mc.o msg_proc_mc.o object_mc.o msg_mc.o
 TARGET= ../bin/server
 
 all: $(TARGET)
@@ -31,3 +31,4 @@ log.o: log.c log.h
 msg_sch_mc.o: msg_sch_mc.c msg_sch_mc.h msg_proc_mc.h msg_mc.h macro_mc.h cb_ctx_mc.h
 msg_proc_mc.o: msg_proc_mc.c msg_proc_mc.h object_mc.h macro_mc.h cb_ctx_mc.h
 object_mc.o: object_mc.c object_mc.h macro_mc.h
+msg_mc.o: msg_mc.c msg_mc.h

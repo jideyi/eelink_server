@@ -36,47 +36,6 @@ typedef struct
 }__attribute__((__packed__)) MC_MSG_HEADER;
 #pragma pack(pop)
 
-inline void fill_msg_header(MC_MSG_HEADER* msg)
-{
-	msg->header[0] = 0x67;
-	msg->header[1] = 0x67;
-}
-
-inline void set_msg_cmd(MC_MSG_HEADER* msg, char cmd)
-{
-	msg->cmd = cmd;
-}
-
-inline char get_msg_cmd(MC_MSG_HEADER* msg)
-{
-	return msg->cmd;
-}
-
-inline void set_msg_len(MC_MSG_HEADER* msg, short length)
-{
-	msg->length = length;
-}
-
-inline void set_msg_seq(MC_MSG_HEADER* msg, short seq)
-{
-	msg->seq = seq;
-}
-
-inline MC_MSG_HEADER* alloc_msg(char cmd, short length, short seq)
-{
-	MC_MSG_HEADER* msg = malloc(sizeof(MC_MSG_HEADER) + length);
-	fill_msg_header(msg);
-	set_msg_cmd(msg, cmd);
-	set_msg_len(msg, sizeof(msg->seq) + length);
-	set_msg_seq(msg,seq);
-
-	return msg;
-}
-
-inline void free_msg(MC_MSG_HEADER* msg)
-{
-	free(msg);
-}
 //Login message structure
 typedef struct
 {
@@ -203,5 +162,10 @@ typedef struct
 
 typedef MC_MSG_OPERATOR_REQ MC_MSG_OPERATOR_RSP;
 
+
+char get_msg_cmd(MC_MSG_HEADER* msg);
+
+MC_MSG_HEADER* alloc_msg(char cmd, short length, short seq);
+void free_msg(MC_MSG_HEADER* msg);
 
 #endif /* SRC_MSG_MC_H_ */

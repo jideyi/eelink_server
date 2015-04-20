@@ -38,7 +38,7 @@ int mc_msg_send(const void* msg, size_t len, CB_CTX* ctx)
 
 	pfn(ctx->bev, msg, len);
 
-	LOG_INFO("send response msg of cmd(%d)", get_msg_cmd(msg));
+	LOG_INFO("send response msg of cmd(%d), leng(%ld - %ld)", get_msg_cmd(msg), len, htons(len));
 	LOG_DEBUG_HEX(msg, len);
 
 	free(msg);

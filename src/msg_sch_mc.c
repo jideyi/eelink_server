@@ -66,11 +66,11 @@ int handle_mc_msg(const char* m, size_t msgLen, CB_CTX* ctx)
 	}
 
 
-	LOG_DEBUG("sizeof(MC_MSG_HEADER) = %d", sizeof(MC_MSG_HEADER));
+	LOG_DEBUG("sizeof(MC_MSG_HEADER) = %ld", sizeof(MC_MSG_HEADER));
 
 	if (msgLen < sizeof(MC_MSG_HEADER) - sizeof(msg->seq) + ntohs(msg->length))
 	{
-		LOG_ERROR("msg len not right: %d, body len = %d", msgLen, ntohs(msg->length));
+		LOG_ERROR("msg len not right: %ld, body len = %d", msgLen, ntohs(msg->length));
 		return -1;
 	}
 
