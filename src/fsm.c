@@ -6,8 +6,26 @@
  */
 
 #include "fsm.h"
+#include "log.h"
 #include "cb_ctx_mc.h"
 #include "gizwits_req.h"
+
+#define LOG_DEBUG(...) \
+	zlog(cat[MOD_FSM], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_DEBUG, __VA_ARGS__)
+
+#define LOG_INFO(...) \
+	zlog(cat[MOD_FSM], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_INFO, __VA_ARGS__)
+
+#define LOG_WARNNING(...) \
+	zlog(cat[MOD_FSM], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_WARNNING, __VA_ARGS__)
+
+#define LOG_ERROR(...) \
+	zlog(cat[MOD_FSM], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_ERROR, __VA_ARGS__)
+
+#define LOG_FATAL(...) \
+	zlog(cat[MOD_FSM], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_FATAL, __VA_ARGS__)
+
+
 
 #define CUR_STATUS(ctx)	((CB_CTX*)ctx)->cur_status
 
@@ -30,8 +48,12 @@ ACTION* state_transitions[STS_MAX][EVT_MAX] =
 
 int fsm_run(EVENT event, void* ctx)
 {
+	LOG_DEBUG("run FSM State(%d), Event(%d)", CUR_STATUS(ctx), event);
 	ACTION* action = state_transitions[CUR_STATUS(ctx)][event];
-	return action(ctx);
+	if (action)
+	{
+		return action(ctx);
+	}
 }
 
 int start_fsm(void* ctx)
