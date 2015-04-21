@@ -24,7 +24,7 @@ typedef enum
 {
 	EVT_SIGN_IN,
 	EVT_GOT_DID,
-	EVT_OTA,
+	EVT_GOT_M2M,
 	EVT_FIRMWARE,
 	EVT_LOGIN,
 	EVT_PING,

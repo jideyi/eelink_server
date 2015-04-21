@@ -122,12 +122,14 @@ void http_requset_get_cb(struct evhttp_request *req, void *arg)
             print_request_head_info(req->output_headers);
 
             LOG_DEBUG("len:%zu  body size:%zu", len, req->body_size);
-            char *tmp = malloc(len+1);
-            memcpy(tmp, evbuffer_pullup(buf, -1), len);
-            tmp[len] = '\0';
+            char *body = malloc(len+1);
+            memcpy(body, evbuffer_pullup(buf, -1), len);
+            body[len] = '\0';
             LOG_DEBUG("print the body:");
-            LOG_DEBUG("HTML BODY:%s", tmp);
-            free(tmp);
+            LOG_DEBUG("HTML BODY:%s", body);
+
+            session->pfn(req->response_code, body, session->ctx);
+            free(body);
 
 //            event_base_loopexit(base, 0);
             break;

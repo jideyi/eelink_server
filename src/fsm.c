@@ -31,16 +31,19 @@
 
 typedef int ACTION(void* ctx);
 
-int action_req_did(void* ctx);
+static int action_req_did(void* ctx);
+static int action_provision(void* ctx);
+static int action_ota(void* ctx);
+static int action_firmware(void* ctx);
 
 
 ACTION* state_transitions[STS_MAX][EVT_MAX] =
 {
-						/* EVT_SIGN_IN		EVT_GOT_DID 	EVT_OTA		EVT_FIRMWARE	EVT_LOGIN	EVT_PING	EVT_MQTT */
+						/* EVT_SIGN_IN		EVT_GOT_DID 		EVT_OTA		EVT_FIRMWARE	EVT_LOGIN	EVT_PING	EVT_MQTT */
 /* STS_INITIAL 		*/	{action_req_did,	},
-/* STS_WAIT_DID		*/	{},
-/* STS_WAIT_M2MINFO	*/	{},
-/* STS_WAIT_OTA		*/	{},
+/* STS_WAIT_DID		*/	{NULL,				action_provision,	},
+/* STS_WAIT_M2MINFO	*/	{NULL,				NULL,				action_ota,},
+/* STS_WAIT_OTA		*/	{NULL,				NULL,				NULL,		action_firmware},
 /* STS_WAIT_FIRMWARE*/	{},
 /* STS_LOGINING		*/	{},
 /* STS_RUNNING		*/	{},
@@ -54,6 +57,7 @@ int fsm_run(EVENT event, void* ctx)
 	{
 		return action(ctx);
 	}
+	return 0;
 }
 
 int start_fsm(void* ctx)
@@ -61,8 +65,10 @@ int start_fsm(void* ctx)
 	return fsm_run(EVT_SIGN_IN, ctx);
 }
 
-int action_req_did(void* ctx)
+static int action_req_did(void* ctx)
 {
+	LOG_DEBUG("request did");
+
 	mc_register(ctx);
 
 	CUR_STATUS(ctx) = STS_WAIT_DID;
@@ -70,24 +76,28 @@ int action_req_did(void* ctx)
 	return 0;
 }
 
-int action_provision(void* ctx)
+static int action_provision(void* ctx)
 {
+	LOG_DEBUG("provision");
 
+	mc_provision(ctx);
 	CUR_STATUS(ctx) = STS_WAIT_M2MINFO;
 
 	return 0;
 }
 
-int action_ota(void* ctx)
+static int action_ota(void* ctx)
 {
+	LOG_DEBUG("OTA");
 
 	CUR_STATUS(ctx) = STS_WAIT_OTA;
 
 	return 0;
 }
 
-int action_firmware(void* ctx)
+static int action_firmware(void* ctx)
 {
+	LOG_DEBUG("Download firmware");
 
 	CUR_STATUS(ctx) = STS_WAIT_FIRMWARE;
 
