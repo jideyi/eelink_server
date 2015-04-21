@@ -21,6 +21,8 @@ static const char* all_modules[] =
 		"FSM",
 		"HTTP",
 		"MQTT",
+		"GIZWITS_REQ",
+		"GIZWITS_RSP",
 };
 
 int log_init()
