@@ -8,6 +8,7 @@
 #include <errno.h>
 
 #include "log.h"
+#include "fsm.h"
 #include "server_mc.h"
 
 #include "msg_sch_mc.h"
@@ -95,9 +96,11 @@ static void accept_conn_cb(struct evconnlistener *listener,
 	struct bufferevent *bev = bufferevent_socket_new(base, fd, BEV_OPT_CLOSE_ON_FREE);
 
 	CB_CTX* cb_ctx = malloc(sizeof(CB_CTX));
+	cb_ctx->base = base;
 	cb_ctx->bev = bev;
 	cb_ctx->obj = 0;
 	cb_ctx->pSendMsg = send_msg;
+	cb_ctx->cur_status = STS_INITIAL;
 
 	//TODO: set the water-mark and timeout
 	bufferevent_setcb(bev, read_cb, write_cb, event_cb, cb_ctx);

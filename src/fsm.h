@@ -34,8 +34,6 @@ typedef enum
 
 int fsm_run(EVENT, void* ctx);
 
-inline int start_fsm(void* ctx)
-{
-	return fsm_run(EVT_SIGN_IN, ctx);
-}
+int start_fsm(void* ctx);
+
 #endif /* SRC_FSM_H_ */

@@ -6,7 +6,7 @@
  */
 
 #include "fsm.h"
-#include "cb_ctx_mc.h"
+#include "gizwits_rsp.h"
 
 int mc_register_rsp(int response_code, const char* msg, CB_CTX* ctx)
 {

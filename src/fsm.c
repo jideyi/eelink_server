@@ -34,6 +34,11 @@ int fsm_run(EVENT event, void* ctx)
 	return action(ctx);
 }
 
+int start_fsm(void* ctx)
+{
+	return fsm_run(EVT_SIGN_IN, ctx);
+}
+
 int action_req_did(void* ctx)
 {
 	mc_register(ctx);

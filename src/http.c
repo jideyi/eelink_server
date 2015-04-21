@@ -58,6 +58,7 @@ void http_requset_post_cb(struct evhttp_request *req, void *arg)
     switch(req->response_code)
     {
         case HTTP_OK:
+        case HTTP_OK + 1:
         {
             struct evbuffer* buf = evhttp_request_get_input_buffer(req);
             size_t len = evbuffer_get_length(buf);
@@ -79,6 +80,9 @@ void http_requset_post_cb(struct evhttp_request *req, void *arg)
         }
 
         case HTTP_BADREQUEST:
+        	LOG_ERROR("http post responde error:status_code %d %s",
+        			req->response_code,
+        			req->response_code_line);
         	session->pfn(req->response_code, NULL, session->ctx);
         	return;
 
