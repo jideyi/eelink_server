@@ -16,6 +16,9 @@ enum
 	MOD_SERVER_MC,
 	MOD_SCH_MC,
 	MOD_PROC_MC,
+	MOD_FSM,
+	MOD_HTTP,
+	MOD_MQTT,
 	MOD_MAX
 };
 

@@ -18,6 +18,9 @@ static const char* all_modules[] =
 		"SERVER_MC",
 		"SCH_MC",
 		"PROC_MC",
+		"FSM",
+		"HTTP",
+		"MQTT",
 };
 
 int log_init()

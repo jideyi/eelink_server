@@ -1,9 +1,9 @@
 #include <event2/event.h>
 
+#include "gizwits_req.h"
 #include "log.h"
 #include "version.h"
 #include "server_mc.h"
-#include "server_gizwits.h"
 #include "object_mc.h"
 
 #define LOG(...) \
@@ -32,8 +32,6 @@ int main(int argc, char **argv)
     server_mc_start(base);
     
     LOG("start mc server sucessfully");
-
-    server_gizwits_start(base);
 
     event_base_dispatch(base);
 
