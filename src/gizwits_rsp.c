@@ -140,18 +140,17 @@ int mqtt_app2dev(const char* topic, const char* data, const int len, void* userd
 {
 	CB_CTX* ctx = userdata;
 
-	char DID[MAX_DID_LEN] = {0};
-	char clientID[32];
+	APP_SESSION* session = malloc(sizeof(APP_SESSION));
 
 	char* pStart = &topic[strlen("app2dev/")];
 	char* pEnd = strstr(pStart, "/");
 
-	memcpy(DID, pStart, pEnd - pStart);
+	memcpy(session->DID, pStart, pEnd - pStart);
 
 	//TODO: HOW to handle the did
 
 	pStart = strstr((pEnd + 1), "/");
-    strcpy(clientID, pStart + 1);
+    strcpy(session->clientID, pStart + 1);
 
     int header = *(int*)data;
 
@@ -161,7 +160,7 @@ int mqtt_app2dev(const char* topic, const char* data, const int len, void* userd
     const char* pDataToMc = data + varlen + 7;
     const int lenToMc = datalen - 3; // flag(1B)+cmd(2B)=3B
 
-    ctx->pSendMsg(ctx->base, pDataToMc, lenToMc);
+    send_raw_data2mc(pDataToMc, lenToMc, ctx, session);
 
 	return 0;
 }

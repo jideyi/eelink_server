@@ -38,6 +38,12 @@ typedef struct
 	struct mosquitto *mosq;
 }OBJ_MC;
 
+typedef struct
+{
+	char DID[MAX_DID_LEN];
+	char clientID[32];	//TODO: fix the magic data
+}APP_SESSION;
+
 void mc_obj_initial();
 OBJ_MC* mc_obj_new();
 void mc_obj_del(OBJ_MC* obj);

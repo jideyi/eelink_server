@@ -214,10 +214,29 @@ int mc_operator(const void* msg, CB_CTX* ctx)
 
 	LOG_DEBUG("MC response %s", req->data);
 
+	int len = req->header.length + MC_MSG_HEADER_LEN - sizeof(MC_MSG_OPERATOR_RSP);
+	APP_SESSION* session = (APP_SESSION*)req->token;
+	char topic[100] = {0}; //FIXME: how long should be?
+	snprintf(topic, 100, "dev2app/%s/%s", session->DID, session->clientID);
+
+	mqtt_dev2app(topic, req->data, len, ctx);
+
 	return 0;
 }
 
 int mc_data(const void* msg, CB_CTX* ctx)
 {
 	return 0;
+}
+
+void send_raw_data2mc(const void* msg, int len, CB_CTX* ctx, APP_SESSION* session)
+{
+	MC_MSG_OPERATOR_REQ* req = alloc_msg(CMD_OPERAT, sizeof(MC_MSG_OPERATOR_REQ) + len);
+	if (req)
+	{
+		req->type = 0x02;	//FIXME: use enum instead
+		req->token = session;	//TODO: is it safe to use pointer here??
+		memcpy(req->data, msg, len);
+		mc_msg_send(req, sizeof(MC_MSG_OPERATOR_REQ) + len, ctx);
+	}
 }
