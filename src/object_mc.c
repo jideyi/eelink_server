@@ -106,6 +106,9 @@ OBJ_MC* mc_obj_new()
 	memset(obj, 0, sizeof(OBJ_MC));
 	all_mc[mc_count++] = obj;
 
+	//FIXME: for debug only
+	memcpy(obj->DID, "wcsjQEeF25vKoe46Mz3TwN", sizeof("wcsjQEeF25vKoe46Mz3TwN"));
+
 	return obj;
 }
 
@@ -123,4 +126,9 @@ void mc_obj_del(OBJ_MC* obj)
 			break;
 		}
 	}
+}
+
+int mc_obj_did_got(OBJ_MC* obj)
+{
+	return strlen(obj->DID) != 0;
 }

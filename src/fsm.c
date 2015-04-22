@@ -8,6 +8,7 @@
 #include "fsm.h"
 #include "log.h"
 #include "cb_ctx_mc.h"
+#include "object_mc.h"
 #include "gizwits_req.h"
 
 #define LOG_DEBUG(...) \
@@ -40,10 +41,10 @@ static int action_login(void* ctx);
 
 ACTION* state_transitions[STS_MAX][EVT_MAX] =
 {
-						/* EVT_SIGN_IN		EVT_GOT_DID 		EVT_OTA		EVT_FIRMWARE	EVT_LOGIN	EVT_PING	EVT_MQTT */
-/* STS_INITIAL 		*/	{action_req_did,	NULL,				NULL,		NULL,			NULL,		NULL,		NULL},
+						/* EVT_SIGN_IN		EVT_GOT_DID 		EVT_GOT_M2M		EVT_FIRMWARE	EVT_LOGIN	EVT_PING	EVT_MQTT */
+/* STS_INITIAL 		*/	{action_req_did,	action_provision,	NULL,			NULL,			NULL,		NULL,		NULL},
 /* STS_WAIT_DID		*/	{NULL,				action_provision,	},
-/* STS_WAIT_M2MINFO	*/	{NULL,				NULL,				action_ota,},
+/* STS_WAIT_M2MINFO	*/	{NULL,				NULL,				action_login, 	NULL,},
 /* STS_WAIT_OTA		*/	{NULL,				NULL,				NULL,		action_firmware},
 /* STS_WAIT_FIRMWARE*/	{},
 /* STS_LOGINING		*/	{},
@@ -63,7 +64,16 @@ int fsm_run(EVENT event, void* ctx)
 
 int start_fsm(void* ctx)
 {
-	return fsm_run(EVT_SIGN_IN, ctx);
+	OBJ_MC* obj = ((CB_CTX*)ctx)->obj;
+
+	if (mc_obj_did_got(obj))
+	{
+		return fsm_run(EVT_GOT_DID, ctx);
+	}
+	else
+	{
+		return fsm_run(EVT_SIGN_IN, ctx);
+	}
 }
 
 static int action_req_did(void* ctx)
@@ -109,6 +119,7 @@ static int action_login(void* ctx)
 {
 	LOG_DEBUG("LOGIN IN");
 
+	mc_login_mqtt(ctx);
 	CUR_STATUS(ctx) = STS_LOGINING;
 
 	return 0;
