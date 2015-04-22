@@ -23,11 +23,14 @@ void mc_register(void* ctx)
 
 void mc_provision(void* ctx)
 {
+	OBJ_MC* obj = ((CB_CTX*)ctx)->obj;
+
 	HTTP_SESSION *session = malloc(sizeof(HTTP_SESSION));
 	init_session(session, ctx, mc_provision_rsp);
 
-	//TODO:
-	char* url = "http://api.gizwits.com/dev/devices";
+	//TODO: change the magic number
+	char url[100];
+	snprintf(url, 100, "http://api.gizwits.com/dev/devices/%s", obj->DID);
 	http_get(session, url);
 }
 
