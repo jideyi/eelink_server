@@ -12,11 +12,15 @@
 
 void mc_register(void* ctx)
 {
+	OBJ_MC* obj = ((CB_CTX*)ctx)->obj;
+
 	HTTP_SESSION *session = malloc(sizeof(HTTP_SESSION));
 	init_session(session, ctx, mc_register_rsp);
 
-	char* url = "http://api.gizwits.com/dev/devices";
-	char* data = "product_key=e08e87504a2a4b5c934e99e3983bc219&passcode=gokit&mac=112233445566&type=normal";
+	const char* url = "http://api.gizwits.com/dev/devices";
+	char data[200] = {0}; //TODO: fix magic number
+	snprintf(data, 200, "product_key=e08e87504a2a4b5c934e99e3983bc219&passcode=%s&mac=112233445566&type=normal", obj->pwd);
+
 	http_post(session, url, data);
 
 }
