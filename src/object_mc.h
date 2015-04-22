@@ -28,6 +28,13 @@ typedef struct
 	short rxl;
 	short analog1;
 	short analog2;
+
+	char DID[MAX_DID_LEN];
+
+	char m2m_host[100];
+    int m2m_Port;
+
+	struct mosquitto *mosq;
 }OBJ_MC;
 
 void mc_obj_initial();

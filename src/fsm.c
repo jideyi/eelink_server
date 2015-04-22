@@ -35,12 +35,13 @@ static int action_req_did(void* ctx);
 static int action_provision(void* ctx);
 static int action_ota(void* ctx);
 static int action_firmware(void* ctx);
+static int action_login(void* ctx);
 
 
 ACTION* state_transitions[STS_MAX][EVT_MAX] =
 {
 						/* EVT_SIGN_IN		EVT_GOT_DID 		EVT_OTA		EVT_FIRMWARE	EVT_LOGIN	EVT_PING	EVT_MQTT */
-/* STS_INITIAL 		*/	{action_req_did,	},
+/* STS_INITIAL 		*/	{action_req_did,	NULL,				NULL,		NULL,			NULL,		NULL,		NULL},
 /* STS_WAIT_DID		*/	{NULL,				action_provision,	},
 /* STS_WAIT_M2MINFO	*/	{NULL,				NULL,				action_ota,},
 /* STS_WAIT_OTA		*/	{NULL,				NULL,				NULL,		action_firmware},
@@ -104,3 +105,11 @@ static int action_firmware(void* ctx)
 	return 0;
 }
 
+static int action_login(void* ctx)
+{
+	LOG_DEBUG("LOGIN IN");
+
+	CUR_STATUS(ctx) = STS_LOGINING;
+
+	return 0;
+}

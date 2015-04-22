@@ -10,6 +10,11 @@
 
 #define MSG_SIGNATURE_LENGTH (2)
 #define IMEI_LENGTH (8)
+#define MAX_DID_LEN (24)
+#define DID_LEN (22)
+
+#define PRODUCT_KEY "e08e87504a2a4b5c934e99e3983bc219"
+#define MAGIC_NUMBER 0x12345678
 
 typedef struct
 {

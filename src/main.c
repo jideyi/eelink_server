@@ -1,4 +1,5 @@
 #include <event2/event.h>
+#include <mosquitto.h>
 
 #include "gizwits_req.h"
 #include "log.h"
@@ -33,8 +34,11 @@ int main(int argc, char **argv)
     
     LOG("start mc server sucessfully");
 
+    mosquitto_lib_init();
+
     event_base_dispatch(base);
 
+	mosquitto_lib_cleanup();
     zlog_fini();
 
     return 0;

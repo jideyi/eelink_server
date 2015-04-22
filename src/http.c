@@ -177,6 +177,9 @@ void *http_get(HTTP_SESSION* session, const char *url)
             evhttp_uri_get_host(uri),
             (port == -1 ? 80 : port));
 
+	//TODO: set the timeout
+	//evhttp_connection_set_timeout(cn, 1000);
+
     /* does request will be released by evhttp connection???   */
 	struct evhttp_request *req = evhttp_request_new(http_requset_get_cb, session);
 
