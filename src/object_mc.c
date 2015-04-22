@@ -95,6 +95,17 @@ void mc_obj_destruct()
 	mc_count = 0;
 }
 
+void make_pwd(char pwd[])
+{
+    srand(time(NULL));
+
+    for(int i = 0; i < MAX_PWD_LEN; i++)
+	{
+        pwd[i] = 65 + rand() % (90 - 65);
+	}
+    pwd[MAX_PWD_LEN - 1] = '\0';
+}
+
 OBJ_MC* mc_obj_new()
 {
 	if (mc_count == MAX_MC)
@@ -107,7 +118,8 @@ OBJ_MC* mc_obj_new()
 	all_mc[mc_count++] = obj;
 
 	//FIXME: for debug only
-	memcpy(obj->DID, "wcsjQEeF25vKoe46Mz3TwN", sizeof("wcsjQEeF25vKoe46Mz3TwN"));
+	//memcpy(obj->DID, "mYi5ozygGFyBarmbNkrqUz", sizeof("wcsjQEeF25vKoe46Mz3TwN"));
+	make_pwd(obj->pwd);
 
 	return obj;
 }

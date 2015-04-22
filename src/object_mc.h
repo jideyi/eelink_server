@@ -30,6 +30,7 @@ typedef struct
 	short analog2;
 
 	char DID[MAX_DID_LEN];
+	char pwd[MAX_PWD_LEN];
 
 	char m2m_host[100];
     int m2m_Port;

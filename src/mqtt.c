@@ -42,7 +42,8 @@ void mqtt_connect_callback(struct mosquitto *mosq, void *userdata, int result)
 {
 	OBJ_MC* obj = userdata;
 
-	if(!result){
+	if(!result)
+	{
 		char topic[100];	//TODO: fix magic number
 		memset(topic, 0, sizeof(topic));
 		/* Subscribe to broker information topics on successful connect. */
@@ -54,8 +55,10 @@ void mqtt_connect_callback(struct mosquitto *mosq, void *userdata, int result)
 
 		sprintf(topic, "app2dev/%s/#", obj->DID);
 		mosquitto_subscribe(mosq, NULL, topic, 2);
-	}else{
-		fprintf(stderr, "Connect failed\n");
+	}
+	else
+	{
+		fprintf(stderr, "Connect failed: result = %d", result);
 	}
 }
 
@@ -81,7 +84,7 @@ void mqtt_publish_callback(struct mosquitto *mosq, void *userdata, int mid)
 
 struct mosquitto* mqtt_login(const char* id, const char* host, int port, void* ctx)
 {
-	int keepalive = 60;
+	int keepalive = 120;
 	bool clean_session = true;
 
 	struct mosquitto *mosq = mosquitto_new(id, clean_session, ctx);
@@ -94,6 +97,10 @@ struct mosquitto* mqtt_login(const char* id, const char* host, int port, void* c
 	mosquitto_message_callback_set(mosq, mqtt_message_callback);
 	mosquitto_subscribe_callback_set(mosq, mqtt_subscribe_callback);
 	mosquitto_publish_callback_set(mosq, mqtt_publish_callback);
+
+	OBJ_MC* obj = ctx;
+
+	mosquitto_username_pw_set(mosq, obj->DID, obj->pwd);
 
 	if(mosquitto_connect(mosq, host, port, keepalive)){
 		fprintf(stderr, "Unable to connect.\n");
