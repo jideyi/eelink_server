@@ -54,9 +54,9 @@ int mc_provision_rsp(int response_code, const char* msg, CB_CTX* ctx)
 	if (response_code == 200)
 	{
 		//TODO: process the msg: parse the m2m server's domain and port
-	    char m2m_host[100];
+	    char m2m_host[100] = {0};
 	    char temp_port[10]={0};
-	    int m2m_Port;
+	    int m2m_port;
 	    memset(m2m_host, 0, 100);
 
 	    char* p_start = strstr(msg, "host=");
@@ -83,8 +83,12 @@ int mc_provision_rsp(int response_code, const char* msg, CB_CTX* ctx)
 
 	    p_end = strstr(p_start,"&");
 	    memcpy(temp_port, p_start, p_end - p_start);
-	    m2m_Port = atoi(temp_port);
+	    m2m_port = atoi(temp_port);
 
+		OBJ_MC* obj = ctx->obj;
+
+		memcpy(obj->m2m_host, m2m_host, strlen(m2m_host));
+		obj->m2m_Port = m2m_port;
 
 		fsm_run(EVT_GOT_M2M, ctx);
 		return 0;
