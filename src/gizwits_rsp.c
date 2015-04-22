@@ -49,7 +49,7 @@ int mc_register_rsp(int response_code, const char* msg, CB_CTX* ctx)
 
 int mc_provision_rsp(int response_code, const char* msg, CB_CTX* ctx)
 {
-	LOG_DEBUG("process provision response msg");
+	LOG_DEBUG("provision response: status_code = %d, msg = %s", response_code, msg);
 
 	if (response_code == 200)
 	{
@@ -62,12 +62,14 @@ int mc_provision_rsp(int response_code, const char* msg, CB_CTX* ctx)
 	    char* p_start = strstr(msg, "host=");
 	    if (!p_start)
 	    {
+	    	LOG_ERROR("can not get host start");
 	    	return -1;
 	    }
 	    p_start += strlen("host=");
 	    char* p_end = strstr(p_start, "&");
 	    if (!p_end)
 	    {
+	    	LOG_ERROR("can not get host end");
 	    	return -1;
 	    }
 
@@ -77,11 +79,16 @@ int mc_provision_rsp(int response_code, const char* msg, CB_CTX* ctx)
 	    p_start = strstr((p_end + 1), "port=");
 	    if(!p_start)
 	    {
+	    	LOG_ERROR("can not get port start");
 	    	return 1;
 	    }
 	    p_start += strlen("port=");
 
 	    p_end = strstr(p_start,"&");
+	    if (!p_end)
+	    {
+	    	LOG_ERROR("can not get port end");
+	    }
 	    memcpy(temp_port, p_start, p_end - p_start);
 	    m2m_port = atoi(temp_port);
 

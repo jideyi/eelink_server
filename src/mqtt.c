@@ -10,6 +10,25 @@
 #include <stdio.h>
 #include <mosquitto.h>
 #include "object_mc.h"
+#include "log.h"
+
+#define LOG_DEBUG(...) \
+	zlog(cat[MOD_MQTT], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_DEBUG, __VA_ARGS__)
+
+#define LOG_INFO(...) \
+	zlog(cat[MOD_MQTT], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_INFO, __VA_ARGS__)
+
+#define LOG_WARNNING(...) \
+	zlog(cat[MOD_MQTT], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_WARNNING, __VA_ARGS__)
+
+#define LOG_ERROR(...) \
+	zlog(cat[MOD_MQTT], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_ERROR, __VA_ARGS__)
+
+#define LOG_FATAL(...) \
+	zlog(cat[MOD_MQTT], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_FATAL, __VA_ARGS__)
+
+
+
 void mqtt_message_callback(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message)
 {
 	if(message->payloadlen){
@@ -87,9 +106,12 @@ struct mosquitto* mqtt_login(const char* id, const char* host, int port, void* c
 	int keepalive = 120;
 	bool clean_session = true;
 
+	LOG_DEBUG("login MQTT: id = %s,host=%s, port=%d", id, host, port);
+
 	struct mosquitto *mosq = mosquitto_new(id, clean_session, ctx);
-	if(!mosq){
-		fprintf(stderr, "Error: Out of memory.\n");
+	if(!mosq)
+	{
+		LOG_ERROR("Error: Out of memory: mosquitto_new failed");
 		return NULL;
 	}
 	mosquitto_log_callback_set(mosq, mqtt_log_callback);
@@ -100,10 +122,12 @@ struct mosquitto* mqtt_login(const char* id, const char* host, int port, void* c
 
 	OBJ_MC* obj = ctx;
 
+	LOG_DEBUG("set MQTT username:%s, password:%s", obj->DID, obj->pwd);
 	mosquitto_username_pw_set(mosq, obj->DID, obj->pwd);
 
-	if(mosquitto_connect(mosq, host, port, keepalive)){
-		fprintf(stderr, "Unable to connect.\n");
+	if(mosquitto_connect(mosq, host, port, keepalive))
+	{
+		LOG_ERROR("Unable to connect.");
 		return NULL;
 	}
 
