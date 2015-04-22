@@ -185,17 +185,24 @@ void *http_get(HTTP_SESSION* session, const char *url)
 
     const char *query = evhttp_uri_get_query(uri);
     const char *path = evhttp_uri_get_path(uri);
-    size_t len = (query ? strlen(query) : 0) + (path ? strlen(path) : 0) + 1;
     char *path_query = NULL;
-    if (len > 1) {
-        path_query = calloc(len, sizeof(char));
-        sprintf(path_query, "%s?%s", path, query);
+
+    if (query)
+    {
+        size_t len = (query ? strlen(query) : 0) + (path ? strlen(path) : 0) + 1;
+        if (len > 1) {
+            path_query = calloc(len, sizeof(char));
+            sprintf(path_query, "%s?%s", path, query);
+        }
     }
+    else
+    {
+    	path_query = path;
+    }
+
     evhttp_make_request(cn, req, EVHTTP_REQ_GET, path_query ? path_query: "/");
     /** Set the header properties */
     evhttp_add_header(req->output_headers, "Host", evhttp_uri_get_host(uri));
-
-
 }
 
 void *http_post(HTTP_SESSION* session, const char *url,  const char* data)
