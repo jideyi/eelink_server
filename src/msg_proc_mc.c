@@ -118,14 +118,16 @@ int mc_gps(const void* msg, CB_CTX* ctx __attribute__((unused)))
 			ntohl(req->lat), ntohl(req->lon), req->speed, ntohs(req->course));
 
 	OBJ_MC* obj = ctx->obj;
-	if (obj)
+	if (!obj)
 	{
-		obj->lat = ntohl(req->lat);
-		obj->lon = ntohl(req->lon);
-		obj->speed = req->speed;
-		obj->course = ntohs(req->course);
-		obj->cell = req->cell;
+		LOG_ERROR("MC must first login");
+		return -1;
 	}
+	obj->lat = ntohl(req->lat);
+	obj->lon = ntohl(req->lon);
+	obj->speed = req->speed;
+	obj->course = ntohs(req->course);
+	obj->cell = req->cell;
 
 	//no response message needed
 
