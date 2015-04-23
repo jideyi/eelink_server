@@ -8,9 +8,11 @@
 
 
 #include <stdio.h>
+#include <string.h>
 #include <mosquitto.h>
 #include "object_mc.h"
 #include "log.h"
+#include "gizwits_rsp.h"
 
 #define LOG_DEBUG(...) \
 	zlog(cat[MOD_MQTT], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_DEBUG, __VA_ARGS__)
@@ -32,7 +34,7 @@
 void mqtt_message_callback(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message)
 {
 	if(message->payloadlen){
-		printf("%s %s\n", message->topic, message->payload);
+		printf("%s %p\n", message->topic, message->payload);
 	}else{
 		printf("%s (null)\n", message->topic);
 	}

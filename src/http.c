@@ -91,8 +91,8 @@ void http_requset_post_cb(struct evhttp_request *req, void *arg)
             break;
         case HTTP_MOVETEMP:
         {
-            const char *new_location = evhttp_find_header(req->input_headers, "Location");
-            struct evhttp_uri *new_uri = evhttp_uri_parse(new_location);
+//            const char *new_location = evhttp_find_header(req->input_headers, "Location");
+//            struct evhttp_uri *new_uri = evhttp_uri_parse(new_location);
 //            evhttp_uri_free(ctx->uri);
 //            http_req_post->uri = new_uri;
 //            start_url_request((struct http_request_get *)http_req_post, REQUEST_POST_FLAG);
@@ -111,7 +111,6 @@ void http_requset_get_cb(struct evhttp_request *req, void *arg)
 {
 	HTTP_SESSION *session = arg;
 
-    struct http_request_get *http_req_get = (struct http_request_get *)arg;
     switch(req->response_code)
     {
         case HTTP_OK:
@@ -139,8 +138,8 @@ void http_requset_get_cb(struct evhttp_request *req, void *arg)
             break;
         case HTTP_MOVETEMP:
         {
-            const char *new_location = evhttp_find_header(req->input_headers, "Location");
-            struct evhttp_uri *new_uri = evhttp_uri_parse(new_location);
+//            const char *new_location = evhttp_find_header(req->input_headers, "Location");
+//            struct evhttp_uri *new_uri = evhttp_uri_parse(new_location);
 //            evhttp_uri_free(http_req_get->uri);
 //            http_req_get->uri = new_uri;
 //            start_url_request(http_req_get, REQUEST_GET_FLAG);
@@ -203,6 +202,8 @@ void *http_get(HTTP_SESSION* session, const char *url)
     evhttp_make_request(cn, req, EVHTTP_REQ_GET, path_query ? path_query: "/");
     /** Set the header properties */
     evhttp_add_header(req->output_headers, "Host", evhttp_uri_get_host(uri));
+
+    return NULL;	//TODO: change the return type
 }
 
 void *http_post(HTTP_SESSION* session, const char *url,  const char* data)
@@ -228,4 +229,6 @@ void *http_post(HTTP_SESSION* session, const char *url,  const char* data)
     evbuffer_add(req->output_buffer, post_data, strlen(post_data));
     evhttp_add_header(req->output_headers, "Content-Type", HTTP_CONTENT_TYPE_URL_ENCODED);
     evhttp_add_header(req->output_headers, "Host", evhttp_uri_get_host(uri));
+
+    return NULL;	//TODO: change the return type
 }

@@ -74,7 +74,6 @@ static void event_cb(struct bufferevent *bev, short events, void *ctx)
 	}
 	else if (events & (BEV_EVENT_EOF | BEV_EVENT_ERROR))
 	{
-		struct event_base *base = ctx;
 		if (events & BEV_EVENT_ERROR)
 		{
 			 int err = bufferevent_socket_get_dns_error(bev);

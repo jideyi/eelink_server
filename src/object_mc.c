@@ -9,6 +9,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "object_mc.h"
 
@@ -68,7 +69,12 @@ int mc_saveConfig()
     	OBJ_SAVED objBuf;
 		memcpy(objBuf.IMEI, all_mc[i]->IMEI, IMEI_LENGTH);
 		memcpy(objBuf.DID, all_mc[i]->DID, MAX_DID_LEN);
-		write(fd, &objBuf, sizeof(OBJ_SAVED));
+		ssize_t written = write(fd, &objBuf, sizeof(OBJ_SAVED));
+		if (written == -1)
+		{
+			//TODO:log
+			break;
+		}
     }
 
     close(fd);

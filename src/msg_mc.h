@@ -32,7 +32,7 @@ typedef struct
 {
 	char header[MSG_SIGNATURE_LENGTH];
 	char cmd;
-	short length;
+	unsigned short length;
 	short seq;
 }__attribute__((__packed__)) MC_MSG_HEADER;
 
@@ -90,7 +90,7 @@ typedef struct
 	short course;
 	CGI cell;
 	char location;
-	char type;
+	unsigned char type;
 }__attribute__((__packed__)) MC_MSG_ALARM_REQ;
 enum ALARM_TYPE
 {
@@ -190,6 +190,6 @@ MC_MSG_HEADER* alloc_rspMsg(const MC_MSG_HEADER* pMsg);
 
 void free_msg(MC_MSG_HEADER* msg);
 
-const char* get_IMEI_STRING(char* IMEI);
+const char* get_IMEI_STRING(const unsigned char* IMEI);
 
 #endif /* SRC_MSG_MC_H_ */

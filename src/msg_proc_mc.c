@@ -10,6 +10,7 @@
 #include "msg_proc_mc.h"
 #include "msg_mc.h"
 #include "msg_gizwits.h"
+#include "gizwits_req.h"
 #include "object_mc.h"
 
 #include "log.h"
@@ -46,7 +47,7 @@ int mc_msg_send(void* msg, size_t len, CB_CTX* ctx)
 
 	return 0;
 }
-void send_data_giz(const char* data, const int len, CB_CTX* ctx)
+void send_data_giz(const void* data, const int len, CB_CTX* ctx)
 {
 	OBJ_MC* obj = ctx->obj;
 
@@ -194,7 +195,7 @@ int mc_status(const void* msg, CB_CTX* ctx)
 	OBJ_MC* obj = ctx->obj;
 	if (obj)
 	{
-		LOG_INFO("MC(%s) Status %x", req->status);
+		LOG_INFO("MC(%s) Status %x", obj->IMEI, req->status);
 	}
 	else
 	{

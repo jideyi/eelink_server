@@ -5,6 +5,7 @@
  *      Author: jk
  */
 #include <arpa/inet.h>
+#include <stdio.h>
 
 #include "msg_mc.h"
 
@@ -90,7 +91,7 @@ void free_msg(MC_MSG_HEADER* msg)
 }
 
 
-const char* get_IMEI_STRING(char* IMEI)
+const char* get_IMEI_STRING(const unsigned char* IMEI)
 {
 	static char strIMEI[IMEI_LENGTH * 2 + 1];
 	for (int i = 0; i < IMEI_LENGTH; i++)

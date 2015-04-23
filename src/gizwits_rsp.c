@@ -4,6 +4,9 @@
  *  Created on: Apr 21, 2015
  *      Author: jk
  */
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include "fsm.h"
 #include "log.h"
@@ -142,8 +145,8 @@ int mqtt_app2dev(const char* topic, const char* data, const int len, void* userd
 
 	APP_SESSION* session = malloc(sizeof(APP_SESSION));
 
-	char* pStart = &topic[strlen("app2dev/")];
-	char* pEnd = strstr(pStart, "/");
+	const char* pStart = &topic[strlen("app2dev/")];
+	const char* pEnd = strstr(pStart, "/");
 
 	memcpy(session->DID, pStart, pEnd - pStart);
 
@@ -153,6 +156,10 @@ int mqtt_app2dev(const char* topic, const char* data, const int len, void* userd
     strcpy(session->clientID, pStart + 1);
 
     int header = *(int*)data;
+    if (header != 0x00000003)
+    {
+    	//TODO:
+    }
 
     int varlen = mqtt_num_rem_len_bytes(data + 4); //bypass the header
     int datalen = mqtt_parse_rem_len(data + 4);
