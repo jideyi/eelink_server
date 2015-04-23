@@ -9,6 +9,23 @@
 #include "http.h"
 #include "mqtt.h"
 #include "object_mc.h"
+#include "log.h"
+
+#define LOG_DEBUG(...) \
+	zlog(cat[MOD_GIZWITS_REQ], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_DEBUG, __VA_ARGS__)
+
+#define LOG_INFO(...) \
+	zlog(cat[MOD_GIZWITS_REQ], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_INFO, __VA_ARGS__)
+
+#define LOG_WARNNING(...) \
+	zlog(cat[MOD_GIZWITS_REQ], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_WARNNING, __VA_ARGS__)
+
+#define LOG_ERROR(...) \
+	zlog(cat[MOD_GIZWITS_REQ], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_ERROR, __VA_ARGS__)
+
+#define LOG_FATAL(...) \
+	zlog(cat[MOD_GIZWITS_REQ], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_FATAL, __VA_ARGS__)
+
 
 void mc_register(void* ctx)
 {
@@ -21,6 +38,8 @@ void mc_register(void* ctx)
 	char data[200] = {0}; //TODO: fix magic number
 
 	snprintf(data, 200, "product_key=%s&passcode=%s&mac=%s&type=normal", PRODUCT_KEY, obj->pwd, obj->IMEI);
+
+	LOG_INFO("Register: data = %s", data);
 
 	http_post(session, url, data);
 
