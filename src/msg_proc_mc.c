@@ -55,6 +55,7 @@ void send_data_giz(const void* data, const int len, CB_CTX* ctx)
 	snprintf(topic, 100, "dev2app/%s", obj->DID);
 
 	mqtt_dev2app(topic, data, len, ctx);
+	LOG_DEBUG("Send PUBLISH msg to app: topic = %s", topic);
 }
 
 int mc_login(const void* msg, CB_CTX* ctx)
