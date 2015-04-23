@@ -19,7 +19,8 @@ void mc_register(void* ctx)
 
 	const char* url = "http://api.gizwits.com/dev/devices";
 	char data[200] = {0}; //TODO: fix magic number
-	snprintf(data, 200, "product_key=e08e87504a2a4b5c934e99e3983bc219&passcode=%s&mac=112233445566&type=normal", obj->pwd);
+
+	snprintf(data, 200, "product_key=%s&passcode=%s&mac=%s&type=normal", PRODUCT_KEY, obj->pwd, obj->IMEI);
 
 	http_post(session, url, data);
 

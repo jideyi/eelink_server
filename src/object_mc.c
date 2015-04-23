@@ -24,6 +24,7 @@ typedef struct
 {
 	char IMEI[IMEI_LENGTH];
 	char DID[MAX_DID_LEN];
+	char PWD[MAX_PWD_LEN];
 }OBJ_SAVED;
 
 int mc_getConfig()
@@ -44,6 +45,7 @@ int mc_getConfig()
 			OBJ_MC* obj = mc_obj_new();
 			memcpy(obj->IMEI, objBuf.IMEI, IMEI_LENGTH);
 			memcpy(obj->DID, objBuf.DID, MAX_DID_LEN);
+			memcpy(obj->pwd, objBuf.PWD, MAX_DID_LEN);
 		}
 		else
 		{
@@ -69,6 +71,7 @@ int mc_saveConfig()
     	OBJ_SAVED objBuf;
 		memcpy(objBuf.IMEI, all_mc[i]->IMEI, IMEI_LENGTH);
 		memcpy(objBuf.DID, all_mc[i]->DID, MAX_DID_LEN);
+		memcpy(objBuf.PWD, all_mc[i]->pwd, MAX_PWD_LEN);
 		ssize_t written = write(fd, &objBuf, sizeof(OBJ_SAVED));
 		if (written == -1)
 		{
@@ -123,8 +126,6 @@ OBJ_MC* mc_obj_new()
 	memset(obj, 0, sizeof(OBJ_MC));
 	all_mc[mc_count++] = obj;
 
-	//FIXME: for debug only
-	//memcpy(obj->DID, "mYi5ozygGFyBarmbNkrqUz", sizeof("wcsjQEeF25vKoe46Mz3TwN"));
 	make_pwd(obj->pwd);
 
 	return obj;
