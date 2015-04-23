@@ -139,7 +139,7 @@ int mc_gps(const void* msg, CB_CTX* ctx __attribute__((unused)))
 	giz.speed = req->speed;
 	giz.course = ntohs(req->course);
 
-	//send_data_giz(&giz, sizeof(giz), ctx);
+	send_data_giz(&giz, sizeof(giz), ctx);
 
 	return 0;
 }
