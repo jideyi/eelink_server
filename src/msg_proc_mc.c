@@ -75,7 +75,7 @@ int mc_login(const void* msg, CB_CTX* ctx)
 
 			obj = mc_obj_new();
 
-			memcpy(obj->IMEI, req->IMEI, sizeof(IMEI_LENGTH));
+			memcpy(obj->IMEI, req->IMEI, IMEI_LENGTH);
 			obj->language = req->language;
 			obj->locale = req->locale;
 		}
