@@ -50,29 +50,10 @@ static MC_MSG_PROC msgProcs[] =
 		{CMD_DATA,	mc_data},
 };
 
-int handle_mc_msg(const char* m, size_t msgLen, CB_CTX* ctx)
+int handle_one_msg(const void* m, CB_CTX* ctx)
 {
 	MC_MSG_HEADER* msg = (MC_MSG_HEADER*)m;
 
-	if (msgLen < sizeof(MC_MSG_HEADER))
-	{
-		LOG_DEBUG("receive message length not enough: %zu(at least(%zu)", msgLen, sizeof(MC_MSG_HEADER));
-
-		return -1;
-	}
-	//check the msg header
-	if (msg->header[0] != 0x67 || msg->header[1] != 0x67)
-	{
-		LOG_DEBUG("receive message header signature error: %x%x)", msg->header[0], msg->header[1]);
-
-		return -1;
-	}
-
-	if (msgLen < sizeof(MC_MSG_HEADER) - sizeof(msg->seq) + ntohs(msg->length))
-	{
-		LOG_ERROR("message length not enough: %zu, body length = %d", msgLen, ntohs(msg->length));
-		return -1;
-	}
 
 	for (size_t i = 0; i < sizeof(msgProcs) / sizeof(msgProcs[0]); i++)
 	{
@@ -88,3 +69,36 @@ int handle_mc_msg(const char* m, size_t msgLen, CB_CTX* ctx)
 
 	return -1;
 }
+
+int handle_mc_msg(const char* m, size_t msgLen, CB_CTX* ctx)
+{
+	MC_MSG_HEADER* msg = (MC_MSG_HEADER*)m;
+
+	if (msgLen < sizeof(MC_MSG_HEADER))
+	{
+		LOG_DEBUG("receive message length not enough: %zu(at least(%zu)", msgLen, sizeof(MC_MSG_HEADER));
+
+		return -1;
+	}
+
+	size_t leftMsgLen = msgLen;
+	while (leftMsgLen >= MC_MSG_HEADER_LEN + ntohs(msg->length))
+	{
+		//check the msg header
+		if (msg->header[0] != 0x67 || msg->header[1] != 0x67)
+		{
+			LOG_DEBUG("receive message header signature error: %x%x)", msg->header[0], msg->header[1]);
+
+			return -1;
+		}
+
+		handle_one_msg(msg, ctx);
+
+		leftMsgLen = leftMsgLen - MC_MSG_HEADER_LEN - ntohs(msg->length);
+		msg = m + (msgLen - leftMsgLen);
+	};
+
+	return -1;
+}
+
+
