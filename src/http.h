@@ -18,11 +18,7 @@ typedef struct
 	HTTP_RSP_PROC* pfn;
 }HTTP_SESSION;
 
-inline void init_session(HTTP_SESSION* session, CB_CTX* ctx, HTTP_RSP_PROC* pfn)
-{
-	session->ctx = ctx;
-	session->pfn = pfn;
-}
+void init_session(HTTP_SESSION* session, CB_CTX* ctx, HTTP_RSP_PROC* pfn);
 
 void *http_get(HTTP_SESSION* session, const char *url);
 

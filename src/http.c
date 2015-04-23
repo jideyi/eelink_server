@@ -43,6 +43,12 @@
 #define HTTP_CONTENT_TYPE_TEXT_PLAIN    "text/plain"
 
 
+void init_session(HTTP_SESSION* session, CB_CTX* ctx, HTTP_RSP_PROC* pfn)
+{
+	session->ctx = ctx;
+	session->pfn = pfn;
+}
+
 static inline void print_request_head_info(struct evkeyvalq *header)
 {
     struct evkeyval *first_node = header->tqh_first;

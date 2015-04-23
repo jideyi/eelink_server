@@ -17,7 +17,7 @@
                                             (((unsigned long int)(x) & 0x00ff0000)>>8)| \
                                             (((unsigned long int)(x) & 0xff000000)>>24)))
 
-inline void fill_msg_header(MC_MSG_HEADER* msg)
+void fill_msg_header(MC_MSG_HEADER* msg)
 {
 	msg->header[0] = 0x67;
 	msg->header[1] = 0x67;
@@ -29,18 +29,27 @@ inline char get_msg_cmd(const MC_MSG_HEADER* msg)
 }
 
 
-inline void set_msg_cmd(MC_MSG_HEADER* msg, char cmd)
+void set_msg_cmd(MC_MSG_HEADER* msg, char cmd)
 {
 	msg->cmd = cmd;
 }
 
 
-inline void set_msg_len(MC_MSG_HEADER* msg, short length)
+void set_msg_len(MC_MSG_HEADER* msg, short length)
 {
 	msg->length = htons(length);
 	//msg->length = local_htons(length);
 }
 
+void set_msg_seq(MC_MSG_HEADER* msg, short seq)
+{
+	msg->seq = seq;
+}
+
+short get_msg_seq(const MC_MSG_HEADER* msg)
+{
+	return msg->seq;
+}
 
 
 MC_MSG_HEADER* alloc_msg(char cmd, size_t length)

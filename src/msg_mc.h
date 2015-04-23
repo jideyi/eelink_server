@@ -173,15 +173,9 @@ typedef MC_MSG_OPERATOR_REQ MC_MSG_OPERATOR_RSP;
 
 #pragma pack(pop)
 
-inline void set_msg_seq(MC_MSG_HEADER* msg, short seq)
-{
-	msg->seq = seq;
-}
+void set_msg_seq(MC_MSG_HEADER* msg, short seq);
 
-inline short get_msg_seq(const MC_MSG_HEADER* msg)
-{
-	return msg->seq;
-}
+short get_msg_seq(const MC_MSG_HEADER* msg);
 
 char get_msg_cmd(const MC_MSG_HEADER* msg);
 
