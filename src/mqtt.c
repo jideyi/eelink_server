@@ -20,8 +20,8 @@
 #define LOG_INFO(...) \
 	zlog(cat[MOD_MQTT], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_INFO, __VA_ARGS__)
 
-#define LOG_WARNNING(...) \
-	zlog(cat[MOD_MQTT], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_WARNNING, __VA_ARGS__)
+#define LOG_WARNING(...) \
+	zlog(cat[MOD_MQTT], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_WARN, __VA_ARGS__)
 
 #define LOG_ERROR(...) \
 	zlog(cat[MOD_MQTT], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_ERROR, __VA_ARGS__)
@@ -34,11 +34,13 @@
 void mqtt_message_callback(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message)
 {
 	if(message->payloadlen){
-		printf("%s %p\n", message->topic, message->payload);
+		LOG_DEBUG("%s %p", message->topic, message->payload);
 	}else{
-		printf("%s (null)\n", message->topic);
+		LOG_DEBUG("%s no payload(null)", message->topic);
 	}
 	fflush(stdout);
+
+	 LOG_DEBUG("recieve PUBLISH: %s", message->topic);
 
 	 if(strncmp(message->topic,"app2dev/",strlen("app2dev/"))==0)
 	 {
@@ -54,7 +56,7 @@ void mqtt_message_callback(struct mosquitto *mosq, void *userdata, const struct 
 	 }
 	 else
 	 {
-
+		 LOG_ERROR("recieve unknown PUBLISH");
 	 }
 
 }
@@ -94,19 +96,44 @@ void mqtt_subscribe_callback(struct mosquitto *mosq, void *userdata, int mid, in
 
 void mqtt_log_callback(struct mosquitto *mosq, void *userdata, int level, const char *str)
 {
-	/* Pring all log messages regardless of level. */
-	printf("%s\n", str);
+	switch (level)
+	{
+	case MOSQ_LOG_DEBUG:
+		LOG_DEBUG("%s", str);
+
+		break;
+	case MOSQ_LOG_INFO:
+		LOG_INFO("%s", str);
+		break;
+
+	case MOSQ_LOG_NOTICE:
+		LOG_INFO("%s", str);
+		break;
+
+	case MOSQ_LOG_WARNING:
+		LOG_WARNING("%s", str);
+		break;
+
+	case MOSQ_LOG_ERR:
+		LOG_ERROR("%s", str);
+		break;
+
+	default:
+		LOG_ERROR("unknown level log:%s", str);
+	}
+
 }
 
 void mqtt_publish_callback(struct mosquitto *mosq, void *userdata, int mid)
 {
+	OBJ_MC* obj = userdata;
 
 }
 
 struct mosquitto* mqtt_login(const char* id, const char* host, int port, void* ctx)
 {
 	int keepalive = 120;
-	bool clean_session = true;
+	bool clean_session = false;
 
 	LOG_DEBUG("login MQTT: id = %s,host=%s, port=%d", id, host, port);
 
