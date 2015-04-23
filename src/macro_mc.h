@@ -14,7 +14,7 @@
 #define DID_LEN (22)
 #define MAX_PWD_LEN (16)
 
-#define PRODUCT_KEY "e08e87504a2a4b5c934e99e3983bc219"
+#define PRODUCT_KEY "01fdd12699454be1a072094ec063749d"
 #define MAGIC_NUMBER 0x12345678
 
 typedef struct

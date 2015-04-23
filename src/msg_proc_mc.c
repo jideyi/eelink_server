@@ -9,6 +9,7 @@
 
 #include "msg_proc_mc.h"
 #include "msg_mc.h"
+#include "msg_gizwits.h"
 #include "object_mc.h"
 
 #include "log.h"
@@ -44,6 +45,15 @@ int mc_msg_send(void* msg, size_t len, CB_CTX* ctx)
 	free(msg);
 
 	return 0;
+}
+void send_data_giz(const char* data, const int len, CB_CTX* ctx)
+{
+	OBJ_MC* obj = ctx->obj;
+
+	char topic[100] = {0}; //FIXME: how long should be?
+	snprintf(topic, 100, "dev2app/%s", obj->DID);
+
+	mqtt_dev2app(topic, data, len, ctx);
 }
 
 int mc_login(const void* msg, CB_CTX* ctx)
@@ -106,6 +116,18 @@ int mc_gps(const void* msg, CB_CTX* ctx __attribute__((unused)))
 	}
 
 	//no response message needed
+
+	//transmmite the msg to GIZWIT
+
+	GIZWITS_DATA giz;
+	giz.action = 0x04;
+
+	giz.lat = ntohl(req->lat);
+	giz.lon = ntohl(req->lon);
+	giz.speed = req->speed;
+	giz.course = ntohs(req->course);
+
+	send_data_giz(&giz, sizeof(giz), ctx);
 
 	return 0;
 }
