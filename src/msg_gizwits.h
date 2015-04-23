@@ -21,6 +21,8 @@ typedef struct
 	short ci;
 	int lat;
 	int lon;
+
+	char checksum; //TODO: is this field needed???
 }__attribute__((__packed__)) GIZWITS_DATA;
 
 
