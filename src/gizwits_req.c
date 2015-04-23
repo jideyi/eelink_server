@@ -128,7 +128,7 @@ int mqtt_dev2app(const char* topic, const char* data, const int len, void* ctx)
 	}
 
 	//topic: "dev2app/<DID>"
-	mosquitto_publish(obj->mosq, NULL, topic, payloadlen, payload, 2, false);	//TODO: determine the parameter
+	mosquitto_publish(obj->mosq, NULL, topic, payloadlen, payload, 0, false);	//TODO: determine the parameter
 
 	//TODO: free the payload here may make problem on multithread enviroment
 	free(payload);
