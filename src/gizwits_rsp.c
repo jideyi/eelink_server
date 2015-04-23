@@ -43,6 +43,8 @@ int mc_register_rsp(int response_code, const char* msg, CB_CTX* ctx)
 		OBJ_MC* obj = ctx->obj;
 		memcpy(obj->DID, p_didStart, DID_LEN);
 
+		mc_saveConfig();
+
 		fsm_run(EVT_GOT_DID, ctx);
 		return 0;
 	}

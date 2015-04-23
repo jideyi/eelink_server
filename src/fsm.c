@@ -68,10 +68,14 @@ int start_fsm(void* ctx)
 
 	if (mc_obj_did_got(obj))
 	{
+		LOG_DEBUG("did already got: %s", obj->DID);
+
 		return fsm_run(EVT_GOT_DID, ctx);
 	}
 	else
 	{
+		LOG_DEBUG("need to get did first");
+
 		return fsm_run(EVT_SIGN_IN, ctx);
 	}
 }

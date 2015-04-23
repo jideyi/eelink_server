@@ -146,6 +146,23 @@ void mc_obj_del(OBJ_MC* obj)
 	}
 }
 
+OBJ_MC* mc_get(char IMEI[])
+{
+	for (int i = 0; i < mc_count; i++)
+	{
+		OBJ_MC* obj = all_mc[i];
+		if(obj)
+		{
+			if (strcmp(obj->IMEI, IMEI) == 0)
+			{
+				return obj;
+			}
+		}
+	}
+
+	return NULL;
+}
+
 int mc_obj_did_got(OBJ_MC* obj)
 {
 	return strlen(obj->DID) != 0;

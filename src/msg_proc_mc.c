@@ -62,18 +62,29 @@ int mc_login(const void* msg, CB_CTX* ctx)
 	const MC_MSG_LOGIN_REQ* req = msg;
 
 
-	LOG_DEBUG("mc login: IMEI=%s", get_IMEI_STRING(req->IMEI));
-
 	OBJ_MC* obj = ctx->obj;
 	if (!obj)
 	{
-		obj = mc_obj_new();
+		LOG_DEBUG("mc IMEI(%s) login", get_IMEI_STRING(req->IMEI));
 
-		memcpy(obj->IMEI, req->IMEI, sizeof(IMEI_LENGTH));
-		obj->language = req->language;
-		obj->locale = req->locale;
+		obj = mc_get(req->IMEI);
+
+		if (!obj)
+		{
+			LOG_DEBUG("the first time of IMEI(%s)'s login", get_IMEI_STRING(req->IMEI));
+
+			obj = mc_obj_new();
+
+			memcpy(obj->IMEI, req->IMEI, sizeof(IMEI_LENGTH));
+			obj->language = req->language;
+			obj->locale = req->locale;
+		}
 
 		ctx->obj = obj;
+	}
+	else
+	{
+		LOG_DEBUG("mc IMEI(%s) already login", get_IMEI_STRING(req->IMEI));
 	}
 
 	MC_MSG_LOGIN_RSP *rsp = alloc_rspMsg(msg);
@@ -128,7 +139,7 @@ int mc_gps(const void* msg, CB_CTX* ctx __attribute__((unused)))
 	giz.speed = req->speed;
 	giz.course = ntohs(req->course);
 
-	send_data_giz(&giz, sizeof(giz), ctx);
+	//send_data_giz(&giz, sizeof(giz), ctx);
 
 	return 0;
 }
