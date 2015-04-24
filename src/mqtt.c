@@ -105,7 +105,7 @@ void mqtt_publish_callback(struct mosquitto *mosq, void *userdata, int mid)
 
 struct mosquitto* mqtt_login(const char* id, const char* host, int port, void* ctx)
 {
-	int keepalive = 120;
+	int keepalive = 600;
 	bool clean_session = true;
 
 	LOG_DEBUG("login MQTT: id = %s,host=%s, port=%d", id, host, port);
