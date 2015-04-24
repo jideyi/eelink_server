@@ -131,8 +131,6 @@ static unsigned short mqtt_parse_rem_len(const char* buf) {
 	unsigned short value = 0;
 	char digit;
 
-	buf++;	// skip "flags" byte in fixed header
-
 	do {
 		digit = *buf;
 		value += (digit & 127) * multiplier;
