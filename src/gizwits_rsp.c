@@ -14,6 +14,7 @@
 #include "cb_ctx_mc.h"
 #include "macro_mc.h"
 #include "object_mc.h"
+#include "msg_gizwits.h"
 
 #define LOG_DEBUG(...) \
 	zlog(cat[MOD_GIZWITS_RSP], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_DEBUG, __VA_ARGS__)
@@ -146,7 +147,7 @@ int mqtt_app2dev(const char* topic, const char* data, const int len, void* userd
 {
 	CB_CTX* ctx = userdata;
 
-    	hzlog_debug(cat[MOD_GIZWITS_RSP], data, len);
+    hzlog_debug(cat[MOD_GIZWITS_RSP], data, len);
 
 	APP_SESSION* session = malloc(sizeof(APP_SESSION));
 
@@ -171,7 +172,56 @@ int mqtt_app2dev(const char* topic, const char* data, const int len, void* userd
     int datalen = mqtt_parse_rem_len(data + 4);
 
     const char* pDataToMc = data + varlen + 7;
+    //the length field does not contain the flag and cmd
     //const int lenToMc = datalen - 3; // flag(1B)+cmd(2B)=3B
+	//向设备发送控制指令
+    #define		SUB_CMD_CONTROL_MCU			0x01
+    //向设备请求设备状态
+    #define		SUB_CMD_REQUIRE_STATUS		0x02
+    //设备返回请求的设备状态
+    #define		SUB_CMD_REQUIRE_STATUS_ACK	0x03
+    //设备推送当前的设备状态
+    #define		SUB_CMD_REPORT_MCU_STATUS	0x04
+
+    typedef struct
+    {
+    	char sub_cmd; //
+    	char cmd_tag;
+    	//TODO the writeable part
+    	char checksum;
+    }REQ;
+    REQ* req = pDataToMc;
+    switch (req->sub_cmd)
+	{
+    case SUB_CMD_CONTROL_MCU:
+    	//根据相应的位，决定要修改哪个字段
+    	if (req->cmd_tag & 0x01)
+    	{
+    		;
+    	}
+
+		if (req->cmd_tag & 0x02)
+		{
+			;
+		}
+
+    	break;
+    case SUB_CMD_REQUIRE_STATUS:
+    {
+    	GIZWITS_DATA giz;
+    	OBJ_MC* obj = ctx->obj;
+    	giz.sub_cmd = SUB_CMD_REQUIRE_STATUS_ACK;
+    	giz.lat = htonl((obj->lat / 30000.0 + 5400.0) * 10000);
+    	giz.lon = htonl((obj->lon / 30000.0 + 5400.0) * 10000);
+    	giz.speed = obj->speed;
+    	giz.course = htons(obj->course);
+    	//TODO:set all the other fields
+    	send_data_giz(&giz, sizeof(giz), ctx);
+    	break;
+    }
+    default:
+    	;
+	}
 
     send_raw_data2mc(pDataToMc, datalen, ctx, session);
 
@@ -180,11 +230,29 @@ int mqtt_app2dev(const char* topic, const char* data, const int len, void* userd
 
 int mqtt_ser2cli_res(const char* topic, const char* data, const int len, void* userdata)
 {
+	hzlog_debug(cat[MOD_GIZWITS_RSP], data, len);
+
+	typedef struct
+	{
+		int header;
+		short cmd;
+		short appCount;
+	}SER2CLI_RES;
+	SER2CLI_RES* notify = data;
+
+	if (notify)
+	{
+		LOG_INFO("Current online app is %d", ntohs(notify->appCount));
+	}
+
 	return 0;
 }
 
 int mqtt_ser2cli_noti(const char* topic, const char* data, const int len, void* userdata)
 {
+	hzlog_debug(cat[MOD_GIZWITS_RSP], data, len);
+
+
 	return 0;
 }
 

@@ -1,7 +1,7 @@
 /*
  * msg_gizwits.h
  *
- *  Created on: 2015Äê4ÔÂ23ÈÕ
+ *  Created on: 2015ï¿½ï¿½4ï¿½ï¿½23ï¿½ï¿½
  *      Author: jk
  */
 
@@ -10,7 +10,7 @@
 
 typedef struct
 {
-	char action;
+	char sub_cmd;
 
 	char readOnlyData;
 	char speed;
