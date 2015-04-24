@@ -81,17 +81,16 @@ void mqtt_connect_callback(struct mosquitto *mosq, void *userdata, int result)
 	}
 	else
 	{
-		fprintf(stderr, "Connect failed: result = %d", result);
+		LOG_ERROR("Connect failed: result = %d", result);
 	}
 }
 
 void mqtt_subscribe_callback(struct mosquitto *mosq, void *userdata, int mid, int qos_count, const int *granted_qos)
 {
-	printf("Subscribed (mid: %d): %d", mid, granted_qos[0]);
+	LOG_DEBUG("Subscribed (mid: %d): %d", mid, granted_qos[0]);
 	for(int i=1; i<qos_count; i++){
-		printf(", %d", granted_qos[i]);
+		LOG_DEBUG(", %d", granted_qos[i]);
 	}
-	printf("\n");
 }
 
 void mqtt_log_callback(struct mosquitto *mosq, void *userdata, int level, const char *str)
