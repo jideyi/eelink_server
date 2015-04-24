@@ -10,6 +10,8 @@
 
 #include "macro_mc.h"
 
+#define MSG_SIGNATURE_LENGTH (2)
+
 typedef struct
 {
 	char IMEI[IMEI_LENGTH];
@@ -41,7 +43,7 @@ typedef struct
 typedef struct
 {
 	char DID[MAX_DID_LEN];
-	char clientID[32];	//TODO: fix the magic data
+	char clientID[CLIENT_ID_LEN];
 }APP_SESSION;
 
 void mc_obj_initial();
