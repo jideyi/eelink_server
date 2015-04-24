@@ -10,7 +10,6 @@
 
 #include "macro_mc.h"
 
-#define MSG_SIGNATURE_LENGTH (2)
 
 typedef struct
 {
