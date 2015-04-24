@@ -16,7 +16,7 @@ int main(int argc, char **argv)
 
     setvbuf(stdout, NULL, _IONBF, 0);
 
-    printf("Electrombile Server V%s\n", VERSION_STR);
+    printf("Electrombile Server %s, with event %s, mosquitto %d\n", VERSION_STR, LIBEVENT_VERSION, mosquitto_lib_version(NULL, NULL, NULL));
 
     base = event_base_new();
     if (!base)
