@@ -146,6 +146,8 @@ int mqtt_app2dev(const char* topic, const char* data, const int len, void* userd
 {
 	CB_CTX* ctx = userdata;
 
+    	hzlog_debug(cat[MOD_GIZWITS_RSP], data, len);
+
 	APP_SESSION* session = malloc(sizeof(APP_SESSION));
 
 	const char* pStart = &topic[strlen("app2dev/")];
@@ -155,22 +157,23 @@ int mqtt_app2dev(const char* topic, const char* data, const int len, void* userd
 
 	//TODO: HOW to handle the did
 
-	pStart = strstr((pEnd + 1), "/");
+	pStart = pEnd;
     strcpy(session->clientID, pStart + 1);
 
     int header = *(int*)data;
-    if (header != 0x00000003)
+    if (ntohl(header) != 0x00000003)
     {
     	//TODO:
+        return -1;
     }
 
     int varlen = mqtt_num_rem_len_bytes(data + 4); //bypass the header
     int datalen = mqtt_parse_rem_len(data + 4);
 
     const char* pDataToMc = data + varlen + 7;
-    const int lenToMc = datalen - 3; // flag(1B)+cmd(2B)=3B
+    //const int lenToMc = datalen - 3; // flag(1B)+cmd(2B)=3B
 
-    send_raw_data2mc(pDataToMc, lenToMc, ctx, session);
+    send_raw_data2mc(pDataToMc, datalen, ctx, session);
 
 	return 0;
 }
