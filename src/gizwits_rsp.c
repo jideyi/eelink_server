@@ -185,7 +185,7 @@ int mqtt_app2dev(const char* topic, const char* data, const int len, void* userd
     	short cmd;
     }__attribute__((__packed__)) CMD;
     CMD* cmd = pvarlen + varlen;
-    LOG_DEBUG("app2dev msg: flag=%#x, cmd=%#x", cmd->flag, noths(cmd->cmd));
+    LOG_DEBUG("app2dev msg: flag=%#x, cmd=%#x", cmd->flag, ntohs(cmd->cmd));
 
     const char* pDataToMc = cmd + 1;
     const int lenToMc = datalen - sizeof(CMD); // flag(1B)+cmd(2B)=3B
