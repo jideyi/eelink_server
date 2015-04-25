@@ -10,6 +10,7 @@
 
 #include "macro_mc.h"
 
+
 typedef struct
 {
 	/*
@@ -51,7 +52,7 @@ typedef struct
 typedef struct
 {
 	char DID[MAX_DID_LEN];
-	char clientID[32];	//TODO: fix the magic data
+	char clientID[CLIENT_ID_LEN];
 }APP_SESSION;
 
 void mc_obj_initial();

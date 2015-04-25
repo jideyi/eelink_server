@@ -12,6 +12,7 @@
 
 #include "macro_mc.h"
 
+#define MSG_SIGNATURE_LENGTH (2)
 
 enum PROTOCOL
 {
@@ -42,7 +43,7 @@ typedef struct
 typedef struct
 {
 	MC_MSG_HEADER header;
-	unsigned char IMEI[IMEI_LENGTH];
+	char IMEI[IMEI_LENGTH];
 	char language;
 	char locale;
 }__attribute__((__packed__))MC_MSG_LOGIN_REQ;

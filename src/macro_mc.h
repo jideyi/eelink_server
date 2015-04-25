@@ -8,10 +8,10 @@
 #ifndef SRC_MACRO_MC_H_
 #define SRC_MACRO_MC_H_
 
-#define MSG_SIGNATURE_LENGTH (2)
 #define IMEI_LENGTH (8)
 #define MAX_DID_LEN (24)
 #define DID_LEN (22)
+#define CLIENT_ID_LEN (32)
 #define MAX_PWD_LEN (16)
 
 #define MAC_MAC_LEN 6

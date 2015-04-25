@@ -11,6 +11,7 @@
 #include "msg_mc.h"
 #include "msg_gizwits.h"
 #include "gizwits_req.h"
+#include "leancloud_req.h"
 #include "object_mc.h"
 
 #include "log.h"
@@ -47,14 +48,14 @@ int mc_msg_send(void* msg, size_t len, CB_CTX* ctx)
 
 	return 0;
 }
-void send_data_giz(const void* data, const int len, CB_CTX* ctx)
+void send_data_giz(const void* data, const int len, OBJ_MC* obj)
 {
-	OBJ_MC* obj = ctx->obj;
 
 	char topic[100] = {0}; //FIXME: how long should be?
 	snprintf(topic, 100, "dev2app/%s", obj->DID);
 
-	mqtt_dev2app(topic, data, len, ctx);
+	mqtt_dev2app(topic, data, len, obj);
+	LOG_DEBUG("Send PUBLISH msg to app: topic = %s", topic);
 }
 
 int mc_login(const void* msg, CB_CTX* ctx)
@@ -118,30 +119,33 @@ int mc_gps(const void* msg, CB_CTX* ctx __attribute__((unused)))
 			ntohl(req->lat), ntohl(req->lon), req->speed, ntohs(req->course));
 
 	OBJ_MC* obj = ctx->obj;
-	if (obj)
+	if (!obj)
 	{
-		obj->lat = ntohl(req->lat);
-		obj->lon = ntohl(req->lon);
-		obj->speed = req->speed;
-		obj->course = ntohs(req->course);
-		obj->cell = req->cell;
+		LOG_ERROR("MC must first login");
+		return -1;
 	}
+	obj->lat = ntohl(req->lat);
+	obj->lon = ntohl(req->lon);
+	obj->speed = req->speed;
+	obj->course = ntohs(req->course);
+	obj->cell = req->cell;
 
 	//no response message needed
 
 	//transmmite the msg to GIZWIT
 
 	GIZWITS_DATA giz;
-	giz.action = 0x04;
+	giz.sub_cmd = 0x04;
 
-        float lat = (ntohl(req->lat)/30000.0+5400.0)*10000;
+	float lat = (ntohl(req->lat) / 30000.0 + 5400.0) * 10000;
 	giz.lat = htonl(lat);
-        float lon = (ntohl(req->lon)/30000.0+10800.0)*10000;
-        giz.lon = htonl(lon);
+	float lon = (ntohl(req->lon) / 30000.0 + 10800.0) * 10000;
+	giz.lon = htonl(lon);
 	giz.speed = req->speed;
 	giz.course = req->course;
 
-	send_data_giz(&giz, sizeof(giz), ctx);
+	send_data_giz(&giz, sizeof(giz), obj);
+	leancloud_req(obj, ctx);
 
 	return 0;
 }
@@ -198,6 +202,19 @@ int mc_alarm(const void* msg, CB_CTX* ctx)
 
 		mc_msg_send(rsp, rspMsgLength, ctx);
 	}
+
+	GIZWITS_DATA giz;
+	giz.sub_cmd = 0x04;
+
+	float lat = (ntohl(req->lat) / 30000.0 + 5400.0) * 10000;
+	giz.lat = htonl(lat);
+	float lon = (ntohl(req->lon) / 30000.0 + 10800.0) * 10000;
+	giz.lon = htonl(lon);
+	giz.speed = req->speed;
+	giz.course = req->course;
+
+	send_data_giz(&giz, sizeof(giz), obj);
+
 	return 0;
 }
 
@@ -255,7 +272,7 @@ int mc_operator(const void* msg, CB_CTX* ctx)
 	char topic[100] = {0}; //FIXME: how long should be?
 	snprintf(topic, 100, "dev2app/%s/%s", session->DID, session->clientID);
 
-	mqtt_dev2app(topic, req->data, len, ctx);
+	mqtt_dev2app(topic, req->data, len, ctx->obj);
 
 	return 0;
 }

@@ -35,6 +35,46 @@ static void send_msg(struct bufferevent* bev, const void* buf, size_t n)
 	bufferevent_write(bev, buf, n);
 }
 
+static CURL* initCurlHandle()
+{
+	CURL* curl = curl_easy_init();
+
+    struct curl_slist *headerlist=NULL;
+    headerlist = curl_slist_append(headerlist, "X-AVOSCloud-Application-Id: 5wk8ccseci7lnss55xfxdgj9xn77hxg3rppsu16o83fydjjn");
+    headerlist = curl_slist_append(headerlist, "X-AVOSCloud-Application-Key: yovqy5zy16og43zwew8i6qmtkp2y6r9b18zerha0fqi5dqsw");
+    headerlist = curl_slist_append(headerlist, "Content-Type: application/json");
+
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
+
+
+
+#ifdef SKIP_PEER_VERIFICATION
+    /*
+     * If you want to connect to a site who isn't using a certificate that is
+     * signed by one of the certs in the CA bundle you have, you can skip the
+     * verification of the server's certificate. This makes the connection
+     * A LOT LESS SECURE.
+     *
+     * If you have a CA cert for the server stored someplace else than in the
+     * default bundle, then the CURLOPT_CAPATH option might come handy for
+     * you.
+     */
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+#endif
+
+#ifdef SKIP_HOSTNAME_VERIFICATION
+    /*
+     * If the site you're connecting to uses a different host name that what
+     * they have mentioned in their server certificate's commonName (or
+     * subjectAltName) fields, libcurl will refuse to connect. You can skip
+     * this check, but this will make the connection less secure.
+     */
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+#endif
+
+    return curl;
+}
+
 static void read_cb(struct bufferevent *bev, void *ctx)
 {
 	char buf[1024];
@@ -62,8 +102,9 @@ static void write_cb(struct bufferevent* bev, void *ctx)
 	return;
 }
 
-static void event_cb(struct bufferevent *bev, short events, void *ctx)
+static void event_cb(struct bufferevent *bev, short events, void *arg)
 {
+	CB_CTX* ctx = arg;
 	if (events & BEV_EVENT_CONNECTED)
 	{
 		LOG_DEBUG("Connect okay.\n");
@@ -84,6 +125,8 @@ static void event_cb(struct bufferevent *bev, short events, void *ctx)
 		}
 		LOG_INFO("Closing");
 		bufferevent_free(bev);
+		//TODO: cleanup the mosquitto
+		curl_easy_cleanup(ctx->curl);
 	}
 }
 
@@ -94,9 +137,12 @@ static void accept_conn_cb(struct evconnlistener *listener,
 	struct event_base *base = evconnlistener_get_base(listener);
 	struct bufferevent *bev = bufferevent_socket_new(base, fd, BEV_OPT_CLOSE_ON_FREE);
 
+	CURL* curl = initCurlHandle();
+
 	CB_CTX* cb_ctx = malloc(sizeof(CB_CTX));
 	cb_ctx->base = base;
 	cb_ctx->bev = bev;
+	cb_ctx->curl = curl;
 	cb_ctx->obj = 0;
 	cb_ctx->pSendMsg = send_msg;
 	cb_ctx->cur_status = STS_INITIAL;

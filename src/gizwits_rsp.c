@@ -14,6 +14,7 @@
 #include "cb_ctx_mc.h"
 #include "macro_mc.h"
 #include "object_mc.h"
+#include "msg_gizwits.h"
 
 #define LOG_DEBUG(...) \
 	zlog(cat[MOD_GIZWITS_RSP], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_DEBUG, __VA_ARGS__)
@@ -130,8 +131,6 @@ static unsigned short mqtt_parse_rem_len(const char* buf) {
 	unsigned short value = 0;
 	char digit;
 
-	buf++;	// skip "flags" byte in fixed header
-
 	do {
 		digit = *buf;
 		value += (digit & 127) * multiplier;
@@ -144,9 +143,9 @@ static unsigned short mqtt_parse_rem_len(const char* buf) {
 
 int mqtt_app2dev(const char* topic, const char* data, const int len, void* userdata)
 {
-	CB_CTX* ctx = userdata;
+	OBJ_MC* obj = userdata;
 
-    	hzlog_debug(cat[MOD_GIZWITS_RSP], data, len);
+    hzlog_debug(cat[MOD_GIZWITS_RSP], data, len);
 
 	APP_SESSION* session = malloc(sizeof(APP_SESSION));
 
@@ -160,31 +159,128 @@ int mqtt_app2dev(const char* topic, const char* data, const int len, void* userd
 	pStart = pEnd;
     strcpy(session->clientID, pStart + 1);
 
+    /*
+     * data format:
+     * 		header: 4b  0x00000003
+     * 		varlen: 1-4b (the following data len)
+     * 		flag:	1b
+     * 		cmd:	2b
+     * 		data:	max 65536
+     */
+
     int header = *(int*)data;
     if (ntohl(header) != 0x00000003)
     {
-    	//TODO:
+    	LOG_ERROR("app2dev msg header error: %x", header);
         return -1;
     }
 
-    int varlen = mqtt_num_rem_len_bytes(data + 4); //bypass the header
-    int datalen = mqtt_parse_rem_len(data + 4);
+    const char* pvarlen = data + sizeof(header);
+    int varlen = mqtt_num_rem_len_bytes(pvarlen);
+    int datalen = mqtt_parse_rem_len(pvarlen);
 
-    const char* pDataToMc = data + varlen + 7;
-    //const int lenToMc = datalen - 3; // flag(1B)+cmd(2B)=3B
+    typedef struct
+    {
+    	char flag;
+    	short cmd;
+    }__attribute__((__packed__)) CMD;
+    CMD* cmd = pvarlen + varlen;
+    LOG_DEBUG("app2dev msg: flag=%#x, cmd=%#x", cmd->flag, ntohs(cmd->cmd));
 
-    send_raw_data2mc(pDataToMc, datalen, ctx, session);
+    const char* pDataToMc = cmd + 1;
+    const int lenToMc = datalen - sizeof(CMD); // flag(1B)+cmd(2B)=3B
+
+	//向设备发送控制指令
+    #define		SUB_CMD_CONTROL_MCU			0x01
+    //向设备请求设备状态
+    #define		SUB_CMD_REQUIRE_STATUS		0x02
+    //设备返回请求的设备状态
+    #define		SUB_CMD_REQUIRE_STATUS_ACK	0x03
+    //设备推送当前的设备状态
+    #define		SUB_CMD_REPORT_MCU_STATUS	0x04
+
+    typedef struct
+    {
+    	char sub_cmd; //
+    	char cmd_tag;	// corresponding to the action in the MCU interface
+    	//TODO: add writable data
+    	char checksum;
+    }__attribute__((__packed__)) REQ;
+    REQ* req = pDataToMc;
+    switch (req->sub_cmd)
+	{
+    case SUB_CMD_CONTROL_MCU:
+    {
+    	//根据相应的位，决定要修改哪个字段
+    	if (req->cmd_tag & 0x01)
+    	{
+//		   char shift_msg[] = {1,1,2,3,4,'S','H','I','F','T',',','1','0','0','#'};
+//		   char noshift_msg[] = {1,1,2,3,4,'S','H','I','F','T',',','0','#'};
+//		   CB_CTX* ctx = container_of(obj, CB_CTX, obj);
+//		   if (req->on_off)
+//		   {
+//			   send_raw_data2mc(shift_msg, sizeof(shift_msg), ctx, session);
+//		   }
+//		   else
+//		   {
+//			   send_raw_data2mc(noshift_msg, sizeof(noshift_msg), ctx, session);
+//		   }
+
+    	}
+
+		if (req->cmd_tag & 0x02)
+		{
+			;
+		}
+
+    	break;
+    }
+    case SUB_CMD_REQUIRE_STATUS:
+    {
+    	GIZWITS_DATA giz;
+    	giz.sub_cmd = SUB_CMD_REQUIRE_STATUS_ACK;
+    	giz.lat = htonl((obj->lat / 30000.0 + 5400.0) * 10000);
+    	giz.lon = htonl((obj->lon / 30000.0 + 10800.0) * 10000);
+    	giz.speed = obj->speed;
+    	giz.course = htons(obj->course);
+    	//TODO:set all the other fields
+    	send_data_giz(&giz, sizeof(giz), obj);
+    	break;
+    }
+    default:
+    	;
+	}
+
+    //send_raw_data2mc(pDataToMc, datalen, ctx, session);
 
 	return 0;
 }
 
 int mqtt_ser2cli_res(const char* topic, const char* data, const int len, void* userdata)
 {
+	hzlog_debug(cat[MOD_GIZWITS_RSP], data, len);
+
+	typedef struct
+	{
+		int header;
+		short cmd;
+		short appCount;
+	}SER2CLI_RES;
+	SER2CLI_RES* notify = data;
+
+	if (notify)
+	{
+		LOG_INFO("Current online app is %d", ntohs(notify->appCount));
+	}
+
 	return 0;
 }
 
 int mqtt_ser2cli_noti(const char* topic, const char* data, const int len, void* userdata)
 {
+	hzlog_debug(cat[MOD_GIZWITS_RSP], data, len);
+
+
 	return 0;
 }
 
