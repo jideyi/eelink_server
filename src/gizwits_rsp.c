@@ -202,18 +202,30 @@ int mqtt_app2dev(const char* topic, const char* data, const int len, void* userd
     typedef struct
     {
     	char sub_cmd; //
-    	char cmd_tag;
-    	//TODO the writeable part
+    	char cmd_tag;	// corresponding to the action in the MCU interface
+    	char on_off;
     	char checksum;
     }__attribute__((__packed__)) REQ;
     REQ* req = pDataToMc;
     switch (req->sub_cmd)
 	{
     case SUB_CMD_CONTROL_MCU:
+    {
     	//根据相应的位，决定要修改哪个字段
     	if (req->cmd_tag & 0x01)
     	{
-    		;
+		   char shift_msg[] = {1,1,2,3,4,'S','H','I','F','T',',','1','0','0','#'};
+		   char noshift_msg[] = {1,1,2,3,4,'S','H','I','F','T',',','0','#'};
+		   CB_CTX* ctx = container_of(obj, CB_CTX, obj);
+		   if (req->on_off)
+		   {
+			   send_raw_data2mc(shift_msg, sizeof(shift_msg), ctx, session);
+		   }
+		   else
+		   {
+			   send_raw_data2mc(noshift_msg, sizeof(noshift_msg), ctx, session);
+		   }
+
     	}
 
 		if (req->cmd_tag & 0x02)
@@ -222,12 +234,13 @@ int mqtt_app2dev(const char* topic, const char* data, const int len, void* userd
 		}
 
     	break;
+    }
     case SUB_CMD_REQUIRE_STATUS:
     {
     	GIZWITS_DATA giz;
     	giz.sub_cmd = SUB_CMD_REQUIRE_STATUS_ACK;
     	giz.lat = htonl((obj->lat / 30000.0 + 5400.0) * 10000);
-    	giz.lon = htonl((obj->lon / 30000.0 + 5400.0) * 10000);
+    	giz.lon = htonl((obj->lon / 30000.0 + 10800.0) * 10000);
     	giz.speed = obj->speed;
     	giz.course = htons(obj->course);
     	//TODO:set all the other fields
