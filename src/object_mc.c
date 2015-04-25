@@ -168,3 +168,36 @@ int mc_obj_did_got(OBJ_MC* obj)
 {
 	return strlen(obj->DID) != 0;
 }
+
+
+const char* get_IMEI_STRING(const unsigned char* IMEI)
+{
+	static char strIMEI[IMEI_LENGTH * 2 + 1];
+	for (int i = 0; i < IMEI_LENGTH; i++)
+	{
+		sprintf(strIMEI + i * 2, "%02x", IMEI[i]);
+	}
+	strIMEI[IMEI_LENGTH * 2] = 0;
+
+	return strIMEI;
+}
+
+const char* getMacFromIMEI(const char* IMEI)
+{
+	/*
+	 *
+	 * IMEI:  xx xx xx xx xx xx xx xx
+	 * MAC:                1 11 11 1
+	 */
+
+	static char mac[MAC_MAC_LEN + 1] = {0};
+	mac[0] = IMEI[4] & 0x0F + '0';
+	mac[1] = IMEI[5] & 0xF0 >> 4 + '0';
+	mac[2] = IMEI[5] & 0x0F + '0';
+	mac[3] = IMEI[6] & 0xF0 >> 4 + '0';
+	mac[4] = IMEI[6] & 0x0F + '0';
+	mac[5] = IMEI[7] & 0xF0 >> 4 + '0';
+	mac[6] = 0;
+
+	return mac;
+}

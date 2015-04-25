@@ -99,15 +99,3 @@ void free_msg(MC_MSG_HEADER* msg)
 	free(msg);
 }
 
-
-const char* get_IMEI_STRING(const unsigned char* IMEI)
-{
-	static char strIMEI[IMEI_LENGTH * 2 + 1];
-	for (int i = 0; i < IMEI_LENGTH; i++)
-	{
-		sprintf(strIMEI + i * 2, "%02x", IMEI[i]);
-	}
-	strIMEI[IMEI_LENGTH * 2] = 0;
-
-	return strIMEI;
-}
