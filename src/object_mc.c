@@ -187,17 +187,13 @@ const char* getMacFromIMEI(const char* IMEI)
 	/*
 	 *
 	 * IMEI:  xx xx xx xx xx xx xx xx
-	 * MAC:                1 11 11 1
+	 * MAC:         ~~ ~~ ~~ ~~ ~~ ~~
 	 */
 
-	static char mac[MAC_MAC_LEN + 1] = {0};
-	mac[0] = IMEI[4] & 0x0F + '0';
-	mac[1] = IMEI[5] & 0xF0 >> 4 + '0';
-	mac[2] = IMEI[5] & 0x0F + '0';
-	mac[3] = IMEI[6] & 0xF0 >> 4 + '0';
-	mac[4] = IMEI[6] & 0x0F + '0';
-	mac[5] = IMEI[7] & 0xF0 >> 4 + '0';
-	mac[6] = 0;
+	static char mac[MAC_MAC_LEN * 2 + 1] = {0};
+
+    sprintf(mac,"%02X%02X%02X%02X%02X%02X", IMEI[2], IMEI[3],IMEI[4],IMEI[5],IMEI[6],IMEI[7]);
+
 
 	return mac;
 }
