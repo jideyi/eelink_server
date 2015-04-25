@@ -18,7 +18,7 @@ void leancloud_req(OBJ_MC* obj, void* arg)
 
 	char data[100] = {0};	//TODO: use macro
 
-	snprintf(data, 100, "{\"lat\":%d,\"lon\":%d,\"speed\":%d,\"course\":%d}", obj->lat, obj->lon, obj->speed, obj->course);
+	snprintf(data, 100, "{\"did\":%s,\"lat\":%d,\"lon\":%d,\"speed\":%d,\"course\":%d}", obj->DID, obj->lat, obj->lon, obj->speed, obj->course);
 
 	leancloud_post(curl, data, strlen(data));
 }
