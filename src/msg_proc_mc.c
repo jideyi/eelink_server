@@ -129,7 +129,7 @@ int mc_gps(const void* msg, CB_CTX* ctx __attribute__((unused)))
 	obj->speed = req->speed;
 	obj->course = ntohs(req->course);
 	obj->cell = req->cell;
-
+	obj->timestamp = ntohl(req->timestamp);
 	//no response message needed
 
 	//transmmite the msg to GIZWIT
@@ -143,7 +143,7 @@ int mc_gps(const void* msg, CB_CTX* ctx __attribute__((unused)))
 	giz.lon = htonl(lon);
 	giz.speed = req->speed;
 	giz.course = req->course;
-
+	giz.readOnlyData = 0;
 	send_data_giz(&giz, sizeof(giz), obj);
 	leancloud_req(obj, ctx);
 
