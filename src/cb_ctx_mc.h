@@ -9,7 +9,7 @@
 #define SRC_CB_CTX_MC_H_
 
 #include <stdio.h>
-
+#include <curl/curl.h>
 #include <event2/bufferevent.h>
 
 
@@ -19,6 +19,7 @@ typedef struct
 {
 	struct event_base* base;
 	struct bufferevent* bev;
+	CURL *curl;
 	void* obj;
 	MSG_SEND pSendMsg;
 	int cur_status;

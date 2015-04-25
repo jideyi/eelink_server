@@ -1,5 +1,6 @@
 #include <event2/event.h>
 #include <mosquitto.h>
+#include <curl/curl.h>
 
 #include "gizwits_req.h"
 #include "log.h"
@@ -36,9 +37,12 @@ int main(int argc, char **argv)
 
     mosquitto_lib_init();
 
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+
     event_base_dispatch(base);
 
 	mosquitto_lib_cleanup();
+	curl_global_cleanup();
     zlog_fini();
 
     return 0;

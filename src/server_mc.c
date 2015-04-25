@@ -94,9 +94,12 @@ static void accept_conn_cb(struct evconnlistener *listener,
 	struct event_base *base = evconnlistener_get_base(listener);
 	struct bufferevent *bev = bufferevent_socket_new(base, fd, BEV_OPT_CLOSE_ON_FREE);
 
+	CURL* curl = curl_easy_init();
+
 	CB_CTX* cb_ctx = malloc(sizeof(CB_CTX));
 	cb_ctx->base = base;
 	cb_ctx->bev = bev;
+	cb_ctx->curl = curl;
 	cb_ctx->obj = 0;
 	cb_ctx->pSendMsg = send_msg;
 	cb_ctx->cur_status = STS_INITIAL;

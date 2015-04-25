@@ -11,6 +11,7 @@
 #include "msg_mc.h"
 #include "msg_gizwits.h"
 #include "gizwits_req.h"
+#include "leancloud_req.h"
 #include "object_mc.h"
 
 #include "log.h"
@@ -144,6 +145,7 @@ int mc_gps(const void* msg, CB_CTX* ctx __attribute__((unused)))
 	giz.course = req->course;
 
 	send_data_giz(&giz, sizeof(giz), obj);
+	leancloud_req(obj, ctx);
 
 	return 0;
 }
@@ -200,6 +202,19 @@ int mc_alarm(const void* msg, CB_CTX* ctx)
 
 		mc_msg_send(rsp, rspMsgLength, ctx);
 	}
+
+	GIZWITS_DATA giz;
+	giz.sub_cmd = 0x04;
+
+	float lat = (ntohl(req->lat) / 30000.0 + 5400.0) * 10000;
+	giz.lat = htonl(lat);
+	float lon = (ntohl(req->lon) / 30000.0 + 10800.0) * 10000;
+	giz.lon = htonl(lon);
+	giz.speed = req->speed;
+	giz.course = req->course;
+
+	send_data_giz(&giz, sizeof(giz), obj);
+
 	return 0;
 }
 
