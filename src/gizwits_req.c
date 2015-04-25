@@ -103,7 +103,21 @@ int mqtt_dev2app(const char* topic, const char* data, const int len, void* userd
 	char header[100];
 	int headerlen = 0;
 
-	varc Uart_varatt = Tran2varc(len + 3);
+    /*
+     * data format:
+     * 		header: 4b  0x00000003
+     * 		varlen: 1-4b (the following data len)
+     * 		flag:	1b
+     * 		cmd:	2b
+     * 		data:	max 65536
+     */
+    typedef struct
+    {
+    	char flag;
+    	short cmd;
+    }__attribute__((__packed__)) CMD;
+
+	varc Uart_varatt = Tran2varc(len + sizeof(CMD));
 	header[0] = 0x00;
 	header[1] = 0x00;
 	header[2] = 0x00;
@@ -113,11 +127,14 @@ int mqtt_dev2app(const char* topic, const char* data, const int len, void* userd
 	{
 		header[4 + i] = Uart_varatt.var[i];
 	}
-	header[4 + Uart_varatt.varcbty] = 0x00;	//flag
-	header[4 + Uart_varatt.varcbty + 1] = 0x00;	//cmd
-	header[4 + Uart_varatt.varcbty + 2] = 0x91;
+	CMD* cmd = header + 4 + Uart_varatt.varcbty; 	// 4 is for the header signature 0x00000003
+	cmd->flag = 0x00;
+	cmd->cmd = htons(0x0091);
+//	header[4 + Uart_varatt.varcbty] = 0x00;	//flag
+//	header[4 + Uart_varatt.varcbty + 1] = 0x00;	//cmd
+//	header[4 + Uart_varatt.varcbty + 2] = 0x91;
 
-	headerlen = 4 + Uart_varatt.varcbty + 1 + 2;	//header(4) + varLen(x) + flag(1) + cmd(2);
+	headerlen = 4 + Uart_varatt.varcbty + sizeof(CMD);	//header(4) + varLen(x) + flag(1) + cmd(2);
 
 	int payloadlen = headerlen + len;
 	char* payload = malloc(payloadlen);
