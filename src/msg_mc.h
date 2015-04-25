@@ -184,6 +184,4 @@ MC_MSG_HEADER* alloc_rspMsg(const MC_MSG_HEADER* pMsg);
 
 void free_msg(MC_MSG_HEADER* msg);
 
-const char* get_IMEI_STRING(const unsigned char* IMEI);
-
 #endif /* SRC_MSG_MC_H_ */

@@ -50,5 +50,6 @@ void mc_obj_del(OBJ_MC* obj);
 OBJ_MC* mc_get(char IMEI[]);
 
 int mc_obj_did_got(OBJ_MC* obj);
+const char* get_IMEI_STRING(const unsigned char* IMEI);
 
 #endif /* SRC_OBJECT_MC_ */
