@@ -71,6 +71,8 @@ static CURL* initCurlHandle()
      */
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 #endif
+
+    return curl;
 }
 
 static void read_cb(struct bufferevent *bev, void *ctx)
