@@ -203,7 +203,7 @@ int mqtt_app2dev(const char* topic, const char* data, const int len, void* userd
     {
     	char sub_cmd; //
     	char cmd_tag;	// corresponding to the action in the MCU interface
-    	char on_off;
+    	//TODO: add writable data
     	char checksum;
     }__attribute__((__packed__)) REQ;
     REQ* req = pDataToMc;
@@ -214,17 +214,17 @@ int mqtt_app2dev(const char* topic, const char* data, const int len, void* userd
     	//根据相应的位，决定要修改哪个字段
     	if (req->cmd_tag & 0x01)
     	{
-		   char shift_msg[] = {1,1,2,3,4,'S','H','I','F','T',',','1','0','0','#'};
-		   char noshift_msg[] = {1,1,2,3,4,'S','H','I','F','T',',','0','#'};
-		   CB_CTX* ctx = container_of(obj, CB_CTX, obj);
-		   if (req->on_off)
-		   {
-			   send_raw_data2mc(shift_msg, sizeof(shift_msg), ctx, session);
-		   }
-		   else
-		   {
-			   send_raw_data2mc(noshift_msg, sizeof(noshift_msg), ctx, session);
-		   }
+//		   char shift_msg[] = {1,1,2,3,4,'S','H','I','F','T',',','1','0','0','#'};
+//		   char noshift_msg[] = {1,1,2,3,4,'S','H','I','F','T',',','0','#'};
+//		   CB_CTX* ctx = container_of(obj, CB_CTX, obj);
+//		   if (req->on_off)
+//		   {
+//			   send_raw_data2mc(shift_msg, sizeof(shift_msg), ctx, session);
+//		   }
+//		   else
+//		   {
+//			   send_raw_data2mc(noshift_msg, sizeof(noshift_msg), ctx, session);
+//		   }
 
     	}
 

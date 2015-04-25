@@ -12,7 +12,6 @@ typedef struct
 {
 	char sub_cmd;
 
-	char on_off;
 	char readOnlyData;
 	char speed;
 	char mnc;
