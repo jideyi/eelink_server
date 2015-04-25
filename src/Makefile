@@ -2,13 +2,13 @@
 CC= gcc -std=gnu99
 CFLAGS= -O2 -Wall -Wextra 
 LDFLAGS= 
-LIBS= -levent -lzlog -lmosquitto -lcurl
+LIBS= -lm -levent -lzlog -lmosquitto -lcurl
 
 
 RM= rm -f
 
 
-OBJS= main.o server_mc.o gizwits_req.o gizwits_rsp.o log.o msg_sch_mc.o msg_proc_mc.o object_mc.o msg_mc.o fsm.o http.o mqtt.o leancloud_req.o
+OBJS= main.o server_mc.o gizwits_req.o gizwits_rsp.o log.o msg_sch_mc.o msg_proc_mc.o object_mc.o msg_mc.o fsm.o http.o mqtt.o leancloud_req.o cJSON.o
 TARGET= ../bin/server
 
 all: $(TARGET)
@@ -37,3 +37,4 @@ fsm.o: fsm.c fsm.h
 http.o: http.c http.h
 mqtt.o: mqtt.c mqtt.h
 leancloud_req.o: leancloud_req.c leancloud_req.h
+cJSON.o: cJSON.c cJSON.h
