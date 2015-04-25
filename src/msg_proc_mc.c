@@ -47,14 +47,13 @@ int mc_msg_send(void* msg, size_t len, CB_CTX* ctx)
 
 	return 0;
 }
-void send_data_giz(const void* data, const int len, CB_CTX* ctx)
+void send_data_giz(const void* data, const int len, OBJ_MC* obj)
 {
-	OBJ_MC* obj = ctx->obj;
 
 	char topic[100] = {0}; //FIXME: how long should be?
 	snprintf(topic, 100, "dev2app/%s", obj->DID);
 
-	mqtt_dev2app(topic, data, len, ctx);
+	mqtt_dev2app(topic, data, len, obj);
 	LOG_DEBUG("Send PUBLISH msg to app: topic = %s", topic);
 }
 
@@ -144,7 +143,7 @@ int mc_gps(const void* msg, CB_CTX* ctx __attribute__((unused)))
 	giz.speed = req->speed;
 	giz.course = req->course;
 
-	send_data_giz(&giz, sizeof(giz), ctx);
+	send_data_giz(&giz, sizeof(giz), obj);
 
 	return 0;
 }
@@ -258,7 +257,7 @@ int mc_operator(const void* msg, CB_CTX* ctx)
 	char topic[100] = {0}; //FIXME: how long should be?
 	snprintf(topic, 100, "dev2app/%s/%s", session->DID, session->clientID);
 
-	mqtt_dev2app(topic, req->data, len, ctx);
+	mqtt_dev2app(topic, req->data, len, ctx->obj);
 
 	return 0;
 }

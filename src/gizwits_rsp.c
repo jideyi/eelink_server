@@ -143,7 +143,7 @@ static unsigned short mqtt_parse_rem_len(const char* buf) {
 
 int mqtt_app2dev(const char* topic, const char* data, const int len, void* userdata)
 {
-	CB_CTX* ctx = userdata;
+	OBJ_MC* obj = userdata;
 
     hzlog_debug(cat[MOD_GIZWITS_RSP], data, len);
 
@@ -207,21 +207,20 @@ int mqtt_app2dev(const char* topic, const char* data, const int len, void* userd
     case SUB_CMD_REQUIRE_STATUS:
     {
     	GIZWITS_DATA giz;
-    	OBJ_MC* obj = ctx->obj;
     	giz.sub_cmd = SUB_CMD_REQUIRE_STATUS_ACK;
     	giz.lat = htonl((obj->lat / 30000.0 + 5400.0) * 10000);
     	giz.lon = htonl((obj->lon / 30000.0 + 5400.0) * 10000);
     	giz.speed = obj->speed;
     	giz.course = htons(obj->course);
     	//TODO:set all the other fields
-    	send_data_giz(&giz, sizeof(giz), ctx);
+    	send_data_giz(&giz, sizeof(giz), obj);
     	break;
     }
     default:
     	;
 	}
 
-    send_raw_data2mc(pDataToMc, datalen, ctx, session);
+    //send_raw_data2mc(pDataToMc, datalen, ctx, session);
 
 	return 0;
 }

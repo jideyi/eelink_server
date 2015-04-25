@@ -96,9 +96,9 @@ static varc Tran2varc(short remainLen)
 }
 
 
-int mqtt_dev2app(const char* topic, const char* data, const int len, void* ctx)
+int mqtt_dev2app(const char* topic, const char* data, const int len, void* userdata)
 {
-	OBJ_MC* obj = ((CB_CTX*)ctx)->obj;
+	OBJ_MC* obj = userdata;
 
 	char header[100];
 	int headerlen = 0;
