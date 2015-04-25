@@ -37,7 +37,7 @@ void mc_register(void* ctx)
 	const char* url = "http://api.gizwits.com/dev/devices";
 	char data[200] = {0}; //TODO: fix magic number
 
-	snprintf(data, 200, "product_key=%s&passcode=%s&mac=%s&type=normal", PRODUCT_KEY, obj->pwd, obj->IMEI);
+	snprintf(data, 200, "product_key=%s&passcode=%s&mac=%s&type=normal", PRODUCT_KEY, obj->pwd, getMacFromIMEI(obj->IMEI));
 
 	LOG_INFO("Register: data = %s", data);
 
@@ -69,7 +69,7 @@ void mc_login_mqtt(void* ctx)
 //TODO: 2 bytes cannot represent 65535
 typedef struct _varc
 {
-	char var[2];//参数的值
+	char var[2]; //参数的值
 	char varcbty;//1by-4by
 } varc;
 
