@@ -84,6 +84,19 @@ void mqtt_connect_callback(struct mosquitto *mosq, void *userdata, int result)
 		LOG_ERROR("Connect failed: result = %d", result);
 	}
 }
+void mqtt_disconnect_callback(struct mosquitto *mosq, void *userdata, int rc)
+{
+	if(rc)
+	{
+		printf("disconnect rc = %d\n", rc);
+		//mosquitto_reconnect(mosq);
+	}
+	else
+	{
+		run = 0;
+	}
+}
+
 
 void mqtt_subscribe_callback(struct mosquitto *mosq, void *userdata, int mid, int qos_count, const int *granted_qos)
 {
@@ -144,6 +157,7 @@ struct mosquitto* mqtt_login(const char* id, const char* host, int port, void* c
 	}
 	mosquitto_log_callback_set(mosq, mqtt_log_callback);
 	mosquitto_connect_callback_set(mosq, mqtt_connect_callback);
+	mosquitto_disconnect_callback_set(mosq, mqtt_disconnect_callback);
 	mosquitto_message_callback_set(mosq, mqtt_message_callback);
 	mosquitto_subscribe_callback_set(mosq, mqtt_subscribe_callback);
 	mosquitto_publish_callback_set(mosq, mqtt_publish_callback);
