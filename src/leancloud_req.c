@@ -11,12 +11,20 @@
 #include "cb_ctx_mc.h"
 #include "object_mc.h"
 
-
-
 void leancloud_req(OBJ_MC* obj, void* arg)
 {
 	CB_CTX* ctx = arg;
 	CURL *curl = ctx->curl;
+
+	char data[100] = {0};	//TODO: use macro
+
+	snprintf(data, 100, "{\"lat\":%d,\"lon\":%d,\"speed\":%d,\"course\":%d}", obj->lat, obj->lon, obj->speed, obj->course);
+
+	leancloud_post(curl, data, strlen(data));
+}
+
+void leancloud_post(CURL *curl, const void* data, int len)
+{
 
     struct curl_slist *headerlist=NULL;
     headerlist = curl_slist_append(headerlist, "X-AVOSCloud-Application-Id: 5wk8ccseci7lnss55xfxdgj9xn77hxg3rppsu16o83fydjjn");
@@ -27,13 +35,10 @@ void leancloud_req(OBJ_MC* obj, void* arg)
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
 
 
-	char data[100] = {0};	//TODO: use macro
-
-	snprintf(data, 100, "{\"lat\":%d,\"lon\":%d,\"speed\":%d,\"course\":%d}", obj->lat, obj->lon, obj->speed, obj->course);
 	/* pass in a pointer to the data - libcurl will not copy */
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
 	/* size of the POST data */
-	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(data));
+	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, len);
 
 	curl_easy_setopt(curl, CURLOPT_POST, 1L);
 
