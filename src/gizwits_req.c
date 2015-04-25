@@ -127,6 +127,8 @@ int mqtt_dev2app(const char* topic, const char* data, const int len, void* userd
 		memcpy(payload + headerlen, data, len);
 	}
 
+    hzlog_debug(cat[MOD_GIZWITS_REQ], payload, payloadlen);
+
 	//topic: "dev2app/<DID>"
 	mosquitto_publish(obj->mosq, NULL, topic, payloadlen, payload, 0, false);	//TODO: determine the parameter
 

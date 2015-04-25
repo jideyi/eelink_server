@@ -159,19 +159,37 @@ int mqtt_app2dev(const char* topic, const char* data, const int len, void* userd
 	pStart = pEnd;
     strcpy(session->clientID, pStart + 1);
 
+    /*
+     * data format:
+     * 		header: 4b  0x00000003
+     * 		varlen: 1-4b (the following data len)
+     * 		flag:	1b
+     * 		cmd:	2b
+     * 		data:	max 65536
+     */
+
     int header = *(int*)data;
     if (ntohl(header) != 0x00000003)
     {
-    	//TODO:
+    	LOG_ERROR("app2dev msg header error: %x", header);
         return -1;
     }
 
-    int varlen = mqtt_num_rem_len_bytes(data + 4); //bypass the header
-    int datalen = mqtt_parse_rem_len(data + 4);
+    const char* pvarlen = data + sizeof(header);
+    int varlen = mqtt_num_rem_len_bytes(pvarlen);
+    int datalen = mqtt_parse_rem_len(pvarlen);
 
-    const char* pDataToMc = data + varlen + 7;
-    //the length field does not contain the flag and cmd
-    //const int lenToMc = datalen - 3; // flag(1B)+cmd(2B)=3B
+    typedef struct
+    {
+    	char flag;
+    	short cmd;
+    }__attribute__((__packed__)) CMD;
+    CMD* cmd = pvarlen + varlen;
+    LOG_DEBUG("app2dev msg: flag=%#x, cmd=%#x", cmd->flag, cmd->cmd);
+
+    const char* pDataToMc = cmd + 1;
+    const int lenToMc = datalen - sizeof(CMD); // flag(1B)+cmd(2B)=3B
+
 	//向设备发送控制指令
     #define		SUB_CMD_CONTROL_MCU			0x01
     //向设备请求设备状态
@@ -187,7 +205,7 @@ int mqtt_app2dev(const char* topic, const char* data, const int len, void* userd
     	char cmd_tag;
     	//TODO the writeable part
     	char checksum;
-    }REQ;
+    }__attribute__((__packed__)) REQ;
     REQ* req = pDataToMc;
     switch (req->sub_cmd)
 	{
