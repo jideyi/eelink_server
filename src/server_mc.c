@@ -62,8 +62,9 @@ static void write_cb(struct bufferevent* bev, void *ctx)
 	return;
 }
 
-static void event_cb(struct bufferevent *bev, short events, void *ctx)
+static void event_cb(struct bufferevent *bev, short events, void *arg)
 {
+	CB_CTX* ctx = arg;
 	if (events & BEV_EVENT_CONNECTED)
 	{
 		LOG_DEBUG("Connect okay.\n");
@@ -84,6 +85,7 @@ static void event_cb(struct bufferevent *bev, short events, void *ctx)
 		}
 		LOG_INFO("Closing");
 		bufferevent_free(bev);
+		curl_easy_cleanup(ctx->curl);
 	}
 }
 

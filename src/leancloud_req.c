@@ -74,7 +74,6 @@ void leancloud_post(CURL *curl, const void* data, int len)
       fprintf(stderr, "curl_easy_perform() failed: %s\n",
               curl_easy_strerror(res));
 
-    //TODO: cleanup when the connection is disconnected
-    //curl_easy_cleanup(curl);
+    //cleanup when the connect is down
 
 }
