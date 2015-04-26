@@ -182,7 +182,7 @@ const char* get_IMEI_STRING(const unsigned char* IMEI)
 	return strIMEI;
 }
 
-const char* getMacFromIMEI(const char* IMEI)
+const char* getMacFromIMEI(const unsigned char* IMEI)
 {
 	/*
 	 *
