@@ -70,13 +70,13 @@ void mqtt_connect_callback(struct mosquitto *mosq, void *userdata, int result)
 		char topic[100];	//TODO: fix magic number
 		memset(topic, 0, sizeof(topic));
 		/* Subscribe to broker information topics on successful connect. */
-		sprintf(topic, "ser2cli_noti/%s", PRODUCT_KEY);
+		LOG_INFO(topic, "ser2cli_noti/%s", PRODUCT_KEY);
 		mosquitto_subscribe(mosq, NULL, topic, 0);
 
-		sprintf(topic, "ser2cli_res/%s", obj->DID);
+		LOG_INFO(topic, "ser2cli_res/%s", obj->DID);
 		mosquitto_subscribe(mosq, NULL, topic, 0);
 
-		sprintf(topic, "app2dev/%s/#", obj->DID);
+		LOG_INFO(topic, "app2dev/%s/#", obj->DID);
 		mosquitto_subscribe(mosq, NULL, topic, 0);
 	}
 	else
@@ -90,13 +90,13 @@ void mqtt_disconnect_callback(struct mosquitto *mosq, void *userdata, int rc)
 
 	if(rc)
 	{
-		printf("%s disconnect rc = %d(%s)\n", obj->DID, rc, mosquitto_strerror(rc));
+		LOG_ERROR("%s disconnect rc = %d(%s)\n", obj->DID, rc, mosquitto_strerror(rc));
 
 		//mosquitto_reconnect(mosq);
 	}
 	else
 	{
-		printf("client disconnect\n");	}
+		LOG_ERROR("client disconnect\n");	}
 }
 
 
