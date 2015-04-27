@@ -12,5 +12,7 @@
 
 void leancloud_req(OBJ_MC* obj, void* ctx);
 
+void saveDidToLeancloud(OBJ_MC* obj, void* arg);
+
 
 #endif /* SRC_LEANCLOUD_REQ_H_ */

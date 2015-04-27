@@ -13,11 +13,14 @@
 #include "object_mc.h"
 #include "cJSON.h"
 
-static void leancloud_post(CURL *curl, const void* data, int len)
+static void leancloud_post(CURL *curl, const char* class, const void* data, int len)
 {
+	char url[256] = {0};
 
 
-    curl_easy_setopt(curl, CURLOPT_URL, "https://api.leancloud.cn/1.1/classes/GPS");
+	snprintf(url, 256, "https://api.leancloud.cn/1.1/classes/%s", class);
+
+    curl_easy_setopt(curl, CURLOPT_URL, url);
 
 	curl_easy_setopt(curl, CURLOPT_POST, 1L);
 
@@ -52,10 +55,26 @@ void leancloud_req(OBJ_MC* obj, void* arg)
 	cJSON_AddNumberToObject(root,"course",	obj->course);
 	cJSON_AddNumberToObject(root,"time",obj->timestamp);
 	char* data = cJSON_Print(root);
-	leancloud_post(curl, data, strlen(data));
+	leancloud_post(curl, "GPS", data, strlen(data));
 	cJSON_Delete(root);
 	free(data);
 //	char data[100] = {0};	//use macro
 //	snprintf(data, 100, "{\"did\":\"%s\",\"lat\":%d,\"lon\":%d,\"speed\":%d,\"course\":%d}", obj->DID, obj->lat, obj->lon, obj->speed, obj->course);
 //	leancloud_post(curl, data, strlen(data));
+}
+
+void saveDidToLeancloud(OBJ_MC* obj, void* arg)
+{
+	CB_CTX* ctx = arg;
+	CURL *curl = ctx->curl;
+
+	cJSON *root = cJSON_CreateObject();
+
+	cJSON_AddStringToObject(root,"did", 	obj->DID);
+	cJSON_AddStringToObject(root,"IMEI",	obj->IMEI);
+	cJSON_AddStringToObject(root,"password",obj->pwd);
+	char* data = cJSON_Print(root);
+	leancloud_post(curl, "DID", data, strlen(data));
+	cJSON_Delete(root);
+	free(data);
 }

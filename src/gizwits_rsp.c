@@ -15,6 +15,7 @@
 #include "macro_mc.h"
 #include "object_mc.h"
 #include "msg_gizwits.h"
+#include "leancloud_req.h"
 
 #define LOG_DEBUG(...) \
 	zlog(cat[MOD_GIZWITS_RSP], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_DEBUG, __VA_ARGS__)
