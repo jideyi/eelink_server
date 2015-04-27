@@ -124,15 +124,19 @@ int mc_gps(const void* msg, CB_CTX* ctx __attribute__((unused)))
 		LOG_ERROR("MC must first login");
 		return -1;
 	}
-	obj->lat = ntohl(req->lat);
-	obj->lon = ntohl(req->lon);
-	obj->speed = req->speed;
-	obj->course = ntohs(req->course);
-	obj->cell = req->cell;
-	obj->timestamp = ntohl(req->timestamp);
 	//no response message needed
 
 	//transmmite the msg to GIZWIT
+
+	if (obj->lat == ntohl(req->lat)
+		&& obj->lon == ntohl(req->lon)
+		&& obj->speed == req->speed
+		&& obj->course == ntohs(req->course))
+	{
+		LOG_INFO("No need to upload data");
+		return 0;
+	}
+
 
 	GIZWITS_DATA giz;
 	giz.sub_cmd = 0x04;
@@ -145,7 +149,16 @@ int mc_gps(const void* msg, CB_CTX* ctx __attribute__((unused)))
 	giz.course = req->course;
 	giz.readOnlyData = 0;
 	send_data_giz(&giz, sizeof(giz), obj);
+
 	leancloud_req(obj, ctx);
+
+	//update local object
+	obj->lat = ntohl(req->lat);
+	obj->lon = ntohl(req->lon);
+	obj->speed = req->speed;
+	obj->course = ntohs(req->course);
+	obj->cell = req->cell;
+	obj->timestamp = ntohl(req->timestamp);
 
 	return 0;
 }
