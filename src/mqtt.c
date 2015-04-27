@@ -86,9 +86,12 @@ void mqtt_connect_callback(struct mosquitto *mosq, void *userdata, int result)
 }
 void mqtt_disconnect_callback(struct mosquitto *mosq, void *userdata, int rc)
 {
+	OBJ_MC* obj = userdata;
+
 	if(rc)
 	{
-		printf("disconnect rc = %d(%s)\n", rc, mosquitto_strerror(rc));
+		printf("%s disconnect rc = %d(%s)\n", obj->DID, rc, mosquitto_strerror(rc));
+
 		//mosquitto_reconnect(mosq);
 	}
 	else
@@ -143,7 +146,7 @@ void mqtt_publish_callback(struct mosquitto *mosq, void *userdata, int mid)
 
 struct mosquitto* mqtt_login(const char* id, const char* host, int port, void* ctx)
 {
-	int keepalive = 60;
+	int keepalive = 200;
 	bool clean_session = false;
 
 	LOG_DEBUG("login MQTT: id = %s,host=%s, port=%d", id, host, port);
