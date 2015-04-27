@@ -62,6 +62,6 @@ OBJ_MC* mc_get(char IMEI[]);
 
 int mc_obj_did_got(OBJ_MC* obj);
 const char* get_IMEI_STRING(const unsigned char* IMEI);
-const char* getMacFromIMEI(const char* IMEI);
+const char* getMacFromIMEI(const unsigned char* IMEI);
 
 #endif /* SRC_OBJECT_MC_ */
