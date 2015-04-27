@@ -88,13 +88,12 @@ void mqtt_disconnect_callback(struct mosquitto *mosq, void *userdata, int rc)
 {
 	if(rc)
 	{
-		printf("disconnect rc = %d\n", rc);
+		printf("disconnect rc = %d(%s%\n", rc, mosquitto_strerror(rc));
 		//mosquitto_reconnect(mosq);
 	}
 	else
 	{
-		run = 0;
-	}
+		printf("client disconnect\n");	}
 }
 
 
@@ -161,6 +160,7 @@ struct mosquitto* mqtt_login(const char* id, const char* host, int port, void* c
 	mosquitto_message_callback_set(mosq, mqtt_message_callback);
 	mosquitto_subscribe_callback_set(mosq, mqtt_subscribe_callback);
 	mosquitto_publish_callback_set(mosq, mqtt_publish_callback);
+	mosquitto_reconnect_delay_set(mosq, 10, 120, false);
 
 	OBJ_MC* obj = ctx;
 
