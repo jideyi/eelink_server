@@ -71,7 +71,7 @@ void saveDidToLeancloud(OBJ_MC* obj, void* arg)
 	cJSON *root = cJSON_CreateObject();
 
 	cJSON_AddStringToObject(root,"did", 	obj->DID);
-	cJSON_AddStringToObject(root,"IMEI",	obj->IMEI);
+	cJSON_AddStringToObject(root,"IMEI",	get_IMEI_STRING(obj->IMEI));
 	cJSON_AddStringToObject(root,"password",obj->pwd);
 	char* data = cJSON_Print(root);
 	leancloud_post(curl, "DID", data, strlen(data));
