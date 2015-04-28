@@ -281,6 +281,8 @@ int mc_operator(const void* msg, CB_CTX* ctx)
 
 	LOG_DEBUG("MC response %s", req->data);
 
+	return 0; //TODO:
+
 	int len = req->header.length + MC_MSG_HEADER_LEN - sizeof(MC_MSG_OPERATOR_RSP);
 	APP_SESSION* session = (APP_SESSION*)req->token;
 	char topic[1024] = {0}; //FIXME: how long should be?
