@@ -51,7 +51,7 @@ int mc_msg_send(void* msg, size_t len, CB_CTX* ctx)
 void send_data_giz(const void* data, const int len, OBJ_MC* obj)
 {
 
-	char topic[100] = {0}; //FIXME: how long should be?
+	char topic[1024] = {0}; //FIXME: how long should be?
 	snprintf(topic, 100, "dev2app/%s", obj->DID);
 
 	mqtt_dev2app(topic, data, len, obj);
@@ -283,7 +283,7 @@ int mc_operator(const void* msg, CB_CTX* ctx)
 
 	int len = req->header.length + MC_MSG_HEADER_LEN - sizeof(MC_MSG_OPERATOR_RSP);
 	APP_SESSION* session = (APP_SESSION*)req->token;
-	char topic[100] = {0}; //FIXME: how long should be?
+	char topic[1024] = {0}; //FIXME: how long should be?
 	snprintf(topic, 100, "dev2app/%s/%s", session->DID, session->clientID);
 
 	mqtt_dev2app(topic, req->data, len, ctx->obj);
