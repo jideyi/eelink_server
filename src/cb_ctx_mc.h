@@ -23,7 +23,7 @@
          const typeof( ((type *)0)->member ) *__mptr = (ptr);     \
          (type *)( (char *)__mptr - offsetof(type,member) );})
 
-typedef void (*MSG_SEND)(struct bufferevent* bev, const void* buf, size_t n);
+typedef void (*msg_send)(struct bufferevent* bev, const void* buf, size_t n);
 
 typedef struct
 {
@@ -31,7 +31,7 @@ typedef struct
 	struct bufferevent* bev;
 	CURL *curl;
 	void* obj;
-	MSG_SEND pSendMsg;
+	msg_send pSendMsg;
 	int cur_status;
 }CB_CTX;
 
