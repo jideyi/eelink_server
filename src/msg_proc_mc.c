@@ -37,7 +37,7 @@
 
 int mc_msg_send(void* msg, size_t len, CB_CTX* ctx)
 {
-	MSG_SEND pfn = ctx->pSendMsg;
+	msg_send pfn = ctx->pSendMsg;
 
 	pfn(ctx->bev, msg, len);
 
