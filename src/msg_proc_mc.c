@@ -150,8 +150,6 @@ int mc_gps(const void* msg, CB_CTX* ctx __attribute__((unused)))
 	giz.readOnlyData = 0;
 	send_data_giz(&giz, sizeof(giz), obj);
 
-	leancloud_req(obj, ctx);
-
 	//update local object
 	obj->lat = ntohl(req->lat);
 	obj->lon = ntohl(req->lon);
@@ -159,6 +157,9 @@ int mc_gps(const void* msg, CB_CTX* ctx __attribute__((unused)))
 	obj->course = ntohs(req->course);
 	obj->cell = req->cell;
 	obj->timestamp = ntohl(req->timestamp);
+
+	leancloud_req(obj, ctx);
+
 
 	return 0;
 }
