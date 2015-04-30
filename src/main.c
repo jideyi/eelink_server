@@ -6,7 +6,6 @@
 #include "log.h"
 #include "version.h"
 #include "server_mc.h"
-#include "object_mc.h"
 
 #define LOG(...) \
 	zlog(cat[MOD_MAIN], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_DEBUG, __VA_ARGS__)
