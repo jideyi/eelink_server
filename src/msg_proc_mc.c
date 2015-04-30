@@ -9,8 +9,6 @@
 
 #include "msg_proc_mc.h"
 #include "msg_mc.h"
-#include "msg_gizwits.h"
-#include "gizwits_req.h"
 #include "leancloud_req.h"
 #include "object_mc.h"
 
@@ -54,7 +52,6 @@ void send_data_giz(const void* data, const int len, OBJ_MC* obj)
 	char topic[1024] = {0}; //FIXME: how long should be?
 	snprintf(topic, 100, "dev2app/%s", obj->DID);
 
-	mqtt_dev2app(topic, data, len, obj);
 	LOG_DEBUG("Send PUBLISH msg to app: topic = %s", topic);
 }
 
@@ -93,8 +90,6 @@ int mc_login(const void* msg, CB_CTX* ctx)
 	{
 		mc_msg_send(rsp, sizeof(MC_MSG_LOGIN_RSP), ctx);
 	}
-
-//	start_fsm(ctx);
 
 	return 0;
 }
@@ -136,19 +131,6 @@ int mc_gps(const void* msg, CB_CTX* ctx __attribute__((unused)))
 		LOG_INFO("No need to upload data");
 		return 0;
 	}
-
-
-	GIZWITS_DATA giz;
-	giz.sub_cmd = 0x04;
-
-	float lat = (ntohl(req->lat) / 30000.0 + 5400.0) * 10000;
-	giz.lat = htonl(lat);
-	float lon = (ntohl(req->lon) / 30000.0 + 10800.0) * 10000;
-	giz.lon = htonl(lon);
-	giz.speed = req->speed;
-	giz.course = req->course;
-	giz.readOnlyData = 0;
-	send_data_giz(&giz, sizeof(giz), obj);
 
 	//update local object
 	obj->lat = ntohl(req->lat);
@@ -217,18 +199,6 @@ int mc_alarm(const void* msg, CB_CTX* ctx)
 		mc_msg_send(rsp, rspMsgLength, ctx);
 	}
 
-	GIZWITS_DATA giz;
-	giz.sub_cmd = 0x04;
-
-	float lat = (ntohl(req->lat) / 30000.0 + 5400.0) * 10000;
-	giz.lat = htonl(lat);
-	float lon = (ntohl(req->lon) / 30000.0 + 10800.0) * 10000;
-	giz.lon = htonl(lon);
-	giz.speed = req->speed;
-	giz.course = req->course;
-
-	send_data_giz(&giz, sizeof(giz), obj);
-
 	return 0;
 }
 
@@ -287,8 +257,6 @@ int mc_operator(const void* msg, CB_CTX* ctx)
 	APP_SESSION* session = (APP_SESSION*)req->token;
 	char topic[1024] = {0}; //FIXME: how long should be?
 	snprintf(topic, 100, "dev2app/%s/%s", session->DID, session->clientID);
-
-	mqtt_dev2app(topic, req->data, len, ctx->obj);
 
 	return 0;
 }
