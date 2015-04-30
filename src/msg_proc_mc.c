@@ -94,7 +94,7 @@ int mc_login(const void* msg, CB_CTX* ctx)
 		mc_msg_send(rsp, sizeof(MC_MSG_LOGIN_RSP), ctx);
 	}
 
-	start_fsm(ctx);
+//	start_fsm(ctx);
 
 	return 0;
 }
