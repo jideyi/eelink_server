@@ -41,7 +41,7 @@ static void leancloud_post(CURL *curl, const char* class, const void* data, int 
     //cleanup when the connect is down, see server_mc.c
 }
 
-void leancloud_req(OBJ_MC* obj, void* arg)
+void leancloud_saveGPS(OBJ_MC* obj, void* arg)
 {
 	CB_CTX* ctx = arg;
 	CURL *curl = ctx->curl;
@@ -63,7 +63,7 @@ void leancloud_req(OBJ_MC* obj, void* arg)
 //	leancloud_post(curl, data, strlen(data));
 }
 
-void saveDidToLeancloud(OBJ_MC* obj, void* arg)
+void leancloud_saveDid(OBJ_MC* obj, void* arg)
 {
 	CB_CTX* ctx = arg;
 	CURL *curl = ctx->curl;

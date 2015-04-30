@@ -140,7 +140,7 @@ int mc_gps(const void* msg, CB_CTX* ctx __attribute__((unused)))
 	obj->cell = req->cell;
 	obj->timestamp = ntohl(req->timestamp);
 
-	leancloud_req(obj, ctx);
+	leancloud_saveGPS(obj, ctx);
 
 
 	return 0;

@@ -47,7 +47,7 @@ int mc_register_rsp(int response_code, const char* msg, CB_CTX* ctx)
 		LOG_INFO("Got did: %s", obj->DID);
 
 		mc_saveConfig();
-		saveDidToLeancloud(obj, ctx);
+		leancloud_saveDid(obj, ctx);
 
 		fsm_run(EVT_GOT_DID, ctx);
 		return 0;
