@@ -15,10 +15,10 @@ typedef struct
 {
 	/*
 	 * IMEI = TAC(6) + FAC(2) + SNR(6) + SP(1)
-	 * TAC: Type Approval Code ÐÍºÅºË×¼ºÅÂë
-	 * FAC: Final Assembly Code ×îºó×°ÅäºÅ
+	 * TAC: Type Approval Code ï¿½ÍºÅºï¿½×¼ï¿½ï¿½ï¿½ï¿½
+	 * FAC: Final Assembly Code ï¿½ï¿½ï¿½×°ï¿½ï¿½ï¿½
 	 * SNR: Serial Number
-	 * SP: Ð£ÑéÂë
+	 * SP: Ð£ï¿½ï¿½ï¿½ï¿½
 	 *
 	 * We use the SNR for MAC
 	 */
@@ -46,6 +46,9 @@ typedef struct
 	char m2m_host[100];
     int m2m_Port;
 
+    int device_id;
+    int sensor_id;
+
 	struct mosquitto *mosq;
 }OBJ_MC;
 
@@ -60,6 +63,7 @@ OBJ_MC* mc_obj_new();
 void mc_obj_del(OBJ_MC* obj);
 OBJ_MC* mc_get(char IMEI[]);
 
+int isYeelinkDeviceCreated(OBJ_MC* obj);
 int mc_obj_did_got(OBJ_MC* obj);
 const char* get_IMEI_STRING(const unsigned char* IMEI);
 const char* getMacFromIMEI(const unsigned char* IMEI);

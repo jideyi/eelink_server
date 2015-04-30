@@ -29,7 +29,8 @@ typedef struct
 {
 	struct event_base* base;
 	struct bufferevent* bev;
-	CURL *curl;
+	CURL *curlOfLeancloud;
+	CURL *curlOfYeelink;
 	void* obj;
 	msg_send pSendMsg;
 	int cur_status;

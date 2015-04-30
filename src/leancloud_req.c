@@ -44,7 +44,7 @@ static void leancloud_post(CURL *curl, const char* class, const void* data, int 
 void leancloud_saveGPS(OBJ_MC* obj, void* arg)
 {
 	CB_CTX* ctx = arg;
-	CURL *curl = ctx->curl;
+	CURL *curl = ctx->curlOfLeancloud;
 
 	cJSON *root = cJSON_CreateObject();
 
@@ -66,7 +66,7 @@ void leancloud_saveGPS(OBJ_MC* obj, void* arg)
 void leancloud_saveDid(OBJ_MC* obj, void* arg)
 {
 	CB_CTX* ctx = arg;
-	CURL *curl = ctx->curl;
+	CURL *curl = ctx->curlOfLeancloud;
 
 	cJSON *root = cJSON_CreateObject();
 

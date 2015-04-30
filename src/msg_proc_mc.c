@@ -11,7 +11,7 @@
 #include "msg_mc.h"
 #include "leancloud_req.h"
 #include "object_mc.h"
-
+#include "yeelink_req.h"
 #include "log.h"
 
 #define LOG_DEBUG(...) \
@@ -94,7 +94,7 @@ int mc_login(const void* msg, CB_CTX* ctx)
 	return 0;
 }
 
-int mc_gps(const void* msg, CB_CTX* ctx __attribute__((unused)))
+int mc_gps(const void* msg, CB_CTX* ctx)
 {
 	const MC_MSG_GPS_REQ* req = msg;
 
@@ -121,7 +121,10 @@ int mc_gps(const void* msg, CB_CTX* ctx __attribute__((unused)))
 	}
 	//no response message needed
 
-	//transmmite the msg to GIZWIT
+	if (!isYeelinkDeviceCreated(obj))
+	{
+		yeelink_createDevice(obj, ctx);
+	}
 
 	if (obj->lat == ntohl(req->lat)
 		&& obj->lon == ntohl(req->lon)
@@ -141,7 +144,7 @@ int mc_gps(const void* msg, CB_CTX* ctx __attribute__((unused)))
 	obj->timestamp = ntohl(req->timestamp);
 
 	leancloud_saveGPS(obj, ctx);
-
+	yeelink_saveGPS(obj, ctx);
 
 	return 0;
 }
@@ -261,7 +264,7 @@ int mc_operator(const void* msg, CB_CTX* ctx)
 	return 0;
 }
 
-int mc_data(const void* msg, CB_CTX* ctx)
+int mc_data(const void* msg, CB_CTX* ctx __attribute__((unused)))
 {
 	return 0;
 }

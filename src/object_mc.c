@@ -197,3 +197,8 @@ const char* getMacFromIMEI(const unsigned char* IMEI)
 
 	return mac;
 }
+
+int isYeelinkDeviceCreated(OBJ_MC* obj)
+{
+	return obj->device_id != 0 && obj->sensor_id != 0 ;
+}

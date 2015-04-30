@@ -8,7 +8,7 @@ LIBS= -lm -levent -lzlog -lmosquitto -lcurl
 RM= rm -f
 
 
-OBJS= main.o server_mc.o log.o msg_sch_mc.o msg_proc_mc.o object_mc.o msg_mc.o http.o leancloud_req.o cJSON.o
+OBJS= main.o server_mc.o log.o msg_sch_mc.o msg_proc_mc.o object_mc.o msg_mc.o http.o leancloud_req.o cJSON.o yeelink_req.o yeelink_rsp.o curl.o
 TARGET= ../bin/server
 
 all: $(TARGET)
@@ -34,3 +34,5 @@ msg_mc.o: msg_mc.c msg_mc.h
 http.o: http.c http.h
 leancloud_req.o: leancloud_req.c leancloud_req.h
 cJSON.o: cJSON.c cJSON.h
+yeelink_req.o: yeelink_req.c yeelink_req.h
+yeelink_rsp.o: yeelink_rsp.c yeelink_rsp.h
