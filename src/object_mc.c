@@ -25,6 +25,8 @@ typedef struct
 	char IMEI[IMEI_LENGTH];
 	char DID[MAX_DID_LEN];
 	char PWD[MAX_PWD_LEN];
+        int device_id;
+        int sensor_id;
 }OBJ_SAVED;
 
 int mc_getConfig()
@@ -46,6 +48,8 @@ int mc_getConfig()
 			memcpy(obj->IMEI, objBuf.IMEI, IMEI_LENGTH);
 			memcpy(obj->DID, objBuf.DID, MAX_DID_LEN);
 			memcpy(obj->pwd, objBuf.PWD, MAX_DID_LEN);
+                        obj->device_id = objBuf.device_id;
+                        obj->sensor_id = objBuf.sensor_id;
 		}
 		else
 		{
@@ -72,6 +76,8 @@ int mc_saveConfig()
 		memcpy(objBuf.IMEI, all_mc[i]->IMEI, IMEI_LENGTH);
 		memcpy(objBuf.DID, all_mc[i]->DID, MAX_DID_LEN);
 		memcpy(objBuf.PWD, all_mc[i]->pwd, MAX_PWD_LEN);
+                objBuf.device_id = all_mc[i]->device_id;
+                objBuf.sensor_id = all_mc[i]->sensor_id;
 		ssize_t written = write(fd, &objBuf, sizeof(OBJ_SAVED));
 		if (written == -1)
 		{
