@@ -26,7 +26,7 @@ size_t leancloud_onSaveGPS(void *contents, size_t size, size_t nmemb, void *user
 	}
 	else
 	{
-		printf("response: %s", rsp);
+		//printf("response: %s", rsp);
 	}
 
 	cJSON_Delete(json);
