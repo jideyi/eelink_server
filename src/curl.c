@@ -39,6 +39,19 @@ static CURL* initCurlHandle()
     return curl;
 }
 
+static struct curl_slist *getLeancloudHeader()
+{
+	static struct curl_slist *headerlist = NULL;
+    if (!headerlist)
+    {
+        headerlist = curl_slist_append(headerlist, "X-AVOSCloud-Application-Id: 5wk8ccseci7lnss55xfxdgj9xn77hxg3rppsu16o83fydjjn");
+        headerlist = curl_slist_append(headerlist, "X-AVOSCloud-Application-Key: yovqy5zy16og43zwew8i6qmtkp2y6r9b18zerha0fqi5dqsw");
+        headerlist = curl_slist_append(headerlist, "Content-Type: application/json");
+    }
+
+    return headerlist;
+}
+
 CURL* initCurlHandleOfLeancloud()
 {
 	CURL* curl = initCurlHandle();
@@ -48,14 +61,22 @@ CURL* initCurlHandleOfLeancloud()
 		return NULL;
 	}
 
-    struct curl_slist *headerlist=NULL;
-    headerlist = curl_slist_append(headerlist, "X-AVOSCloud-Application-Id: 5wk8ccseci7lnss55xfxdgj9xn77hxg3rppsu16o83fydjjn");
-    headerlist = curl_slist_append(headerlist, "X-AVOSCloud-Application-Key: yovqy5zy16og43zwew8i6qmtkp2y6r9b18zerha0fqi5dqsw");
-    headerlist = curl_slist_append(headerlist, "Content-Type: application/json");
 
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, getLeancloudHeader());
 
     return curl;
+}
+
+static struct curl_slist *getYeelinkHeader()
+{
+	static struct curl_slist *headerlist = NULL;
+    if (!headerlist)
+    {
+        headerlist = curl_slist_append(headerlist, "U-ApiKey:f8864ad808704dc4003f0d135774beaf");
+        headerlist = curl_slist_append(headerlist, "Content-Type: application/json");
+    }
+
+    return headerlist;
 }
 
 CURL* initCurlHandleOfYeelink()
@@ -67,11 +88,25 @@ CURL* initCurlHandleOfYeelink()
 		return NULL;
 	}
 
-    struct curl_slist *headerlist=NULL;
-    headerlist = curl_slist_append(headerlist, "U-ApiKey:f8864ad808704dc4003f0d135774beaf");
-    headerlist = curl_slist_append(headerlist, "Content-Type: application/json");
-
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
+	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, getYeelinkHeader());
 
     return curl;
+}
+
+void cleanupLeancloudCurlHandle(CURL* curl)
+{
+	struct curl_slist *headerlist = getLeancloudHeader();
+
+	curl_slist_free_all(headerlist);
+
+	curl_easy_cleanup(curl);
+}
+
+void cleanupYeelinkCurlHandle(CURL* curl)
+{
+	struct curl_slist *headerlist = getYeelinkHeader();
+
+	curl_slist_free_all(headerlist);
+
+	curl_easy_cleanup(curl);
 }
