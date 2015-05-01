@@ -9,6 +9,7 @@
 #include <stdlib.h>
 
 #include "leancloud_req.h"
+#include "leancloud_rsp.h"
 #include "cb_ctx_mc.h"
 #include "object_mc.h"
 #include "cJSON.h"
@@ -55,6 +56,8 @@ void leancloud_saveGPS(OBJ_MC* obj, void* arg)
 	cJSON_AddNumberToObject(root,"course",	obj->course);
 	cJSON_AddNumberToObject(root,"time",obj->timestamp);
 	char* data = cJSON_Print(root);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, leancloud_onSaveGPS);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, arg);
 	leancloud_post(curl, "GPS", data, strlen(data));
 	cJSON_Delete(root);
 	free(data);
