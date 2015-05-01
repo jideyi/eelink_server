@@ -31,6 +31,10 @@ size_t yeelink_onCreateDevice(void *contents, size_t size, size_t nmemb, void *u
 		yeelink_createSensor(device_id, userp);
 	}
 
+	cJSON_Delete(json);
+	free(rsp);
+
+
 	return size * nmemb;
 }
 
@@ -54,6 +58,9 @@ size_t yeelink_onCreateSensor(void *contents, size_t size, size_t nmemb, void *u
 		int sensor_id = cJSON_GetObjectItem(json, "sensor_id")->valueint;
 		obj->sensor_id = sensor_id;
 	}
+
+	cJSON_Delete(json);
+	free(rsp);
 
 	return size * nmemb;
 }
