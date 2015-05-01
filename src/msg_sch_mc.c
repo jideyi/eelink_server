@@ -76,7 +76,7 @@ int handle_mc_msg(const char* m, size_t msgLen, CB_CTX* ctx)
 
 	if (msgLen < sizeof(MC_MSG_HEADER))
 	{
-		LOG_DEBUG("receive message length not enough: %zu(at least(%zu)", msgLen, sizeof(MC_MSG_HEADER));
+		LOG_ERROR("receive message length not enough: %zu(at least(%zu)", msgLen, sizeof(MC_MSG_HEADER));
 
 		return -1;
 	}
@@ -87,7 +87,7 @@ int handle_mc_msg(const char* m, size_t msgLen, CB_CTX* ctx)
 		//check the msg header
 		if (msg->header[0] != 0x67 || msg->header[1] != 0x67)
 		{
-			LOG_DEBUG("receive message header signature error: %x%x)", msg->header[0], msg->header[1]);
+			LOG_ERROR("receive message header signature error: %x%x)", msg->header[0], msg->header[1]);
 
 			return -1;
 		}
@@ -98,7 +98,7 @@ int handle_mc_msg(const char* m, size_t msgLen, CB_CTX* ctx)
 		msg = m + (msgLen - leftMsgLen);
 	};
 
-	return -1;
+	return 0;
 }
 
 

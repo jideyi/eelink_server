@@ -46,14 +46,6 @@ int mc_msg_send(void* msg, size_t len, CB_CTX* ctx)
 
 	return 0;
 }
-void send_data_giz(const void* data, const int len, OBJ_MC* obj)
-{
-
-	char topic[1024] = {0}; //FIXME: how long should be?
-	snprintf(topic, 100, "dev2app/%s", obj->DID);
-
-	LOG_DEBUG("Send PUBLISH msg to app: topic = %s", topic);
-}
 
 int mc_login(const void* msg, CB_CTX* ctx)
 {
@@ -110,8 +102,8 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 		return -1;
 	}
 
-	LOG_INFO("GPS: lat(%d), lon(%d), speed(%d), course(%d)",
-			ntohl(req->lat), ntohl(req->lon), req->speed, ntohs(req->course));
+	LOG_INFO("GPS: lat(%f), lon(%f), speed(%d), course(%d)",
+			ntohl(req->lat) / 30000.0 / 60.0, ntohl(req->lon) / 30000.0 / 60.0, req->speed, ntohs(req->course));
 
 	OBJ_MC* obj = ctx->obj;
 	if (!obj)
@@ -212,7 +204,7 @@ int mc_status(const void* msg, CB_CTX* ctx)
 	OBJ_MC* obj = ctx->obj;
 	if (obj)
 	{
-		LOG_INFO("MC(%s) Status %x", obj->IMEI, req->status);
+		LOG_INFO("MC(%s) Status %x", get_IMEI_STRING(obj->IMEI), req->status);
 	}
 	else
 	{
