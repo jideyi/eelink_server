@@ -118,6 +118,8 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 		yeelink_createDevice(obj, ctx);
 	}
 
+	yeelink_saveGPS(obj, ctx);
+
 	if (obj->lat == ntohl(req->lat)
 		&& obj->lon == ntohl(req->lon)
 		&& obj->speed == req->speed
@@ -136,7 +138,6 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 	obj->timestamp = ntohl(req->timestamp);
 
 	leancloud_saveGPS(obj, ctx);
-	yeelink_saveGPS(obj, ctx);
 
 	return 0;
 }
