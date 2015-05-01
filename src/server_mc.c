@@ -89,6 +89,7 @@ static void event_cb(struct bufferevent *bev, short events, void *arg)
 		bufferevent_free(bev);
 		//TODO: cleanup the mosquitto
 		curl_easy_cleanup(ctx->curlOfLeancloud);
+		curl_easy_cleanup(ctx->curlOfYeelink);
 	}
 }
 
