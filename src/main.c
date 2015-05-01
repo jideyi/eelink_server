@@ -2,7 +2,6 @@
 #include <mosquitto.h>
 #include <curl/curl.h>
 
-#include "gizwits_req.h"
 #include "log.h"
 #include "version.h"
 #include "server_mc.h"

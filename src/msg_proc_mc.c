@@ -245,20 +245,15 @@ int mc_operator(const void* msg, CB_CTX* ctx)
 {
 	const MC_MSG_OPERATOR_RSP* req = msg;
 
-	LOG_DEBUG("MC response %s", req->data);
+	LOG_INFO("MC operator response %s", req->data);
 
 	return 0; //TODO:
-
-	int len = req->header.length + MC_MSG_HEADER_LEN - sizeof(MC_MSG_OPERATOR_RSP);
-	APP_SESSION* session = (APP_SESSION*)req->token;
-	char topic[1024] = {0}; //FIXME: how long should be?
-	snprintf(topic, 100, "dev2app/%s/%s", session->DID, session->clientID);
-
-	return 0;
 }
 
 int mc_data(const void* msg, CB_CTX* ctx __attribute__((unused)))
 {
+	LOG_INFO("MC data message");
+
 	return 0;
 }
 
