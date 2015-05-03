@@ -55,7 +55,7 @@ void leancloud_saveGPS(OBJ_MC* obj, void* arg)
 	cJSON_AddNumberToObject(root,"speed",	obj->speed);
 	cJSON_AddNumberToObject(root,"course",	obj->course);
 	cJSON_AddNumberToObject(root,"time",obj->timestamp);
-	char* data = cJSON_Print(root);
+	char* data = cJSON_PrintUnformatted(root);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, leancloud_onSaveGPS);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, arg);
 	leancloud_post(curl, "GPS", data, strlen(data));
@@ -76,7 +76,7 @@ void leancloud_saveDid(OBJ_MC* obj, void* arg)
 	cJSON_AddStringToObject(root,"did", 	obj->DID);
 	cJSON_AddStringToObject(root,"IMEI",	get_IMEI_STRING(obj->IMEI));
 	cJSON_AddStringToObject(root,"password",obj->pwd);
-	char* data = cJSON_Print(root);
+	char* data = cJSON_PrintUnformatted(root);
 	leancloud_post(curl, "DID", data, strlen(data));
 	cJSON_Delete(root);
 	free(data);

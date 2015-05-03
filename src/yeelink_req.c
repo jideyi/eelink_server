@@ -64,7 +64,7 @@ void yeelink_createDevice(OBJ_MC* obj, void* arg)
 
 	cJSON_AddItemToObject(root, "location", location);
 
-	char* data = cJSON_Print(root);
+	char* data = cJSON_PrintUnformatted(root);
 
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, yeelink_onCreateDevice);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, arg);
@@ -99,7 +99,7 @@ void yeelink_createSensor(int device_id, void* arg)
 	cJSON_AddStringToObject(root,"tags", "[\"lat\",\"lng\"]");
 
 
-	char* data = cJSON_Print(root);
+	char* data = cJSON_PrintUnformatted(root);
 
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, yeelink_onCreateSensor);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, arg);
@@ -131,7 +131,7 @@ void yeelink_saveGPS(OBJ_MC* obj, void* arg)
 
 	cJSON_AddItemToObject(root, "value", gps);
 
-	char* data = cJSON_Print(root);
+	char* data = cJSON_PrintUnformatted(root);
 
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
 
