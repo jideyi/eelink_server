@@ -33,17 +33,19 @@ int main(int argc, char **argv)
 
     mc_obj_initial();
 
-    server_mc_start(base);
+    struct evconnlistener* listener = server_mc_start(base);
     
     LOG("start mc server sucessfully");
 
-    mosquitto_lib_init();
+//    mosquitto_lib_init();
 
     curl_global_init(CURL_GLOBAL_DEFAULT);
 
     event_base_dispatch(base);
 
-	mosquitto_lib_cleanup();
+    evconnlistener_free(listener);
+    event_base_free(base);
+//	mosquitto_lib_cleanup();
 	curl_global_cleanup();
     zlog_fini();
 

@@ -3,6 +3,6 @@
 
 #include <event2/event.h>
 
-void server_mc_start(struct event_base*);
+struct evconnlistener* server_mc_start(struct event_base*);
 
 #endif //_SERVER_MC_

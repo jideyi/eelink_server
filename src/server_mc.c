@@ -38,7 +38,7 @@ static void send_msg(struct bufferevent* bev, const void* buf, size_t n)
 
 static void read_cb(struct bufferevent *bev, void *ctx)
 {
-	char buf[1024];
+	char buf[1024] = {0};
 	size_t n = 0;
 
 	LOG_DEBUG("Receive message");
@@ -119,7 +119,7 @@ static void accept_error_cb(struct evconnlistener *listener, void *ctx)
     event_base_loopexit(base, NULL);
 }
 
-void server_mc_start(struct event_base* base)
+struct evconnlistener* server_mc_start(struct event_base* base)
 {
     struct evconnlistener *listener;
     struct sockaddr_in sin;
@@ -140,9 +140,10 @@ void server_mc_start(struct event_base* base)
             (struct sockaddr*)&sin, sizeof(sin));
     if (!listener) {
             perror("Couldn't create listener");
-            return;
+            return NULL;
     }
     evconnlistener_set_error_cb(listener, accept_error_cb);
 
+    return listener;
 }
 
