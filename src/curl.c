@@ -93,22 +93,18 @@ CURL* initCurlHandleOfYeelink()
     return curl;
 }
 
-void cleanupLeancloudCurlHandle(CURL* curl)
+void clcanupLeancloudHeader()
 {
-	//the header cannot be freed here
-	//struct curl_slist *headerlist = getLeancloudHeader();
+	struct curl_slist *headerlist = getLeancloudHeader();
 
-	//curl_slist_free_all(headerlist);
-
-	curl_easy_cleanup(curl);
+	curl_slist_free_all(headerlist);
 }
 
-void cleanupYeelinkCurlHandle(CURL* curl)
+
+void cleanupYeelinkHeader()
 {
-	//the header cannot be freed here
-	//struct curl_slist *headerlist = getYeelinkHeader();
+	struct curl_slist *headerlist = getYeelinkHeader();
 
-	//curl_slist_free_all(headerlist);
-
-	curl_easy_cleanup(curl);
+	curl_slist_free_all(headerlist);
 }
+
