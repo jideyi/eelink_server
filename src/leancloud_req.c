@@ -21,7 +21,7 @@ static void leancloud_post(CURL *curl, const char* class, const void* data, int 
 	char url[256] = {0};
 
 
-	snprintf(url, 256, "%S/classes/%s", LEANCLOUD_URL_BASE, class);
+	snprintf(url, 256, "%s/classes/%s", LEANCLOUD_URL_BASE, class);
 
     curl_easy_setopt(curl, CURLOPT_URL, url);
 
