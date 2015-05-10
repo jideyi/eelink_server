@@ -2,6 +2,7 @@
 #include <mosquitto.h>
 #include <curl/curl.h>
  #include <signal.h>
+ #include <openssl/ssl.h>
 
 #include "log.h"
 #include "version.h"
@@ -71,6 +72,7 @@ int main(int argc, char **argv)
     event_base_dispatch(base);
 
     //cleanup all resouce
+    mc_obj_destruct();
     evconnlistener_free(listener);
     event_base_free(base);
 //	mosquitto_lib_cleanup();
@@ -78,6 +80,7 @@ int main(int argc, char **argv)
     clcanupLeancloudHeader();
     cleanupYeelinkHeader();
 
+//    sk_free(SSL_COMP_get_compression_methods());
     LOG("stop mc server sucessfully");
 
     zlog_fini();
