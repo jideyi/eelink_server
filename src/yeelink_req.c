@@ -29,6 +29,7 @@ static void yeelink_post(CURL *curl, const char* url, const void* data, int len)
 	/* size of the POST data */
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, len);
 
+    LOG_INFO("Post yeelink: url->%s, data->%s", url, data);
 
     /* Perform the request, res will get the return code */
     CURLcode res = curl_easy_perform(curl);
@@ -135,7 +136,8 @@ void yeelink_saveGPS(OBJ_MC* obj, void* arg)
 
 	char* data = cJSON_PrintUnformatted(root);
 
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, yeelink_onsaveGPS);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, arg);
 
 	yeelink_post(curl, url, data, strlen(data));
 
