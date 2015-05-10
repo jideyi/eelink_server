@@ -4,6 +4,9 @@
  *  Created on: Apr 30, 2015
  *      Author: jk
  */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "yeelink_rsp.h"
 #include "cb_ctx_mc.h"
@@ -75,17 +78,8 @@ size_t yeelink_onsaveGPS(void *contents, size_t size, size_t nmemb, void *userp)
 	memcpy(rsp, contents, size * nmemb);
 	rsp[size * nmemb] = 0;
 
-	cJSON* json = cJSON_Parse(rsp);
-	if (!json)
-	{
-		LOG_ERROR("error parse respone:%s", rsp);
-	}
-	else
-	{
-		//
-	}
+	LOG_ERROR("error parse respone:%s", rsp);
 
-	cJSON_Delete(json);
 	free(rsp);
 
 	return size * nmemb;
