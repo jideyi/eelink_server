@@ -13,6 +13,7 @@
 #include "cb_ctx_mc.h"
 #include "object_mc.h"
 #include "cJSON.h"
+#include "log.h"
 
 #define LEANCLOUD_URL_BASE "https://api.leancloud.cn/1.1"
 
@@ -36,10 +37,13 @@ static void leancloud_post(CURL *curl, const char* class, const void* data, int 
     /* Perform the request, res will get the return code */
     CURLcode res = curl_easy_perform(curl);
 
+    LOG_INFO("Post leancloud: %s", url);
+
     /* Check for errors */
     if(res != CURLE_OK)
-      fprintf(stderr, "curl_easy_perform() failed: %s\n",
-              curl_easy_strerror(res));
+    {
+    	LOG_ERROR("curl_easy_perform() failed: %s",curl_easy_strerror(res));
+    }
 
     //cleanup when the connect is down, see server_mc.c
 }

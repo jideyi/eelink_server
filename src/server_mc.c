@@ -13,6 +13,7 @@
 
 #include "msg_sch_mc.h"
 
+#ifdef WITH_CATEGORY
 #define LOG_DEBUG(...) \
 	zlog(cat[MOD_SERVER_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_DEBUG, __VA_ARGS__)
 
@@ -27,7 +28,7 @@
 
 #define LOG_FATAL(...) \
 	zlog(cat[MOD_SERVER_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_FATAL, __VA_ARGS__)
-
+#endif
 
 static void send_msg(struct bufferevent* bev, const void* buf, size_t n)
 {
@@ -45,7 +46,7 @@ static void read_cb(struct bufferevent *bev, void *ctx)
 
     while ((n = bufferevent_read(bev, buf, sizeof(buf))) > 0)
     {
-    	hzlog_debug(cat[MOD_SERVER_MC], buf, n);
+    	LOG_HEX(buf, n);
     	if (handle_mc_msg(buf, n, ctx))
     	{
     		LOG_ERROR("handle incoming message error!");
@@ -138,9 +139,10 @@ struct evconnlistener* server_mc_start(struct event_base* base)
     listener = evconnlistener_new_bind(base, accept_conn_cb, NULL,
             LEV_OPT_CLOSE_ON_FREE|LEV_OPT_REUSEABLE, -1,
             (struct sockaddr*)&sin, sizeof(sin));
-    if (!listener) {
-            perror("Couldn't create listener");
-            return NULL;
+    if (!listener)
+    {
+		LOG_FATAL("Couldn't create listener");
+		return NULL;
     }
     evconnlistener_set_error_cb(listener, accept_error_cb);
 

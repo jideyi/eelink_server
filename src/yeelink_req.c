@@ -14,6 +14,7 @@
 #include "cJSON.h"
 #include "curl.h"
 #include "yeelink_rsp.h"
+#include "log.h"
 
 #define YEELINK_URL_BASE "http://api.yeelink.net/v1.0"
 
@@ -34,8 +35,9 @@ static void yeelink_post(CURL *curl, const char* url, const void* data, int len)
 
     /* Check for errors */
     if(res != CURLE_OK)
-      fprintf(stderr, "curl_easy_perform() failed: %s\n",
-              curl_easy_strerror(res));
+    {
+      LOG_ERROR("curl_easy_perform() failed: %s", curl_easy_strerror(res));
+    }
 
     //cleanup when the connect is down, see server_mc.c
 }

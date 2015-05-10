@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 #include "curl.h"
+#include "log.h"
 
 static CURL* initCurlHandle()
 {
@@ -58,6 +59,7 @@ CURL* initCurlHandleOfLeancloud()
 
 	if (!curl)
 	{
+		LOG_FATAL("initial leancloud curl handle error");
 		return NULL;
 	}
 
@@ -69,7 +71,9 @@ CURL* initCurlHandleOfLeancloud()
 
 static struct curl_slist *getYeelinkHeader()
 {
+	//the static local variable will be freed when the application exit
 	static struct curl_slist *headerlist = NULL;
+
     if (!headerlist)
     {
         headerlist = curl_slist_append(headerlist, "U-ApiKey:f8864ad808704dc4003f0d135774beaf");
@@ -85,6 +89,7 @@ CURL* initCurlHandleOfYeelink()
 
 	if (!curl)
 	{
+		LOG_FATAL("initial yeelink curl handle error");
 		return NULL;
 	}
 

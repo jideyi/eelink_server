@@ -14,24 +14,6 @@
 #include "yeelink_req.h"
 #include "log.h"
 
-#define LOG_DEBUG(...) \
-	zlog(cat[MOD_PROC_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_DEBUG, __VA_ARGS__)
-
-#define LOG_INFO(...) \
-	zlog(cat[MOD_PROC_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_INFO, __VA_ARGS__)
-
-#define LOG_WARNNING(...) \
-	zlog(cat[MOD_PROC_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_WARNNING, __VA_ARGS__)
-
-#define LOG_ERROR(...) \
-	zlog(cat[MOD_PROC_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_ERROR, __VA_ARGS__)
-
-#define LOG_FATAL(...) \
-	zlog(cat[MOD_PROC_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_FATAL, __VA_ARGS__)
-
-#define LOG_DEBUG_HEX(buf, buf_len) \
-	hzlog(cat[MOD_PROC_MC], __FILE__, sizeof(__FILE__)-1, __func__, sizeof(__func__)-1, __LINE__, \
-	ZLOG_LEVEL_DEBUG, buf, buf_len)
 
 int mc_msg_send(void* msg, size_t len, CB_CTX* ctx)
 {
@@ -40,7 +22,7 @@ int mc_msg_send(void* msg, size_t len, CB_CTX* ctx)
 	pfn(ctx->bev, msg, len);
 
 	LOG_INFO("send response msg of cmd(%d), length(%ld)", get_msg_cmd(msg), len);
-	LOG_DEBUG_HEX(msg, len);
+	LOG_HEX(msg, len);
 
 	free(msg);
 
@@ -108,7 +90,7 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 	OBJ_MC* obj = ctx->obj;
 	if (!obj)
 	{
-		LOG_ERROR("MC must first login");
+		LOG_WARN("MC must first login");
 		return -1;
 	}
 	//no response message needed
@@ -178,14 +160,18 @@ int mc_alarm(const void* msg, CB_CTX* ctx)
 	}
 
 	OBJ_MC* obj = ctx->obj;
-	if (obj)
+	if (!obj)
 	{
-		obj->lat = ntohl(req->lat);
-		obj->lon = ntohl(req->lon);
-		obj->speed = req->speed;
-		obj->course = ntohs(req->course);
-		obj->cell = req->cell;
+		LOG_WARN("MC must first login");
+		return -1;
 	}
+
+
+	obj->lat = ntohl(req->lat);
+	obj->lon = ntohl(req->lon);
+	obj->speed = req->speed;
+	obj->course = ntohs(req->course);
+	obj->cell = req->cell;
 
 	size_t rspMsgLength = sizeof(MC_MSG_ALARM_RSP) + 0; //TODO: currently without any message content
 	MC_MSG_ALARM_RSP* rsp = alloc_msg(req->header.cmd, rspMsgLength);
@@ -204,23 +190,21 @@ int mc_status(const void* msg, CB_CTX* ctx)
 	const MC_MSG_STATUS_REQ* req = msg;
 
 	OBJ_MC* obj = ctx->obj;
-	if (obj)
+	if (!obj)
 	{
-		LOG_INFO("MC(%s) Status %x", get_IMEI_STRING(obj->IMEI), req->status);
-	}
-	else
-	{
-		LOG_INFO("MC Status %x", req->status);
+		LOG_WARN("MC must first login");
+		return -1;
 	}
 
-	if (obj)
-	{
-		obj->lat = ntohl(req->lat);
-		obj->lon = ntohl(req->lon);
-		obj->speed = req->speed;
-		obj->course = ntohs(req->course);
-		obj->cell = req->cell;
-	}
+	LOG_INFO("MC(%s) Status %x", get_IMEI_STRING(obj->IMEI), req->status);
+
+
+	obj->lat = ntohl(req->lat);
+	obj->lon = ntohl(req->lon);
+	obj->speed = req->speed;
+	obj->course = ntohs(req->course);
+	obj->cell = req->cell;
+
 
 	MC_MSG_STATUS_RSP* rsp = alloc_rspMsg(msg);
 	if (rsp)

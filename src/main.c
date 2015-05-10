@@ -8,9 +8,6 @@
 #include "version.h"
 #include "server_mc.h"
 
-#define LOG(...) \
-	zlog(cat[MOD_MAIN], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_DEBUG, __VA_ARGS__)
-
 struct event_base *base = NULL;
 
 static void sig_usr(int signo)
@@ -53,15 +50,15 @@ int main(int argc, char **argv)
 
     struct evconnlistener* listener = server_mc_start(base);
     
-    LOG("start mc server sucessfully");
+    LOG_INFO("start mc server sucessfully");
 
     if (signal(SIGINT, sig_usr) == SIG_ERR)
     {
-        LOG("Can't catch SIGINT");
+        LOG_ERROR("Can't catch SIGINT");
     }
     if (signal(SIGTERM, sig_usr) == SIG_ERR)
     {
-        LOG("Can't catch SIGTERM");
+    	LOG_ERROR("Can't catch SIGTERM");
     }
 //    mosquitto_lib_init();
 
@@ -81,7 +78,7 @@ int main(int argc, char **argv)
     cleanupYeelinkHeader();
 
 //    sk_free(SSL_COMP_get_compression_methods());
-    LOG("stop mc server sucessfully");
+    LOG_INFO("stop mc server sucessfully");
 
     zlog_fini();
 

@@ -13,6 +13,8 @@
 
 #include "log.h"
 
+#ifdef WITH_CATEGORY
+
 #define LOG_DEBUG(...) \
 	zlog(cat[MOD_SCH_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_DEBUG, __VA_ARGS__)
 
@@ -27,7 +29,7 @@
 
 #define LOG_FATAL(...) \
 	zlog(cat[MOD_SCH_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_FATAL, __VA_ARGS__)
-
+#endif
 
 typedef int (*MSG_PROC)(const void* msg, CB_CTX* ctx);
 typedef struct

@@ -8,6 +8,7 @@
 #include "cb_ctx_mc.h"
 #include "object_mc.h"
 #include "cJSON.h"
+#include "log.h"
 
 size_t leancloud_onSaveGPS(void *contents, size_t size, size_t nmemb, void *userp)
 {
@@ -22,11 +23,11 @@ size_t leancloud_onSaveGPS(void *contents, size_t size, size_t nmemb, void *user
 
 	if (!json)
 	{
-		printf("error parse respone:%s", rsp);
+		LOG_ERROR("error parse respone:%s", rsp);
 	}
 	else
 	{
-		//printf("response: %s", rsp);
+		LOG_INFO("response: %s", rsp);
 	}
 
 	cJSON_Delete(json);
