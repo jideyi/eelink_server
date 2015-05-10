@@ -14,12 +14,14 @@
 #include "object_mc.h"
 #include "cJSON.h"
 
+#define LEANCLOUD_URL_BASE "https://api.leancloud.cn/1.1"
+
 static void leancloud_post(CURL *curl, const char* class, const void* data, int len)
 {
 	char url[256] = {0};
 
 
-	snprintf(url, 256, "https://api.leancloud.cn/1.1/classes/%s", class);
+	snprintf(url, 256, "%S/classes/%s", LEANCLOUD_URL_BASE, class);
 
     curl_easy_setopt(curl, CURLOPT_URL, url);
 
