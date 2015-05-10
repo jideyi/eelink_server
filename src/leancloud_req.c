@@ -33,11 +33,11 @@ static void leancloud_post(CURL *curl, const char* class, const void* data, int 
 	/* size of the POST data */
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, len);
 
+    LOG_INFO("Post leancloud: url->%s, data->%s", url, data);
 
     /* Perform the request, res will get the return code */
     CURLcode res = curl_easy_perform(curl);
 
-    LOG_INFO("Post leancloud: %s", url);
 
     /* Check for errors */
     if(res != CURLE_OK)
