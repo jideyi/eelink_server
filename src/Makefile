@@ -1,6 +1,6 @@
 
 CC= gcc -std=gnu99
-CFLAGS= -O2 -Wall -Wextra 
+CFLAGS= -p -g -Wall -Wextra 
 LDFLAGS= 
 LIBS= -lm -levent -lzlog -lmosquitto -lcurl
 
