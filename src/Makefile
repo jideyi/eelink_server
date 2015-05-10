@@ -24,14 +24,15 @@ clean:
 .PHONY: all clean
 
 # objects
-main.o: main.c server_mc.h
-server_mc.o: server_mc.c server_mc.h
+main.o: main.c server_mc.h version.h
+server_mc.o: server_mc.c server_mc.h curl.h log.h
 log.o: log.c log.h
-msg_sch_mc.o: msg_sch_mc.c msg_sch_mc.h msg_proc_mc.h msg_mc.h macro_mc.h cb_ctx_mc.h
-msg_proc_mc.o: msg_proc_mc.c msg_proc_mc.h object_mc.h macro_mc.h cb_ctx_mc.h
-object_mc.o: object_mc.c object_mc.h macro_mc.h
+msg_sch_mc.o: msg_sch_mc.c msg_sch_mc.h msg_proc_mc.h msg_mc.h
+msg_proc_mc.o: msg_proc_mc.c msg_proc_mc.h log.h object_mc.h msg_mc.h leancloud_req.h yeelink_req.h 
+object_mc.o: object_mc.c object_mc.h
 msg_mc.o: msg_mc.c msg_mc.h
-leancloud_req.o: leancloud_req.c leancloud_req.h
+leancloud_req.o: leancloud_req.c leancloud_req.h leancloud_rsp.h cb_ctx_mc.h object_mc.h cJSON.h log.h curl.h
+leancloud_rsp.o: leancloud_rsp.c leancloud_rsp.h cb_ctx_mc.h object_mc.h cJSON.h log.h
 cJSON.o: cJSON.c cJSON.h
-yeelink_req.o: yeelink_req.c yeelink_req.h
-yeelink_rsp.o: yeelink_rsp.c yeelink_rsp.h
+yeelink_req.o: yeelink_req.c yeelink_req.h yeelink_rsp.h cb_ctx_mc.h object_mc.h cJSON.h log.h curl.h
+yeelink_rsp.o: yeelink_rsp.c yeelink_rsp.h cb_ctx_mc.h object_mc.h cJSON.h log.h
