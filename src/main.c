@@ -1,6 +1,7 @@
 #include <event2/event.h>
 #include <mosquitto.h>
 #include <curl/curl.h>
+ #include <signal.h>
 
 #include "log.h"
 #include "version.h"
@@ -9,9 +10,25 @@
 #define LOG(...) \
 	zlog(cat[MOD_MAIN], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_DEBUG, __VA_ARGS__)
 
+struct event_base *base = NULL;
+
+static void sig_usr(int signo)
+{
+	if (signo == SIGINT)
+	{
+		printf("oops! catch CTRL+C!!!\n");
+		event_base_loopbreak(base);
+	}
+
+	if (signo == SIGTERM)
+	{
+		printf("oops! being killed!!!\n");
+		event_base_loopbreak(base);
+	}
+}
+
 int main(int argc, char **argv)
 {
-    struct event_base *base = NULL;
 
     setvbuf(stdout, NULL, _IONBF, 0);
 
@@ -37,16 +54,32 @@ int main(int argc, char **argv)
     
     LOG("start mc server sucessfully");
 
+    if (signal(SIGINT, sig_usr) == SIG_ERR)
+    {
+        LOG("Can't catch SIGINT");
+    }
+    if (signal(SIGTERM, sig_usr) == SIG_ERR)
+    {
+        LOG("Can't catch SIGTERM");
+    }
 //    mosquitto_lib_init();
 
     curl_global_init(CURL_GLOBAL_DEFAULT);
 
+
+    //start the event loop
     event_base_dispatch(base);
 
+    //cleanup all resouce
     evconnlistener_free(listener);
     event_base_free(base);
 //	mosquitto_lib_cleanup();
-	curl_global_cleanup();
+    curl_global_cleanup();
+    clcanupLeancloudHeader();
+    cleanupYeelinkHeader();
+
+    LOG("stop mc server sucessfully");
+
     zlog_fini();
 
     return 0;
