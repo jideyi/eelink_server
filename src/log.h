@@ -27,7 +27,7 @@ enum
 };
 extern zlog_category_t* cat[];
 
-#else
+#elif defined(WITH_LOG)
 
 extern zlog_category_t* cat;
 
@@ -48,6 +48,15 @@ extern zlog_category_t* cat;
 
 #define LOG_HEX(buf, buf_len) \
 	hzlog(cat, __FILE__, sizeof(__FILE__)-1, __func__, sizeof(__func__)-1, __LINE__, ZLOG_LEVEL_DEBUG, buf, buf_len)
+
+#else
+
+#define LOG_DEBUG(...)
+#define LOG_INFO(...)
+#define LOG_WARN(...)
+#define LOG_ERROR(...)
+#define LOG_FATAL(...)
+#define LOG_HEX(buf, buf_len)
 
 #endif
 
