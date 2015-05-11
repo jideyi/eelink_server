@@ -32,7 +32,7 @@
 
 static void send_msg(struct bufferevent* bev, const void* buf, size_t n)
 {
-	LOG_DEBUG("Send msg rsp %p(len=%zu)", buf, n);
+	LOG_INFO("Send msg to TK115 %p(len=%zu)", buf, n);
 	bufferevent_write(bev, buf, n);
 }
 
@@ -66,35 +66,57 @@ static void event_cb(struct bufferevent *bev, short events, void *arg)
 	{
 		LOG_DEBUG("Connect okay.\n");
 	}
-	else if (events & BEV_EVENT_ERROR)
+	else if (events & BEV_EVENT_TIMEOUT)
 	{
-		LOG_ERROR("Error from bufferevent");
+//		LOG_INFO("%s connection timeout!", get_IMEI_STRING(ctx->obj));
+		LOG_INFO("connection timeout!");
+		cleanupLeancloudCurlHandle(ctx->curlOfLeancloud);
+		cleanupYeelinkCurlHandle(ctx->curlOfYeelink);
+		free(ctx);
+
+		bufferevent_free(bev);
 	}
 	else if (events & (BEV_EVENT_EOF | BEV_EVENT_ERROR))
 	{
 		if (events & BEV_EVENT_ERROR)
 		{
-			 int err = bufferevent_socket_get_dns_error(bev);
-			 if (err)
-			 {
-				 LOG_ERROR("DNS error: %s\n", evutil_gai_strerror(err));
-			 }
+//			 int err = bufferevent_socket_get_dns_error(bev);
+//			 if (err)
+//			 {
+//				 LOG_ERROR("DNS error: %s\n", evutil_gai_strerror(err));
+//			 }
+			LOG_ERROR("BEV_EVENT_ERROR:%s", evutil_socket_error_to_string(EVUTIL_SOCKET_ERROR()));
 		}
-		LOG_INFO("Closing");
-		bufferevent_free(bev);
+		LOG_ERROR("Closing the connection");
 		//TODO: cleanup the mosquitto
 		cleanupLeancloudCurlHandle(ctx->curlOfLeancloud);
 		cleanupYeelinkCurlHandle(ctx->curlOfYeelink);
 		free(ctx);
+
+		bufferevent_free(bev);
 	}
 }
 
+
 static void accept_conn_cb(struct evconnlistener *listener,
-    evutil_socket_t fd, struct sockaddr *address, int socklen, void *ctx)
+    evutil_socket_t fd, struct sockaddr *address, int socklen, void *arg)
 {
+	CB_CTX* ctx = arg;
+
+	struct sockaddr_in* p = address;
+	//TODO: just handle the IPv4, no IPv6
+	char addr[INET_ADDRSTRLEN] = {0};
+	inet_ntop(address->sa_family, &p->sin_addr, addr, sizeof addr);
+
 	/* We got a new connection! Set up a bufferevent for it. */
+	LOG_INFO("TK115 connect from %s:%d", addr, ntohs(p->sin_port));
 	struct event_base *base = evconnlistener_get_base(listener);
 	struct bufferevent *bev = bufferevent_socket_new(base, fd, BEV_OPT_CLOSE_ON_FREE);
+	if (!bev)
+	{
+		LOG_FATAL("accept TK115's connection failed!");
+		return;
+	}
 
 	CB_CTX* cb_ctx = malloc(sizeof(CB_CTX));
 	cb_ctx->base = base;
@@ -108,6 +130,11 @@ static void accept_conn_cb(struct evconnlistener *listener,
 	bufferevent_setcb(bev, read_cb, write_cb, event_cb, cb_ctx);
 
 	bufferevent_enable(bev, EV_READ|EV_WRITE);
+
+	//set the timeout
+	struct timeval tm = {600, 0};
+
+	bufferevent_set_timeouts(bev, &tm, &tm);
 }
 
 static void accept_error_cb(struct evconnlistener *listener, void *ctx)
