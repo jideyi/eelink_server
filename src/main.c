@@ -49,8 +49,16 @@ int main(int argc, char **argv)
     mc_obj_initial();
 
     struct evconnlistener* listener = server_mc_start(base);
+    if (listener)
+    {
+    	LOG_INFO("start mc server sucessfully");
+    }
+    else
+    {
+    	LOG_FATAL("start mc server failed");
+    	return 2;
+    }
     
-    LOG_INFO("start mc server sucessfully");
 
     if (signal(SIGINT, sig_usr) == SIG_ERR)
     {
