@@ -75,6 +75,8 @@ static void event_cb(struct bufferevent *bev, short events, void *arg)
 		free(ctx);
 
 		bufferevent_free(bev);
+		evutil_socket_t socket = bufferevent_getfd(bev);
+		EVUTIL_CLOSESOCKET(socket);
 	}
 	else if (events & (BEV_EVENT_EOF | BEV_EVENT_ERROR))
 	{
@@ -92,6 +94,9 @@ static void event_cb(struct bufferevent *bev, short events, void *arg)
 		cleanupLeancloudCurlHandle(ctx->curlOfLeancloud);
 		cleanupYeelinkCurlHandle(ctx->curlOfYeelink);
 		free(ctx);
+
+		evutil_socket_t socket = bufferevent_getfd(bev);
+		EVUTIL_CLOSESOCKET(socket);
 
 		bufferevent_free(bev);
 	}
@@ -131,8 +136,8 @@ static void accept_conn_cb(struct evconnlistener *listener,
 
 	bufferevent_enable(bev, EV_READ|EV_WRITE);
 
-	//set the timeout
-	struct timeval tm = {600, 0};
+	//set the timeout for the connection, when timeout close the connectiont
+	struct timeval tm = {30, 0};
 
 	bufferevent_set_timeouts(bev, &tm, &tm);
 }
