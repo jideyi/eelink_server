@@ -17,11 +17,12 @@
  * 1.5: support yeelink, using libcurl
  * 1.5.1: add SIGINT and SIGTERM handler
  * 1.5.2: change log interface
+ * 1.5.3: add timeout for tk115 connection
  */
 
 #define VERSION_MAJOR   1
 #define VERSION_MINOR   5
-#define VERSION_MICRO   2
+#define VERSION_MICRO   3
 
 #define VERSION_INT(a, b, c)    (a << 16 | b << 8 | c)
 #define VERSION_DOT(a, b, c)    a##.##b##.##c
