@@ -54,8 +54,10 @@ typedef struct
 
 typedef struct
 {
-	char DID[MAX_DID_LEN];
-	char clientID[CLIENT_ID_LEN];
+//	char DID[MAX_DID_LEN];
+//	char clientID[CLIENT_ID_LEN];
+	short cmd;
+	unsigned short seq;
 }APP_SESSION;
 
 void mc_obj_initial();

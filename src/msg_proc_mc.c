@@ -12,6 +12,8 @@
 #include "leancloud_req.h"
 #include "object_mc.h"
 #include "yeelink_req.h"
+#include "mqtt.h"
+#include "msg_proc_app.h"
 #include "log.h"
 
 
@@ -63,6 +65,28 @@ int mc_login(const void* msg, CB_CTX* ctx)
 	if (rsp)
 	{
 		mc_msg_send(rsp, sizeof(MC_MSG_LOGIN_RSP), ctx);
+	}
+	else
+	{
+		//TODO: LOG_ERROR
+	}
+
+	struct mosquitto* mosq = mqtt_login(get_IMEI_STRING(req->IMEI), "127.0.0.1", 1883,
+			app_log_callback,
+			app_connect_callback,
+			app_disconnect_callback,
+			app_message_callback,
+			app_subscribe_callback,
+			app_publish_callback,
+			ctx);
+	if (mosq)
+	{
+		LOG_INFO("%s connect to MQTT successfully", get_IMEI_STRING(req->IMEI));
+		obj->mosq = mosq;
+	}
+	else
+	{
+		LOG_ERROR("%s failed to connect to MQTT", get_IMEI_STRING(req->IMEI));
 	}
 
 	return 0;
@@ -230,6 +254,25 @@ int mc_operator(const void* msg, CB_CTX* ctx)
 {
 	const MC_MSG_OPERATOR_RSP* req = msg;
 
+	switch (req->type)
+	{
+	case 0x01:
+	{
+		APP_SESSION* session = (APP_SESSION*)req->token;
+
+		dev_sendRspMsg2App(session->cmd, session->seq, req->data, sizeof(MC_MSG_HEADER) + req->header.length - sizeof(MC_MSG_OPERATOR_RSP));
+		free(session);
+		break;
+	}
+
+	case 0x02:
+		//TODO:handle the msg
+		break;
+
+	default:
+		break;
+	}
+
 	LOG_INFO("MC operator response %s", req->data);
 
 	return 0; //TODO:
@@ -242,14 +285,3 @@ int mc_data(const void* msg, CB_CTX* ctx __attribute__((unused)))
 	return 0;
 }
 
-void send_raw_data2mc(const void* msg, int len, CB_CTX* ctx, APP_SESSION* session)
-{
-	MC_MSG_OPERATOR_REQ* req = alloc_msg(CMD_OPERAT, sizeof(MC_MSG_OPERATOR_REQ) + len);
-	if (req)
-	{
-		req->type = 0x02;	//FIXME: use enum instead
-		req->token = session;	//TODO: is it safe to use pointer here??
-		memcpy(req->data, msg, len);
-		mc_msg_send(req, sizeof(MC_MSG_OPERATOR_REQ) + len, ctx);
-	}
-}
