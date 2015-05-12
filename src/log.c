@@ -9,6 +9,7 @@
 
 #include "log.h"
 
+#ifdef WITH_CATEGORY
 
 zlog_category_t* cat[MOD_MAX];
 
@@ -24,6 +25,9 @@ static const char* all_modules[] =
 		"GIZWITS_REQ",
 		"GIZWITS_RSP",
 };
+#else
+zlog_category_t *cat;
+#endif
 
 int log_init()
 {
@@ -35,6 +39,7 @@ int log_init()
     	return -1;
     }
 
+#ifdef WITH_CATEGORY
     memset(cat, 0, sizeof(cat));
 
     for (size_t i = 0; i < sizeof(all_modules) / sizeof(const char*); i++)
@@ -49,7 +54,17 @@ int log_init()
         }
         cat[i] = c;
     }
+#else
+    cat = zlog_get_category("my_cat");
 
+    if (!cat)
+    {
+		printf("get cat fail\n");
+
+		zlog_fini();
+		return -2;
+    }
+#endif
 
 
     return 0;

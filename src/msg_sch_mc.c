@@ -13,6 +13,8 @@
 
 #include "log.h"
 
+#ifdef WITH_CATEGORY
+
 #define LOG_DEBUG(...) \
 	zlog(cat[MOD_SCH_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_DEBUG, __VA_ARGS__)
 
@@ -27,7 +29,7 @@
 
 #define LOG_FATAL(...) \
 	zlog(cat[MOD_SCH_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_FATAL, __VA_ARGS__)
-
+#endif
 
 typedef int (*MSG_PROC)(const void* msg, CB_CTX* ctx);
 typedef struct
@@ -76,7 +78,7 @@ int handle_mc_msg(const char* m, size_t msgLen, CB_CTX* ctx)
 
 	if (msgLen < sizeof(MC_MSG_HEADER))
 	{
-		LOG_DEBUG("receive message length not enough: %zu(at least(%zu)", msgLen, sizeof(MC_MSG_HEADER));
+		LOG_ERROR("receive message length not enough: %zu(at least(%zu)", msgLen, sizeof(MC_MSG_HEADER));
 
 		return -1;
 	}
@@ -87,7 +89,7 @@ int handle_mc_msg(const char* m, size_t msgLen, CB_CTX* ctx)
 		//check the msg header
 		if (msg->header[0] != 0x67 || msg->header[1] != 0x67)
 		{
-			LOG_DEBUG("receive message header signature error: %x%x)", msg->header[0], msg->header[1]);
+			LOG_ERROR("receive message header signature error: %x%x)", msg->header[0], msg->header[1]);
 
 			return -1;
 		}
@@ -98,7 +100,7 @@ int handle_mc_msg(const char* m, size_t msgLen, CB_CTX* ctx)
 		msg = m + (msgLen - leftMsgLen);
 	};
 
-	return -1;
+	return 0;
 }
 
 

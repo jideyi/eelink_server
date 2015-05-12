@@ -14,8 +14,9 @@
 #include "cJSON.h"
 #include "curl.h"
 #include "yeelink_rsp.h"
+#include "log.h"
 
-#define YEELINK_URL_BASE "http://api.yeelink.net/v1.0/devices"
+#define YEELINK_URL_BASE "http://api.yeelink.net/v1.0"
 
 static void yeelink_post(CURL *curl, const char* url, const void* data, int len)
 {
@@ -28,14 +29,16 @@ static void yeelink_post(CURL *curl, const char* url, const void* data, int len)
 	/* size of the POST data */
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, len);
 
+    LOG_INFO("Post yeelink: url->%s, data->%s", url, data);
 
     /* Perform the request, res will get the return code */
     CURLcode res = curl_easy_perform(curl);
 
     /* Check for errors */
     if(res != CURLE_OK)
-      fprintf(stderr, "curl_easy_perform() failed: %s\n",
-              curl_easy_strerror(res));
+    {
+      LOG_ERROR("curl_easy_perform() failed: %s", curl_easy_strerror(res));
+    }
 
     //cleanup when the connect is down, see server_mc.c
 }
@@ -64,12 +67,12 @@ void yeelink_createDevice(OBJ_MC* obj, void* arg)
 
 	cJSON_AddItemToObject(root, "location", location);
 
-	char* data = cJSON_Print(root);
+	char* data = cJSON_PrintUnformatted(root);
 
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, yeelink_onCreateDevice);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, arg);
 
-	yeelink_post(curl, YEELINK_URL_BASE, data, strlen(data));
+	yeelink_post(curl, YEELINK_URL_BASE"/devices", data, strlen(data));
 
 	cJSON_Delete(root);
 	free(data);
@@ -81,7 +84,7 @@ void yeelink_createSensor(int device_id, void* arg)
 {
 	char url[256] = {0};
 
-	snprintf(url, 256, "http://api.yeelink.net/v1.0/device/%d/sensors", device_id);
+	snprintf(url, 256, "%s/device/%d/sensors", YEELINK_URL_BASE, device_id);
 
 
 	CURL *curl = initCurlHandleOfYeelink();
@@ -99,7 +102,7 @@ void yeelink_createSensor(int device_id, void* arg)
 	cJSON_AddStringToObject(root,"tags", "[\"lat\",\"lng\"]");
 
 
-	char* data = cJSON_Print(root);
+	char* data = cJSON_PrintUnformatted(root);
 
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, yeelink_onCreateSensor);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, arg);
@@ -120,7 +123,7 @@ void yeelink_saveGPS(OBJ_MC* obj, void* arg)
 
 	char url[256] = {0};
 
-	snprintf(url, 256, "http://api.yeelink.net/v1.0/device/%d/sensor/%d/datapoints", obj->device_id, obj->sensor_id);
+	snprintf(url, 256, "%s/device/%d/sensor/%d/datapoints", YEELINK_URL_BASE, obj->device_id, obj->sensor_id);
 
 	cJSON *root = cJSON_CreateObject();
 
@@ -131,9 +134,10 @@ void yeelink_saveGPS(OBJ_MC* obj, void* arg)
 
 	cJSON_AddItemToObject(root, "value", gps);
 
-	char* data = cJSON_Print(root);
+	char* data = cJSON_PrintUnformatted(root);
 
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, yeelink_onsaveGPS);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, arg);
 
 	yeelink_post(curl, url, data, strlen(data));
 

@@ -14,24 +14,6 @@
 #include "yeelink_req.h"
 #include "log.h"
 
-#define LOG_DEBUG(...) \
-	zlog(cat[MOD_PROC_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_DEBUG, __VA_ARGS__)
-
-#define LOG_INFO(...) \
-	zlog(cat[MOD_PROC_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_INFO, __VA_ARGS__)
-
-#define LOG_WARNNING(...) \
-	zlog(cat[MOD_PROC_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_WARNNING, __VA_ARGS__)
-
-#define LOG_ERROR(...) \
-	zlog(cat[MOD_PROC_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_ERROR, __VA_ARGS__)
-
-#define LOG_FATAL(...) \
-	zlog(cat[MOD_PROC_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_FATAL, __VA_ARGS__)
-
-#define LOG_DEBUG_HEX(buf, buf_len) \
-	hzlog(cat[MOD_PROC_MC], __FILE__, sizeof(__FILE__)-1, __func__, sizeof(__func__)-1, __LINE__, \
-	ZLOG_LEVEL_DEBUG, buf, buf_len)
 
 int mc_msg_send(void* msg, size_t len, CB_CTX* ctx)
 {
@@ -39,20 +21,12 @@ int mc_msg_send(void* msg, size_t len, CB_CTX* ctx)
 
 	pfn(ctx->bev, msg, len);
 
-	LOG_INFO("send response msg of cmd(%d), length(%ld)", get_msg_cmd(msg), len);
-	LOG_DEBUG_HEX(msg, len);
+	LOG_DEBUG("send response msg of cmd(%d), length(%ld)", get_msg_cmd(msg), len);
+	LOG_HEX(msg, len);
 
 	free(msg);
 
 	return 0;
-}
-void send_data_giz(const void* data, const int len, OBJ_MC* obj)
-{
-
-	char topic[1024] = {0}; //FIXME: how long should be?
-	snprintf(topic, 100, "dev2app/%s", obj->DID);
-
-	LOG_DEBUG("Send PUBLISH msg to app: topic = %s", topic);
 }
 
 int mc_login(const void* msg, CB_CTX* ctx)
@@ -110,13 +84,13 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 		return -1;
 	}
 
-	LOG_INFO("GPS: lat(%d), lon(%d), speed(%d), course(%d)",
-			ntohl(req->lat), ntohl(req->lon), req->speed, ntohs(req->course));
+	LOG_INFO("GPS: lat(%f), lon(%f), speed(%d), course(%d)",
+			ntohl(req->lat) / 30000.0 / 60.0, ntohl(req->lon) / 30000.0 / 60.0, req->speed, ntohs(req->course));
 
 	OBJ_MC* obj = ctx->obj;
 	if (!obj)
 	{
-		LOG_ERROR("MC must first login");
+		LOG_WARN("MC must first login");
 		return -1;
 	}
 	//no response message needed
@@ -125,6 +99,7 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 	{
 		yeelink_createDevice(obj, ctx);
 	}
+
 
 	if (obj->lat == ntohl(req->lat)
 		&& obj->lon == ntohl(req->lon)
@@ -143,8 +118,9 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 	obj->cell = req->cell;
 	obj->timestamp = ntohl(req->timestamp);
 
-	leancloud_saveGPS(obj, ctx);
 	yeelink_saveGPS(obj, ctx);
+
+	leancloud_saveGPS(obj, ctx);
 
 	return 0;
 }
@@ -184,14 +160,18 @@ int mc_alarm(const void* msg, CB_CTX* ctx)
 	}
 
 	OBJ_MC* obj = ctx->obj;
-	if (obj)
+	if (!obj)
 	{
-		obj->lat = ntohl(req->lat);
-		obj->lon = ntohl(req->lon);
-		obj->speed = req->speed;
-		obj->course = ntohs(req->course);
-		obj->cell = req->cell;
+		LOG_WARN("MC must first login");
+		return -1;
 	}
+
+
+	obj->lat = ntohl(req->lat);
+	obj->lon = ntohl(req->lon);
+	obj->speed = req->speed;
+	obj->course = ntohs(req->course);
+	obj->cell = req->cell;
 
 	size_t rspMsgLength = sizeof(MC_MSG_ALARM_RSP) + 0; //TODO: currently without any message content
 	MC_MSG_ALARM_RSP* rsp = alloc_msg(req->header.cmd, rspMsgLength);
@@ -210,23 +190,21 @@ int mc_status(const void* msg, CB_CTX* ctx)
 	const MC_MSG_STATUS_REQ* req = msg;
 
 	OBJ_MC* obj = ctx->obj;
-	if (obj)
+	if (!obj)
 	{
-		LOG_INFO("MC(%s) Status %x", obj->IMEI, req->status);
-	}
-	else
-	{
-		LOG_INFO("MC Status %x", req->status);
+		LOG_WARN("MC must first login");
+		return -1;
 	}
 
-	if (obj)
-	{
-		obj->lat = ntohl(req->lat);
-		obj->lon = ntohl(req->lon);
-		obj->speed = req->speed;
-		obj->course = ntohs(req->course);
-		obj->cell = req->cell;
-	}
+	LOG_INFO("MC(%s) Status %x", get_IMEI_STRING(obj->IMEI), req->status);
+
+
+	obj->lat = ntohl(req->lat);
+	obj->lon = ntohl(req->lon);
+	obj->speed = req->speed;
+	obj->course = ntohs(req->course);
+	obj->cell = req->cell;
+
 
 	MC_MSG_STATUS_RSP* rsp = alloc_rspMsg(msg);
 	if (rsp)
@@ -252,20 +230,15 @@ int mc_operator(const void* msg, CB_CTX* ctx)
 {
 	const MC_MSG_OPERATOR_RSP* req = msg;
 
-	LOG_DEBUG("MC response %s", req->data);
+	LOG_INFO("MC operator response %s", req->data);
 
 	return 0; //TODO:
-
-	int len = req->header.length + MC_MSG_HEADER_LEN - sizeof(MC_MSG_OPERATOR_RSP);
-	APP_SESSION* session = (APP_SESSION*)req->token;
-	char topic[1024] = {0}; //FIXME: how long should be?
-	snprintf(topic, 100, "dev2app/%s/%s", session->DID, session->clientID);
-
-	return 0;
 }
 
 int mc_data(const void* msg, CB_CTX* ctx __attribute__((unused)))
 {
+	LOG_INFO("MC data message");
+
 	return 0;
 }
 

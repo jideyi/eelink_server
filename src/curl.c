@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 #include "curl.h"
+#include "log.h"
 
 static CURL* initCurlHandle()
 {
@@ -39,23 +40,47 @@ static CURL* initCurlHandle()
     return curl;
 }
 
+static struct curl_slist *getLeancloudHeader()
+{
+	static struct curl_slist *headerlist = NULL;
+    if (!headerlist)
+    {
+        headerlist = curl_slist_append(headerlist, "X-AVOSCloud-Application-Id: 5wk8ccseci7lnss55xfxdgj9xn77hxg3rppsu16o83fydjjn");
+        headerlist = curl_slist_append(headerlist, "X-AVOSCloud-Application-Key: yovqy5zy16og43zwew8i6qmtkp2y6r9b18zerha0fqi5dqsw");
+        headerlist = curl_slist_append(headerlist, "Content-Type: application/json");
+    }
+
+    return headerlist;
+}
+
 CURL* initCurlHandleOfLeancloud()
 {
 	CURL* curl = initCurlHandle();
 
 	if (!curl)
 	{
+		LOG_FATAL("initial leancloud curl handle error");
 		return NULL;
 	}
 
-    struct curl_slist *headerlist=NULL;
-    headerlist = curl_slist_append(headerlist, "X-AVOSCloud-Application-Id: 5wk8ccseci7lnss55xfxdgj9xn77hxg3rppsu16o83fydjjn");
-    headerlist = curl_slist_append(headerlist, "X-AVOSCloud-Application-Key: yovqy5zy16og43zwew8i6qmtkp2y6r9b18zerha0fqi5dqsw");
-    headerlist = curl_slist_append(headerlist, "Content-Type: application/json");
 
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, getLeancloudHeader());
 
     return curl;
+}
+
+static struct curl_slist *getYeelinkHeader()
+{
+	//the static local variable will be freed when the application exit
+	static struct curl_slist *headerlist = NULL;
+
+    if (!headerlist)
+    {
+        headerlist = curl_slist_append(headerlist, "U-ApiKey:f8864ad808704dc4003f0d135774beaf");
+        headerlist = curl_slist_append(headerlist, "Content-Type: application/json");
+    }
+
+    return headerlist;
 }
 
 CURL* initCurlHandleOfYeelink()
@@ -64,14 +89,27 @@ CURL* initCurlHandleOfYeelink()
 
 	if (!curl)
 	{
+		LOG_FATAL("initial yeelink curl handle error");
 		return NULL;
 	}
 
-    struct curl_slist *headerlist=NULL;
-    headerlist = curl_slist_append(headerlist, "U-ApiKey:f8864ad808704dc4003f0d135774beaf");
-    headerlist = curl_slist_append(headerlist, "Content-Type: application/json");
-
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerlist);
+	curl_easy_setopt(curl, CURLOPT_HTTPHEADER, getYeelinkHeader());
 
     return curl;
 }
+
+void clcanupLeancloudHeader()
+{
+	struct curl_slist *headerlist = getLeancloudHeader();
+
+	curl_slist_free_all(headerlist);
+}
+
+
+void cleanupYeelinkHeader()
+{
+	struct curl_slist *headerlist = getYeelinkHeader();
+
+	curl_slist_free_all(headerlist);
+}
+
