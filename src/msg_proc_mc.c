@@ -71,22 +71,25 @@ int mc_login(const void* msg, CB_CTX* ctx)
 		//TODO: LOG_ERROR
 	}
 
-	struct mosquitto* mosq = mqtt_login(get_IMEI_STRING(req->IMEI), "127.0.0.1", 1883,
-			app_log_callback,
-			app_connect_callback,
-			app_disconnect_callback,
-			app_message_callback,
-			app_subscribe_callback,
-			app_publish_callback,
-			ctx);
-	if (mosq)
+	if (!obj->mosq)
 	{
-		LOG_INFO("%s connect to MQTT successfully", get_IMEI_STRING(req->IMEI));
-		obj->mosq = mosq;
-	}
-	else
-	{
-		LOG_ERROR("%s failed to connect to MQTT", get_IMEI_STRING(req->IMEI));
+		struct mosquitto* mosq = mqtt_login(get_IMEI_STRING(req->IMEI), "127.0.0.1", 1883,
+				app_log_callback,
+				app_connect_callback,
+				app_disconnect_callback,
+				app_message_callback,
+				app_subscribe_callback,
+				app_publish_callback,
+				ctx);
+		if (mosq)
+		{
+			LOG_INFO("%s connect to MQTT successfully", get_IMEI_STRING(req->IMEI));
+			obj->mosq = mosq;
+		}
+		else
+		{
+			LOG_ERROR("%s failed to connect to MQTT", get_IMEI_STRING(req->IMEI));
+		}
 	}
 
 	return 0;
