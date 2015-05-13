@@ -10,7 +10,10 @@
 
 enum CMD
 {
-	CMD_FENCE	= 0x01,
+	CMD_WILD		= 0x0,
+	CMD_FENCE_SET	= 0x01,
+	CMD_FENCE_DEL,
+	CMD_FENCE_GET,
 };
 
 //Message definition

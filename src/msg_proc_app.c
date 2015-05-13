@@ -91,7 +91,20 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 
 	switch (ntohs(pMsg->cmd))
 	{
-	case CMD_FENCE:
+	case CMD_WILD:
+		LOG_INFO("receive app wildcard cmd");
+		app_sendRawData2mc(pMsg->data, pMsg->length - sizeof(pMsg->seq), ctx, session);
+		break;
+	case CMD_FENCE_SET:
+		LOG_INFO("receive app CMD_FENCE_SET cmd");
+		app_sendRawData2mc(pMsg->data, pMsg->length - sizeof(pMsg->seq), ctx, session);
+		break;
+	case CMD_FENCE_DEL:
+		LOG_INFO("receive app CMD_FENCE_DEL cmd");
+		app_sendRawData2mc(pMsg->data, pMsg->length - sizeof(pMsg->seq), ctx, session);
+		break;
+	case CMD_FENCE_GET:
+		LOG_INFO("receive app CMD_FENCE_GET cmd");
 		app_sendRawData2mc(pMsg->data, pMsg->length - sizeof(pMsg->seq), ctx, session);
 		break;
 	default:
