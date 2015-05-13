@@ -255,16 +255,17 @@ int mc_sms(const void* msg, CB_CTX* ctx)
 
 int mc_operator(const void* msg, CB_CTX* ctx)
 {
+	OBJ_MC* obj = ctx->obj;
+
 	const MC_MSG_OPERATOR_RSP* req = msg;
 
 	switch (req->type)
 	{
 	case 0x01:
 	{
-		APP_SESSION* session = (APP_SESSION*)req->token;
+		int session = req->token;
 
-		dev_sendRspMsg2App(session->cmd, session->seq, req->data, sizeof(MC_MSG_HEADER) + req->header.length - sizeof(MC_MSG_OPERATOR_RSP));
-		free(session);
+		dev_sendRspMsg2App(obj->session[session].cmd, obj->session[session].seq, req->data, sizeof(MC_MSG_HEADER) + req->header.length - sizeof(MC_MSG_OPERATOR_RSP));
 		break;
 	}
 

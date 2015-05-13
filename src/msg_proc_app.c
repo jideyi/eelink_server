@@ -16,7 +16,7 @@
 #include "log.h"
 
 
-void app_sendRawData2mc(const void* msg, int len, CB_CTX* ctx, APP_SESSION* session)
+void app_sendRawData2mc(const void* msg, int len, CB_CTX* ctx, int session)
 {
 	MC_MSG_OPERATOR_REQ* req = alloc_msg(CMD_OPERAT, sizeof(MC_MSG_OPERATOR_REQ) + len);
 	if (req)
@@ -84,15 +84,9 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 		return -1;
 	}
 
-	APP_SESSION* session = malloc(sizeof(APP_SESSION));
-	if (!session)
-	{
-		LOG_FATAL("Memory not enough");
-		return -1;
-	}
-
-	session->cmd = pMsg->cmd;
-	session->seq = pMsg->seq;
+	int session = obj->curSession++;
+	obj->session[session].cmd = pMsg->cmd;
+	obj->session[session].seq = pMsg->seq;
 
 	switch (pMsg->cmd)
 	{

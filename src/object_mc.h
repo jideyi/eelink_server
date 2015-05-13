@@ -11,6 +11,16 @@
 #include "macro_mc.h"
 
 
+
+typedef struct
+{
+//	char DID[MAX_DID_LEN];
+//	char clientID[CLIENT_ID_LEN];
+	short cmd;
+	unsigned short seq;
+}APP_SESSION;
+
+
 typedef struct
 {
 	/*
@@ -50,15 +60,12 @@ typedef struct
     int sensor_id;
 
 	struct mosquitto *mosq;
-}OBJ_MC;
 
-typedef struct
-{
-//	char DID[MAX_DID_LEN];
-//	char clientID[CLIENT_ID_LEN];
-	short cmd;
-	unsigned short seq;
-}APP_SESSION;
+	//FIXME: this is not proper, just for temmp use
+#define MAX_SESSION 10
+	APP_SESSION session[MAX_SESSION];
+	int curSession;
+}OBJ_MC;
 
 void mc_obj_initial();
 OBJ_MC* mc_obj_new();
