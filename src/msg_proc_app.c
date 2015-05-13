@@ -22,7 +22,7 @@ void app_sendRawData2mc(const void* msg, int len, CB_CTX* ctx, int session)
 	if (req)
 	{
 		req->type = 0x01;	//FIXME: use enum instead
-		req->token = session;	//TODO: is it safe to use pointer here??
+		req->token = session;
 		memcpy(req->data, msg, len);
 		mc_msg_send(req, sizeof(MC_MSG_OPERATOR_REQ) + len, ctx);
 	}
@@ -32,6 +32,7 @@ void dev_sendRawData2App(const char* topic, const char* data, const int len, CB_
 {
 	OBJ_MC* obj = ctx->obj;
 
+	LOG_HEX(data, len);
 	mosquitto_publish(obj->mosq, NULL, topic, len, data, 0, false);	//TODO: determine the parameter
 
 }
@@ -42,9 +43,9 @@ void dev_sendRspMsg2App(short cmd, short seq, const void* data, const int len, C
 
 	APP_MSG* msg = malloc(sizeof(APP_MSG) + len);
 	msg->header = htons(0xAA55);
-	msg->cmd = cmd;
-	msg->length = len + sizeof(msg->seq);
-	msg->seq = seq;
+	msg->cmd = htons(cmd);
+	msg->length = htons(len + sizeof(msg->seq));
+	msg->seq = htons(seq);
 	memcpy(msg->data, data, len);
 
 	char topic[1024] = {0}; //FIXME: how long should be?
@@ -78,22 +79,23 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 	}
 
 	//check the msg length
-	if ((pMsg->length + sizeof(short) * 3) != len)
+	if ((ntohs(pMsg->length) + sizeof(short) * 3) != len)
 	{
 		LOG_ERROR("App2dev msg format error");
 		return -1;
 	}
 
 	int session = obj->curSession++;
-	obj->session[session].cmd = pMsg->cmd;
-	obj->session[session].seq = pMsg->seq;
+	obj->session[session].cmd = ntohs(pMsg->cmd);
+	obj->session[session].seq = ntohs(pMsg->seq);
 
-	switch (pMsg->cmd)
+	switch (ntohs(pMsg->cmd))
 	{
 	case CMD_FENCE:
 		app_sendRawData2mc(pMsg->data, pMsg->length - sizeof(pMsg->seq), ctx, session);
 		break;
 	default:
+		LOG_ERROR("Unknown cmd: %#x", ntohs(pMsg->cmd));
 		break;
 	}
 }
