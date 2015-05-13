@@ -21,7 +21,7 @@ void app_sendRawData2mc(const void* msg, int len, CB_CTX* ctx, APP_SESSION* sess
 	MC_MSG_OPERATOR_REQ* req = alloc_msg(CMD_OPERAT, sizeof(MC_MSG_OPERATOR_REQ) + len);
 	if (req)
 	{
-		req->type = 0x02;	//FIXME: use enum instead
+		req->type = 0x01;	//FIXME: use enum instead
 		req->token = session;	//TODO: is it safe to use pointer here??
 		memcpy(req->data, msg, len);
 		mc_msg_send(req, sizeof(MC_MSG_OPERATOR_REQ) + len, ctx);
@@ -63,7 +63,7 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 	//check the IMEI
 	const char* pStart = &topic[strlen("app2dev/")];
 	const char* pEnd = strstr(pStart, "/");
-	if (strncmp(obj->IMEI, pStart, pEnd - pStart) != 0)
+	if (strncmp(get_IMEI_STRING(obj->IMEI), pStart, pEnd - pStart) != 0)
 	{
 		LOG_ERROR("App2dev msg IMEI error");
 		return -1;
