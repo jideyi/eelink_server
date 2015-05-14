@@ -7,6 +7,7 @@
 #include "log.h"
 #include "version.h"
 #include "server_mc.h"
+#include "curl.h"
 #include "yunba_push.h"
 
 struct event_base *base = NULL;
@@ -41,10 +42,10 @@ int main(int argc, char **argv)
     if (!base)
         return 1; /*XXXerr*/
 
-    int ret = log_init();
-    if (ret)
+    int rc = log_init();
+    if (rc)
     {
-    	return ret;
+    	return rc;
     }
 
     mc_obj_initial();
@@ -69,18 +70,37 @@ int main(int argc, char **argv)
     {
     	LOG_ERROR("Can't catch SIGTERM");
     }
-    mosquitto_lib_init();
 
-    curl_global_init(CURL_GLOBAL_DEFAULT);
+    rc = mosquitto_lib_init();
+    if (rc != MOSQ_ERR_SUCCESS)
+    {
+    	LOG_ERROR("mosquitto lib initial failed: rc=%d", rc);
+    	return -1;
+    }
+
+    rc = yunba_connect();
+    if (rc)
+    {
+    	LOG_FATAL("connect to yunba failed");
+    	return -1;
+    }
+
+    rc = curl_global_init(CURL_GLOBAL_DEFAULT);
+    if (rc != CURLE_OK)
+    {
+    	LOG_FATAL("curl lib initial failed:%d", rc);
+    }
 
 
     //start the event loop
+    LOG_INFO("start the event loop");
     event_base_dispatch(base);
 
     //cleanup all resouce
     mc_obj_destruct();
     evconnlistener_free(listener);
     event_base_free(base);
+    yunba_disconnect();
 	mosquitto_lib_cleanup();
     curl_global_cleanup();
     clcanupLeancloudHeader();
