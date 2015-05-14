@@ -14,6 +14,8 @@
 #include "yeelink_req.h"
 #include "mqtt.h"
 #include "msg_proc_app.h"
+#include "cJSON.h"
+#include "yunba_push.h"
 #include "log.h"
 
 
@@ -171,26 +173,29 @@ int mc_ping(const void* msg, CB_CTX* ctx)
 
 int mc_alarm(const void* msg, CB_CTX* ctx)
 {
+	OBJ_MC* obj = ctx->obj;
+
+	if (!obj)
+	{
+		LOG_WARN("MC does not login");
+		return -1;
+	}
+
 	const MC_MSG_ALARM_REQ* req = msg;
 
 	switch (req->type)
 	{
 	case FENCE_IN:
+	{
 		LOG_INFO("FENCE_IN Alarm");
 		break;
+	}
 	case FENCE_OUT:
 		LOG_INFO("FENCE_OUT Alarm");
 		break;
 
 	default:
 		LOG_INFO("Alarm type = %#x", req->type);
-	}
-
-	OBJ_MC* obj = ctx->obj;
-	if (!obj)
-	{
-		LOG_WARN("MC must first login");
-		return -1;
 	}
 
 
@@ -208,6 +213,22 @@ int mc_alarm(const void* msg, CB_CTX* ctx)
 
 		mc_msg_send(rsp, rspMsgLength, ctx);
 	}
+
+	//send the alarm to YUNBA
+	char topic[128];
+	memset(topic, 0, sizeof(topic));
+	snprintf(topic, 128, "e2link/%s", get_IMEI_STRING(obj->IMEI));
+
+	cJSON *root = cJSON_CreateObject();
+
+	cJSON *alarm = cJSON_CreateObject();
+	cJSON_AddNumberToObject(alarm,"type", req->type);
+
+	cJSON_AddItemToObject(root, "alarm", alarm);
+
+	yunba_publish(topic, root);
+
+	cJSON_Delete(root);
 
 	return 0;
 }
