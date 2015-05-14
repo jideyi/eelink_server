@@ -217,7 +217,7 @@ int mc_alarm(const void* msg, CB_CTX* ctx)
 	//send the alarm to YUNBA
 	char topic[128];
 	memset(topic, 0, sizeof(topic));
-	snprintf(topic, 128, "e2link/%s", get_IMEI_STRING(obj->IMEI));
+	snprintf(topic, 128, "e2link_%s", get_IMEI_STRING(obj->IMEI));
 
 	cJSON *root = cJSON_CreateObject();
 
