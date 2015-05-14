@@ -96,21 +96,17 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 		app_sendRawData2mc(pMsg->data, ntohs(pMsg->length) - sizeof(pMsg->seq), ctx, session);
 		break;
 	case CMD_FENCE_SET:
-		LOG_INFO("receive app CMD_FENCE_SET cmd");
-		app_sendRawData2mc(pMsg->data, ntohs(pMsg->length) - sizeof(pMsg->seq), ctx, session);
-		break;
 	case CMD_FENCE_DEL:
-		LOG_INFO("receive app CMD_FENCE_DEL cmd");
-		app_sendRawData2mc(pMsg->data, ntohs(pMsg->length) - sizeof(pMsg->seq), ctx, session);
-		break;
 	case CMD_FENCE_GET:
-		LOG_INFO("receive app CMD_FENCE_GET cmd");
+		LOG_INFO("receive app CMD:%#x", ntohs(pMsg->cmd));
 		app_sendRawData2mc(pMsg->data, ntohs(pMsg->length) - sizeof(pMsg->seq), ctx, session);
 		break;
 	default:
 		LOG_ERROR("Unknown cmd: %#x", ntohs(pMsg->cmd));
 		break;
 	}
+
+	return 0;
 }
 
 void app_message_callback(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message)
