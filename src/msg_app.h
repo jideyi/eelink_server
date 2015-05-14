@@ -14,6 +14,9 @@ enum CMD
 	CMD_FENCE_SET	= 0x01,
 	CMD_FENCE_DEL,
 	CMD_FENCE_GET,
+	CMD_TEST_GPS    = 0xfe,
+	CMD_TEST_ALARM	= 0xff,
+
 };
 
 //Message definition

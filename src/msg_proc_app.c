@@ -14,6 +14,7 @@
 #include "msg_app.h"
 #include "msg_mc.h"
 #include "log.h"
+#include "cJSON.h"
 
 
 void app_sendRawData2mc(const void* msg, int len, CB_CTX* ctx, int session)
@@ -52,6 +53,26 @@ void dev_sendRspMsg2App(short cmd, short seq, const void* data, const int len, C
 	snprintf(topic, 1024, "dev2app/%s/e2link/cmd", get_IMEI_STRING(obj->IMEI));
 
 	dev_sendRawData2App(topic, msg, sizeof(APP_MSG) + len, ctx);
+}
+
+
+void dev_sendGpsMsg2App(CB_CTX* ctx)
+{
+	OBJ_MC* obj = ctx->obj;
+
+	GPS_MSG* msg = malloc(sizeof(GPS_MSG));
+	msg->header = htons(0xAA55);
+	msg->timestamp = obj->timestamp;
+	msg->lat = obj->lat;
+	msg->lng = obj->lon;
+	msg->course = obj->course;
+	msg->speed = obj->speed;
+	msg->isGPS = 1; 	//TODO:
+
+	char topic[1024] = {0}; //FIXME: how long should be?
+	snprintf(topic, 1024, "dev2app/%s/e2link/gps", get_IMEI_STRING(obj->IMEI));
+
+	dev_sendRawData2App(topic, msg, sizeof(GPS_MSG), ctx);
 }
 
 int app_handleApp2devMsg(const char* topic, const char* data, const int len, void* userdata)
@@ -101,6 +122,30 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 		LOG_INFO("receive app CMD:%#x", ntohs(pMsg->cmd));
 		app_sendRawData2mc(pMsg->data, ntohs(pMsg->length) - sizeof(pMsg->seq), ctx, session);
 		break;
+	case CMD_TEST_GPS:
+		dev_sendGpsMsg2App(ctx);
+		break;
+	case CMD_TEST_ALARM:
+	{
+		//send the alarm to YUNBA
+		char topic[128];
+		memset(topic, 0, sizeof(topic));
+		snprintf(topic, 128, "e2link_%s", get_IMEI_STRING(obj->IMEI));
+
+		cJSON *root = cJSON_CreateObject();
+
+		cJSON *alarm = cJSON_CreateObject();
+		cJSON_AddNumberToObject(alarm,"type", 0x81);
+
+		cJSON_AddItemToObject(root, "alarm", alarm);
+
+		yunba_publish(topic, root);
+		LOG_INFO("send test alarm to app");
+
+		cJSON_Delete(root);
+		break;
+	}
+
 	default:
 		LOG_ERROR("Unknown cmd: %#x", ntohs(pMsg->cmd));
 		break;
