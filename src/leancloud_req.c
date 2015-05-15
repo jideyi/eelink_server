@@ -55,6 +55,7 @@ void leancloud_saveGPS(OBJ_MC* obj, void* arg)
 
 	cJSON *root = cJSON_CreateObject();
 
+	cJSON_AddStringToObject(root,"IMEI",    get_IMEI_STRING(obj->IMEI));
 	cJSON_AddStringToObject(root,"did", 	obj->DID);
 	cJSON_AddNumberToObject(root,"lat",		obj->lat / 30000.0);
 	cJSON_AddNumberToObject(root,"lon",		obj->lon / 30000.0);
