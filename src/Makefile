@@ -5,7 +5,6 @@ CFLAGS= -O2 -Wall -Wextra -DWITH_LOG -I../inc
 LDFLAGS= -L../lib
 LIBS= -lm -levent -lzlog -lmosquitto -lcurl -lyunba
 
-
 RM= rm -f
 
 
@@ -14,7 +13,7 @@ TARGET= ../bin/server
 
 all: $(TARGET)
 $(TARGET): $(OBJS)
-	$(CC) -o $@ $(LDFLAGS) $(OBJS) $(LIBS)
+	$(CC) -o $@ $(LDFLAGS) $(OBJS) $(LIBS) `pkg-config --cflags --libs glib-2.0`
 
 clean:
 	$(RM) $(TARGET) $(OBJS)
