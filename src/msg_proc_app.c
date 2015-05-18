@@ -61,13 +61,20 @@ void dev_sendGpsMsg2App(CB_CTX* ctx)
 	OBJ_MC* obj = ctx->obj;
 
 	GPS_MSG* msg = malloc(sizeof(GPS_MSG));
+if (obj)
+{
 	msg->header = htons(0xAA55);
-	msg->timestamp = obj->timestamp;
-	msg->lat = obj->lat;
-	msg->lng = obj->lon;
-	msg->course = obj->course;
+	msg->timestamp = htonl(obj->timestamp);
+	msg->lat = htonl(obj->lat);
+	msg->lng = htonl(obj->lon);
+	msg->course = htons(obj->course);
 	msg->speed = obj->speed;
 	msg->isGPS = 1; 	//TODO:
+}
+else
+{
+	memset(msg, 0, sizeof(GPS_MSG));
+}
 
 	char topic[1024] = {0}; //FIXME: how long should be?
 	snprintf(topic, 1024, "dev2app/%s/e2link/gps", get_IMEI_STRING(obj->IMEI));
@@ -106,7 +113,7 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 		return -1;
 	}
 
-	int session = obj->curSession++;
+	int session = obj->curSession++ % MAX_SESSION;
 	obj->session[session].cmd = ntohs(pMsg->cmd);
 	obj->session[session].seq = ntohs(pMsg->seq);
 
