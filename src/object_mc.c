@@ -10,15 +10,13 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <time.h>
-#include <glib.h>
 
-#include "log.h"
 #include "object_mc.h"
 
 #define MAX_MC 100
 
-/* global mc hash table */
-GHashTable *g_table = NULL;
+OBJ_MC* all_mc[100];
+int mc_count = 0;
 
 #define CONFIG_FILE "../conf/config.dat"
 
@@ -27,8 +25,8 @@ typedef struct
 	char IMEI[IMEI_LENGTH];
 	char DID[MAX_DID_LEN];
 	char PWD[MAX_PWD_LEN];
-    int device_id;
-    int sensor_id;
+        int device_id;
+        int sensor_id;
 }OBJ_SAVED;
 
 int mc_getConfig()
@@ -50,17 +48,8 @@ int mc_getConfig()
 			memcpy(obj->IMEI, objBuf.IMEI, IMEI_LENGTH);
 			memcpy(obj->DID, objBuf.DID, MAX_DID_LEN);
 			memcpy(obj->pwd, objBuf.PWD, MAX_DID_LEN);
-            obj->device_id = objBuf.device_id;
-            obj->sensor_id = objBuf.sensor_id;
-
-            /* add to mc hash */
-            if(0 != mc_obj_add(obj))
-            {
-                LOG_DEBUG("add IMEI(%s) failed", get_IMEI_STRING(obj->IMEI));
-                free(obj);
-                close(fd);
-                return -1;
-            }
+                        obj->device_id = objBuf.device_id;
+                        obj->sensor_id = objBuf.sensor_id;
 		}
 		else
 		{
@@ -72,7 +61,7 @@ int mc_getConfig()
     return 0;
 }
 
-void mc_writefile(gpointer key, gpointer value, gpointer user_data)
+int mc_saveConfig()
 {
     int fd = open(CONFIG_FILE, O_RDWR | O_CREAT, S_IRWXU);
     if(-1 == fd)
@@ -81,53 +70,44 @@ void mc_writefile(gpointer key, gpointer value, gpointer user_data)
         return -1;
     }
 
-    OBJ_SAVED objBuf;
-    OBJ_MC* obj = (OBJ_MC*)value;
-    memcpy(objBuf.IMEI, obj->IMEI, IMEI_LENGTH);
-	memcpy(objBuf.DID, obj->DID, MAX_DID_LEN);
-	memcpy(objBuf.PWD, obj->pwd, MAX_PWD_LEN);
-    objBuf.device_id = obj->device_id;
-    objBuf.sensor_id = obj->sensor_id;
-	ssize_t written = write(fd, &objBuf, sizeof(OBJ_SAVED));
-	if (written == -1)
-	{
-		//TODO:log
-		return;
-	}
+    for (int i = 0; i < mc_count; i++)
+    {
+    	OBJ_SAVED objBuf;
+		memcpy(objBuf.IMEI, all_mc[i]->IMEI, IMEI_LENGTH);
+		memcpy(objBuf.DID, all_mc[i]->DID, MAX_DID_LEN);
+		memcpy(objBuf.PWD, all_mc[i]->pwd, MAX_PWD_LEN);
+                objBuf.device_id = all_mc[i]->device_id;
+                objBuf.sensor_id = all_mc[i]->sensor_id;
+		ssize_t written = write(fd, &objBuf, sizeof(OBJ_SAVED));
+		if (written == -1)
+		{
+			//TODO:log
+			break;
+		}
+    }
 
     close(fd);
-}
-
-
-int mc_saveConfig()
-{
-    /* foreach mc hash */
-    g_hash_table_foreach(g_table, mc_writefile, NULL);
 
     return 0;
 }
 
-/* initial the hash table */
 void mc_obj_initial()
 {
-    /* create mc hash table */
-    g_table = g_hash_table_new(g_str_hash, g_str_equal);
+	memset(all_mc, 0, sizeof(all_mc));
 
 	mc_getConfig();
-}
-
-void mc_obj_free(gpointer key, gpointer value, gpointer user_data)
-{
-    free((OBJ_MC*)value);
 }
 
 void mc_obj_destruct()
 {
 	mc_saveConfig();
 
-    g_hash_table_foreach(g_table, mc_obj_free, NULL);
 
-    g_hash_table_destroy(g_table);
+	for (int i = 0; i < mc_count; i++)
+	{
+		free(all_mc[i]);
+	}
+	mc_count = 0;
 }
 
 void make_pwd(char pwd[])
@@ -143,54 +123,51 @@ void make_pwd(char pwd[])
 
 OBJ_MC* mc_obj_new()
 {
-	if (MAX_MC == mc_obj_getlen())
+	if (mc_count == MAX_MC)
 	{
 		return NULL;
 	}
 
 	OBJ_MC* obj = malloc(sizeof(OBJ_MC));
 	memset(obj, 0, sizeof(OBJ_MC));
+	all_mc[mc_count++] = obj;
 
 	make_pwd(obj->pwd);
 
 	return obj;
 }
 
-/* add item into mc hash */
-int mc_obj_add(OBJ_MC* obj)
-{
-    if(MAX_MC == mc_obj_getlen())
-    {
-        LOG_DEBUG("add IMEI(%s) failed, mc's size is up to MAX", get_IMEI_STRING(obj->IMEI));
-        return -1;
-    }
-
-    if(TRUE == g_hash_table_insert(g_table, obj->IMEI, obj))
-    {
-        return 0;
-    }
-    return -1;
-}
-
-/* get length of mc hash */
-int mc_obj_getlen()
-{
-    return g_hash_table_size(g_table);
-}
-
 void mc_obj_del(OBJ_MC* obj)
 {
-    OBJ_MC* t_obj = mc_get(obj->IMEI);
-    if(NULL != t_obj)
-    {
-        g_hash_table_remove(g_table, obj->IMEI);
-        free(t_obj);
-    }
+	for (int i = 0; i < mc_count; i++)
+	{
+		if (obj == all_mc[i])
+		{
+			mc_count--;
+			for (int j = i; j < mc_count; j++)
+			{
+				all_mc[j] = all_mc[j + 1];
+			}
+			break;
+		}
+	}
 }
 
 OBJ_MC* mc_get(char IMEI[])
 {
-    return g_hash_table_lookup(g_table, IMEI);
+	for (int i = 0; i < mc_count; i++)
+	{
+		OBJ_MC* obj = all_mc[i];
+		if(obj)
+		{
+			if (strcmp(obj->IMEI, IMEI) == 0)
+			{
+				return obj;
+			}
+		}
+	}
+
+	return NULL;
 }
 
 int mc_obj_did_got(OBJ_MC* obj)
