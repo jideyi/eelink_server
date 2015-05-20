@@ -1,9 +1,9 @@
 
 CC= gcc -std=gnu99
 #CFLAGS= -p -g -Wall -Wextra -DWITH_LOG
-CFLAGS= -O2 -Wall -Wextra -DWITH_LOG -I../inc
+CFLAGS= -O2 -Wall -Wextra -DWITH_LOG -I../inc `pkg-config --cflags glib-2.0`
 LDFLAGS= -L../lib
-LIBS= -lm -levent -lzlog -lmosquitto -lcurl -lyunba
+LIBS= -lm -levent -lzlog -lmosquitto -lcurl -lyunba `pkg-config --libs glib-2.0`
 
 RM= rm -f
 
@@ -13,7 +13,7 @@ TARGET= ../bin/server
 
 all: $(TARGET)
 $(TARGET): $(OBJS)
-	$(CC) -o $@ $(LDFLAGS) $(OBJS) $(LIBS) `pkg-config --cflags --libs glib-2.0`
+	$(CC) -o $@ $(LDFLAGS) $(OBJS) $(LIBS) 
 
 clean:
 	$(RM) $(TARGET) $(OBJS)
