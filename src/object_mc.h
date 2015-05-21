@@ -69,9 +69,7 @@ typedef struct
 
 void mc_obj_initial();
 OBJ_MC* mc_obj_new();
-int mc_obj_getlen();
 int mc_obj_add(OBJ_MC* obj);
-void mc_obj_del(OBJ_MC* obj);
 OBJ_MC* mc_get(char IMEI[]);
 void mc_obj_destruct();
 

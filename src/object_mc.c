@@ -15,8 +15,6 @@
 #include "log.h"
 #include "object_mc.h"
 
-#define MAX_MC 100
-
 /* global mc hash table */
 GHashTable *g_table = NULL;
 
@@ -34,9 +32,9 @@ typedef struct
 int mc_getConfig()
 {
 	int fd = open(CONFIG_FILE, O_RDONLY);
-	if (fd == -1)
+	if (-1 == fd)
 	{
-        printf("open file fail\r\n");
+        LOG_ERROR("open file fail");
         return -1;
 	}
 
@@ -44,19 +42,25 @@ int mc_getConfig()
 	{
 		OBJ_SAVED objBuf;
 		ssize_t readlen = read(fd, &objBuf, sizeof(OBJ_SAVED));
-		if (readlen == sizeof(OBJ_SAVED))
+		if (sizeof(OBJ_SAVED) == readlen)
 		{
 			OBJ_MC* obj = mc_obj_new();
+            if(NULL == obj)
+            {
+                LOG_ERROR("malloc IMEI(%s) obj failed", get_IMEI_STRING(obj->IMEI));
+                close(fd);
+                return -1;
+            }
 			memcpy(obj->IMEI, objBuf.IMEI, IMEI_LENGTH);
 			memcpy(obj->DID, objBuf.DID, MAX_DID_LEN);
-			memcpy(obj->pwd, objBuf.PWD, MAX_DID_LEN);
+			memcpy(obj->pwd, objBuf.PWD, MAX_PWD_LEN);
             obj->device_id = objBuf.device_id;
             obj->sensor_id = objBuf.sensor_id;
 
             /* add to mc hash */
             if(0 != mc_obj_add(obj))
             {
-                LOG_DEBUG("add IMEI(%s) failed", get_IMEI_STRING(obj->IMEI));
+                LOG_ERROR("add IMEI(%s) failed", get_IMEI_STRING(obj->IMEI));
                 free(obj);
                 close(fd);
                 return -1;
@@ -74,12 +78,7 @@ int mc_getConfig()
 
 void mc_writefile(gpointer key, gpointer value, gpointer user_data)
 {
-    int fd = open(CONFIG_FILE, O_RDWR | O_CREAT, S_IRWXU);
-    if(-1 == fd)
-    {
-        printf("open file fail\r\n");
-        return -1;
-    }
+    int fd = *((int*)user_data);
 
     OBJ_SAVED objBuf;
     OBJ_MC* obj = (OBJ_MC*)value;
@@ -91,19 +90,24 @@ void mc_writefile(gpointer key, gpointer value, gpointer user_data)
 	ssize_t written = write(fd, &objBuf, sizeof(OBJ_SAVED));
 	if (written == -1)
 	{
-		//TODO:log
-		return;
+		LOG_ERROR("write IMEI(%s) into file failed", get_IMEI_STRING(obj->IMEI));
 	}
-
-    close(fd);
 }
 
 
 int mc_saveConfig()
 {
-    /* foreach mc hash */
-    g_hash_table_foreach(g_table, mc_writefile, NULL);
+    int fd = open(CONFIG_FILE, O_RDWR | O_CREAT, S_IRWXU);
+    if(-1 == fd)
+    {
+        LOG_ERROR("open file fail");
+        return -1;
+    }
 
+    /* foreach mc hash */
+    g_hash_table_foreach(g_table, mc_writefile, &fd);
+
+    close(fd);
     return 0;
 }
 
@@ -112,7 +116,10 @@ void mc_obj_initial()
     /* create mc hash table */
     g_table = g_hash_table_new(g_str_hash, g_str_equal);
 
-	mc_getConfig();
+	if(mc_getConfig())
+	{
+        LOG_ERROR("failed to get config from file");
+    }
 }
 
 void mc_obj_free(gpointer key, gpointer value, gpointer user_data)
@@ -122,7 +129,10 @@ void mc_obj_free(gpointer key, gpointer value, gpointer user_data)
 
 void mc_obj_destruct()
 {
-	mc_saveConfig();
+	if(mc_saveConfig())
+	{
+        LOG_ERROR("failed to save config into file");
+    }
 
     g_hash_table_foreach(g_table, mc_obj_free, NULL);
 
@@ -142,12 +152,11 @@ void make_pwd(char pwd[])
 
 OBJ_MC* mc_obj_new()
 {
-	if (MAX_MC == mc_obj_getlen())
-	{
-		return NULL;
-	}
-
 	OBJ_MC* obj = malloc(sizeof(OBJ_MC));
+    if(NULL == obj)
+    {
+        return NULL;
+    }
 	memset(obj, 0, sizeof(OBJ_MC));
 
 	make_pwd(obj->pwd);
@@ -158,23 +167,11 @@ OBJ_MC* mc_obj_new()
 /* add item into mc hash */
 int mc_obj_add(OBJ_MC* obj)
 {
-    if(MAX_MC == mc_obj_getlen())
-    {
-        LOG_DEBUG("add IMEI(%s) failed, mc's size is up to MAX", get_IMEI_STRING(obj->IMEI));
-        return -1;
-    }
-
     if(TRUE == g_hash_table_insert(g_table, obj->IMEI, obj))
     {
         return 0;
     }
     return -1;
-}
-
-/* get length of mc hash */
-int mc_obj_getlen()
-{
-    return g_hash_table_size(g_table);
 }
 
 void mc_obj_del(OBJ_MC* obj)

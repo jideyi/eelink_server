@@ -14,6 +14,7 @@
 #include "object_mc.h"
 #include "cJSON.h"
 #include "log.h"
+#include "sql.h"
 
 #define LEANCLOUD_URL_BASE "https://api.leancloud.cn/1.1"
 
@@ -66,6 +67,10 @@ void leancloud_saveGPS(OBJ_MC* obj, void* arg)
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, leancloud_onSaveGPS);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, arg);
 	leancloud_post(curl, "GPS", data, strlen(data));
+    if(mysql_add(obj))
+    {
+        LOG_ERROR("save GPS failed");
+    }
 	cJSON_Delete(root);
 	free(data);
 //	char data[100] = {0};	//use macro

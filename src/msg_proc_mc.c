@@ -50,10 +50,21 @@ int mc_login(const void* msg, CB_CTX* ctx)
 			LOG_DEBUG("the first time of IMEI(%s)'s login", get_IMEI_STRING(req->IMEI));
 
 			obj = mc_obj_new();
+            if(NULL == obj)
+            {
+                LOG_ERROR("malloc IMEI(%s) obj failed", get_IMEI_STRING(req->IMEI));
+                return -1;
+            }
 
 			memcpy(obj->IMEI, req->IMEI, IMEI_LENGTH);
 			obj->language = req->language;
 			obj->locale = req->locale;
+            if(mc_obj_add(obj))
+            {
+                LOG_ERROR("add IMEI(%s) obj failed", get_IMEI_STRING(req->IMEI));
+                free(obj);
+                return -1;
+            }
 		}
 
 		ctx->obj = obj;
