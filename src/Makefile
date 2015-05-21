@@ -1,9 +1,9 @@
 
-CC= gcc -std=gnu99 `pkg-config --cflags --libs glib-2.0 openssl`
+CC= gcc -std=gnu99 
 #CFLAGS= -p -g -Wall -Wextra -DWITH_LOG
-CFLAGS= -O0 -g -Wall -Wextra -DWITH_LOG -I../inc -I/usr/include/mysql 
+CFLAGS= -O0 -g -Wall -Wextra -DWITH_LOG -I../inc -I/usr/include/mysql `pkg-config --cflags glib-2.0 openssl`
 LDFLAGS= -L../lib -L/usr/lib64/mysql 
-LIBS= -lm -levent -lzlog -lmosquitto -lcurl -lyunba -pthread -lmysqlclient -ldl -lz
+LIBS= -lm -levent -lzlog -lmosquitto -lcurl -lyunba -pthread -lmysqlclient -ldl -lz `pkg-config --libs glib-2.0 openssl`
 
 
 RM= rm -f
