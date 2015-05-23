@@ -1,8 +1,8 @@
 
-CC= gcc -std=gnu99 
+CC= gcc -std=gnu99
 #CFLAGS= -p -g -Wall -Wextra -DWITH_LOG
-CFLAGS= -O0 -g -Wall -Wextra -DWITH_LOG -I../inc -I/usr/include/mysql  `pkg-config --cflags glib-2.0 openssl`
-LDFLAGS= -L../lib -L/usr/lib64/mysql 
+CFLAGS= -O0 -g -Wall -Wextra -DWITH_LOG -I../inc -I/usr/include/mysql `pkg-config --cflags glib-2.0 openssl`
+LDFLAGS= -L../lib -L/usr/lib64/mysql
 LIBS= -lm -levent -lzlog -lmosquitto -lcurl -lyunba -pthread -lmysqlclient -ldl -lz `pkg-config --libs glib-2.0 openssl`
 
 
@@ -30,7 +30,7 @@ server_mc.o: server_mc.c server_mc.h curl.h log.h
 sql.o:sql.c sql.h
 log.o: log.c log.h
 msg_sch_mc.o: msg_sch_mc.c msg_sch_mc.h msg_proc_mc.h msg_mc.h
-msg_proc_mc.o: msg_proc_mc.c msg_proc_mc.h log.h object_mc.h msg_mc.h leancloud_req.h yeelink_req.h 
+msg_proc_mc.o: msg_proc_mc.c msg_proc_mc.h log.h object_mc.h msg_mc.h leancloud_req.h yeelink_req.h
 object_mc.o: object_mc.c object_mc.h
 msg_mc.o: msg_mc.c msg_mc.h
 leancloud_req.o: leancloud_req.c leancloud_req.h leancloud_rsp.h cb_ctx_mc.h object_mc.h log.h curl.h
