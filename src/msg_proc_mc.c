@@ -58,6 +58,7 @@ int mc_login(const void* msg, CB_CTX* ctx)
 			obj->locale = req->locale;
 
 			leancloud_saveDid(obj, ctx);
+			mc_obj_add(obj);
 		}
 
 		ctx->obj = obj;
