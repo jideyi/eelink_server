@@ -52,8 +52,11 @@ int mc_login(const void* msg, CB_CTX* ctx)
 			obj = mc_obj_new();
 
 			memcpy(obj->IMEI, req->IMEI, IMEI_LENGTH);
+			memcpy(obj->DID, req->IMEI, IMEI_LENGTH);
 			obj->language = req->language;
 			obj->locale = req->locale;
+
+			leancloud_saveDid(obj, ctx);
 		}
 
 		ctx->obj = obj;
@@ -211,9 +214,9 @@ int mc_alarm(const void* msg, CB_CTX* ctx)
 	MC_MSG_ALARM_RSP* rsp = alloc_msg(req->header.cmd, rspMsgLength);
 	if (rsp)
 	{
-		set_msg_seq(rsp, get_msg_seq(req));
+		set_msg_seq(&rsp->header, get_msg_seq(req));
 
-		mc_msg_send(rsp, rspMsgLength, ctx);
+		mc_msg_send(&rsp->header, rspMsgLength, ctx);
 	}
 
 	//send the alarm to YUNBA
