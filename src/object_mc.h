@@ -43,7 +43,7 @@ typedef struct
 	char speed;
 	short course;
 	CGI cell;
-	char location;
+	char isGPSlocated;
 	short status;
 	short voltage;
 	short rxl;

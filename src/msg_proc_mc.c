@@ -146,6 +146,7 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 	obj->course = ntohs(req->course);
 	obj->cell = req->cell;
 	obj->timestamp = ntohl(req->timestamp);
+	obj->isGPSlocated = req->location & 0x01;
 
 	yeelink_saveGPS(obj, ctx);
 

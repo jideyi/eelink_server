@@ -78,7 +78,7 @@ void mc_writefile(gpointer key, gpointer value, gpointer user_data)
     if(-1 == fd)
     {
         printf("open file fail\r\n");
-        return -1;
+        return;
     }
 
     OBJ_SAVED objBuf;
