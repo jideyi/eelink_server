@@ -57,8 +57,11 @@ int mc_login(const void* msg, CB_CTX* ctx)
             }
 
 			memcpy(obj->IMEI, req->IMEI, IMEI_LENGTH);
+            memcpy(obj->DID, req->IMEI, IMEI_LENGTH);
 			obj->language = req->language;
 			obj->locale = req->locale;
+            leancloud_saveDid(obj, ctx);
+
             if(mc_obj_add(obj))
             {
                 LOG_ERROR("add IMEI(%s) obj failed", get_IMEI_STRING(req->IMEI));
@@ -157,6 +160,7 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 	obj->course = ntohs(req->course);
 	obj->cell = req->cell;
 	obj->timestamp = ntohl(req->timestamp);
+    obj->location = ntohl(req->location);
 
 	yeelink_saveGPS(obj, ctx);
 
@@ -237,6 +241,8 @@ int mc_alarm(const void* msg, CB_CTX* ctx)
 	cJSON_AddNumberToObject(alarm,"type", req->type);
 
 	cJSON_AddItemToObject(root, "alarm", alarm);
+    cJSON_AddStringToObject(root, "alert", "alarm");
+	cJSON_AddStringToObject(root, "sound", "default");
 
 	yunba_publish(topic, root);
 

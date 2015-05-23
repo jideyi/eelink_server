@@ -69,7 +69,7 @@ if (obj)
 	msg->lng = htonl(obj->lon);
 	msg->course = htons(obj->course);
 	msg->speed = obj->speed;
-	msg->isGPS = 1; 	//TODO:
+	msg->isGPS = ((obj->location)&0x01) ? 1 : 0;
 }
 else
 {
