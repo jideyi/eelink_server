@@ -232,6 +232,9 @@ int mc_alarm(const void* msg, CB_CTX* ctx)
 
 	cJSON_AddItemToObject(root, "alarm", alarm);
 
+	cJSON_AddStringToObject(root, "alert", "FENCE alarm");
+	cJSON_AddStringToObject(root, "sound", "alarm.mp3");
+
 	yunba_publish(topic, root);
 
 	cJSON_Delete(root);

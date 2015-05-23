@@ -35,3 +35,15 @@ bin/
 #eclipse project file
 .project
 .cproject
+
+#source insight project files
+*.IAB
+*.IAD
+*.IMB
+*.IMD
+*.PFI
+*.PO
+*.PR
+*.PRI
+*.PS
+*.WK3
