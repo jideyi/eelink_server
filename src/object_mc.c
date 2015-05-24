@@ -64,15 +64,26 @@ static int mc_readConfig()
     return 0;
 }
 
-gboolean mc_isIMEIEqual(gconstpointer a, gconstpointer b)
+void mc_freeKey(gpointer key)
 {
-	return memcpy(a, b, IMEI_LENGTH);
+    LOG_DEBUG("free key IMEI:%s", get_IMEI_STRING(key));
+    g_free(key);
+}
+
+void mc_freeValue(gpointer value)
+{
+    OBJ_MC* obj = (OBJ_MC*)value;
+
+    LOG_DEBUG("free value IMEI:%s", get_IMEI_STRING(obj->IMEI));
+
+    mosquitto_disconnect(obj->mosq);
+    g_free(obj);
 }
 
 void mc_obj_initial()
 {
     /* create mc hash table */
-    g_table = g_hash_table_new_full(NULL, mc_isIMEIEqual, NULL, free);
+    g_table = g_hash_table_new_full(g_str_hash, g_str_equal, mc_freeKey, mc_freeValue);
 
 	mc_readConfig();
 }
@@ -139,7 +150,7 @@ static void make_pwd(char pwd[])
 
 OBJ_MC* mc_obj_new()
 {
-	OBJ_MC* obj = malloc(sizeof(OBJ_MC));
+	OBJ_MC* obj = g_malloc(sizeof(OBJ_MC));
 	memset(obj, 0, sizeof(OBJ_MC));
 
 	make_pwd(obj->pwd);
@@ -150,7 +161,8 @@ OBJ_MC* mc_obj_new()
 /* add item into mc hash */
 void mc_obj_add(OBJ_MC* obj)
 {
-	gboolean rc = g_hash_table_insert(g_table, obj->IMEI, obj);
+	const char* strIMEI = get_IMEI_STRING(obj->IMEI);
+	gboolean rc = g_hash_table_insert(g_table, g_strdup(strIMEI), obj);
     if(rc != TRUE)
     {
         LOG_WARN("duplicate IMEI(%s)", get_IMEI_STRING(obj->IMEI));
@@ -163,14 +175,14 @@ void mc_obj_del(OBJ_MC* obj)
     OBJ_MC* t_obj = mc_get(obj->IMEI);
     if(NULL != t_obj)
     {
-        g_hash_table_remove(g_table, obj->IMEI);
+        g_hash_table_remove(g_table, get_IMEI_STRING(obj->IMEI));
         free(t_obj);
     }
 }
 
 OBJ_MC* mc_get(char IMEI[])
 {
-    return g_hash_table_lookup(g_table, IMEI);
+    return g_hash_table_lookup(g_table, get_IMEI_STRING(IMEI));
 }
 
 int mc_obj_did_got(OBJ_MC* obj)
