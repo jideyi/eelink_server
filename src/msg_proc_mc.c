@@ -57,17 +57,13 @@ int mc_login(const void* msg, CB_CTX* ctx)
             }
 
 			memcpy(obj->IMEI, req->IMEI, IMEI_LENGTH);
-            memcpy(obj->DID, req->IMEI, IMEI_LENGTH);
+			const char* strIMEI = get_IMEI_STRING(req->IMEI);
+			memcpy(obj->DID, strIMEI, strlen(strIMEI));
 			obj->language = req->language;
 			obj->locale = req->locale;
-            leancloud_saveDid(obj, ctx);
 
-            if(mc_obj_add(obj))
-            {
-                LOG_ERROR("add IMEI(%s) obj failed", get_IMEI_STRING(req->IMEI));
-                free(obj);
-                return -1;
-            }
+			leancloud_saveDid(obj, ctx);
+			mc_obj_add(obj);
 		}
 
 		ctx->obj = obj;
@@ -160,7 +156,7 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 	obj->course = ntohs(req->course);
 	obj->cell = req->cell;
 	obj->timestamp = ntohl(req->timestamp);
-    obj->location = ntohl(req->location);
+	obj->isGPSlocated = req->location & 0x01;
 
 	yeelink_saveGPS(obj, ctx);
 
@@ -225,9 +221,9 @@ int mc_alarm(const void* msg, CB_CTX* ctx)
 	MC_MSG_ALARM_RSP* rsp = alloc_msg(req->header.cmd, rspMsgLength);
 	if (rsp)
 	{
-		set_msg_seq(rsp, get_msg_seq(req));
+		set_msg_seq(&rsp->header, get_msg_seq(req));
 
-		mc_msg_send(rsp, rspMsgLength, ctx);
+		mc_msg_send(&rsp->header, rspMsgLength, ctx);
 	}
 
 	//send the alarm to YUNBA
@@ -243,6 +239,9 @@ int mc_alarm(const void* msg, CB_CTX* ctx)
 	cJSON_AddItemToObject(root, "alarm", alarm);
     cJSON_AddStringToObject(root, "alert", "alarm");
 	cJSON_AddStringToObject(root, "sound", "default");
+
+	cJSON_AddStringToObject(root, "alert", "FENCE alarm");
+	cJSON_AddStringToObject(root, "sound", "alarm.mp3");
 
 	yunba_publish(topic, root);
 

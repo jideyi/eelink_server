@@ -61,20 +61,21 @@ void dev_sendGpsMsg2App(CB_CTX* ctx)
 	OBJ_MC* obj = ctx->obj;
 
 	GPS_MSG* msg = malloc(sizeof(GPS_MSG));
-if (obj)
-{
-	msg->header = htons(0xAA55);
-	msg->timestamp = htonl(obj->timestamp);
-	msg->lat = htonl(obj->lat);
-	msg->lng = htonl(obj->lon);
-	msg->course = htons(obj->course);
-	msg->speed = obj->speed;
-	msg->isGPS = ((obj->location)&0x01) ? 1 : 0;
-}
-else
-{
-	memset(msg, 0, sizeof(GPS_MSG));
-}
+
+	if (obj)
+	{
+		msg->header = htons(0xAA55);
+		msg->timestamp = htonl(obj->timestamp);
+		msg->lat = htonl(obj->lat);
+		msg->lng = htonl(obj->lon);
+		msg->course = htons(obj->course);
+		msg->speed = obj->speed;
+		msg->isGPS = obj->isGPSlocated;
+	}
+	else
+	{
+		memset(msg, 0, sizeof(GPS_MSG));
+	}
 
 	char topic[1024] = {0}; //FIXME: how long should be?
 	snprintf(topic, 1024, "dev2app/%s/e2link/gps", get_IMEI_STRING(obj->IMEI));
@@ -168,7 +169,6 @@ void app_message_callback(struct mosquitto *mosq, void *userdata, const struct m
 	}else{
 		LOG_DEBUG("%s no payload(null)", message->topic);
 	}
-	fflush(stdout);
 
 	LOG_INFO("recieve PUBLISH: %s", message->topic);
 
@@ -210,7 +210,7 @@ void app_disconnect_callback(struct mosquitto *mosq, void *userdata, int rc)
 
 	if(rc)
 	{
-		LOG_ERROR("%s disconnect rc = %d(%s)\n", obj->DID, rc, mosquitto_strerror(rc));
+		LOG_ERROR("%s disconnect rc = %d(%s)\n", get_IMEI_STRING(obj->IMEI), rc, mosquitto_strerror(rc));
 
 		//mosquitto_reconnect(mosq);
 	}

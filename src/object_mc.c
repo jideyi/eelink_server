@@ -29,12 +29,12 @@ typedef struct
     int sensor_id;
 }OBJ_SAVED;
 
-int mc_getConfig()
+static int mc_readConfig()
 {
 	int fd = open(CONFIG_FILE, O_RDONLY);
 	if (-1 == fd)
 	{
-        LOG_ERROR("open file fail");
+        LOG_FATAL("open file for read fail");
         return -1;
 	}
 
@@ -58,13 +58,7 @@ int mc_getConfig()
             obj->sensor_id = objBuf.sensor_id;
 
             /* add to mc hash */
-            if(0 != mc_obj_add(obj))
-            {
-                LOG_ERROR("add IMEI(%s) failed", get_IMEI_STRING(obj->IMEI));
-                free(obj);
-                close(fd);
-                return -1;
-            }
+            mc_obj_add(obj);
 		}
 		else
 		{
@@ -76,22 +70,50 @@ int mc_getConfig()
     return 0;
 }
 
-void mc_writefile(gpointer key, gpointer value, gpointer user_data)
+void mc_freeKey(gpointer key)
 {
-    int fd = *((int*)user_data);
+    LOG_DEBUG("free key IMEI:%s", get_IMEI_STRING(key));
+    g_free(key);
+}
+
+void mc_freeValue(gpointer value)
+{
+    OBJ_MC* obj = (OBJ_MC*)value;
+
+    LOG_DEBUG("free value IMEI:%s", get_IMEI_STRING(obj->IMEI));
+
+    mosquitto_disconnect(obj->mosq);
+    g_free(obj);
+}
+
+void mc_obj_initial()
+{
+    /* create mc hash table */
+    g_table = g_hash_table_new_full(g_str_hash, g_str_equal, mc_freeKey, mc_freeValue);
+
+	mc_readConfig();
+}
+
+void mc_writeConfig(gpointer key, gpointer value, gpointer user_data)
+{
+	int fd = *(int*)user_data;
+    OBJ_MC* obj = (OBJ_MC*)value;
 
     OBJ_SAVED objBuf;
-    OBJ_MC* obj = (OBJ_MC*)value;
     memcpy(objBuf.IMEI, obj->IMEI, IMEI_LENGTH);
 	memcpy(objBuf.DID, obj->DID, MAX_DID_LEN);
 	memcpy(objBuf.PWD, obj->pwd, MAX_PWD_LEN);
     objBuf.device_id = obj->device_id;
     objBuf.sensor_id = obj->sensor_id;
+
 	ssize_t written = write(fd, &objBuf, sizeof(OBJ_SAVED));
 	if (written == -1)
 	{
-		LOG_ERROR("write IMEI(%s) into file failed", get_IMEI_STRING(obj->IMEI));
+		LOG_ERROR("save config error");
+		return;
 	}
+
+	return;
 }
 
 
@@ -100,32 +122,18 @@ int mc_saveConfig()
     int fd = open(CONFIG_FILE, O_RDWR | O_CREAT, S_IRWXU);
     if(-1 == fd)
     {
-        LOG_ERROR("open file fail");
+        LOG_FATAL("open file for write fail");
         return -1;
     }
 
     /* foreach mc hash */
-    g_hash_table_foreach(g_table, mc_writefile, &fd);
+    g_hash_table_foreach(g_table, mc_writeConfig, &fd);
 
     close(fd);
+
     return 0;
 }
 
-void mc_obj_initial()
-{
-    /* create mc hash table */
-    g_table = g_hash_table_new(g_str_hash, g_str_equal);
-
-	if(mc_getConfig())
-	{
-        LOG_ERROR("failed to get config from file");
-    }
-}
-
-void mc_obj_free(gpointer key, gpointer value, gpointer user_data)
-{
-    free(value);
-}
 
 void mc_obj_destruct()
 {
@@ -134,12 +142,10 @@ void mc_obj_destruct()
         LOG_ERROR("failed to save config into file");
     }
 
-    g_hash_table_foreach(g_table, mc_obj_free, NULL);
-
     g_hash_table_destroy(g_table);
 }
 
-void make_pwd(char pwd[])
+static void make_pwd(char pwd[])
 {
     srand(time(NULL));
 
@@ -152,11 +158,7 @@ void make_pwd(char pwd[])
 
 OBJ_MC* mc_obj_new()
 {
-	OBJ_MC* obj = malloc(sizeof(OBJ_MC));
-    if(NULL == obj)
-    {
-        return NULL;
-    }
+	OBJ_MC* obj = g_malloc(sizeof(OBJ_MC));
 	memset(obj, 0, sizeof(OBJ_MC));
 
 	make_pwd(obj->pwd);
@@ -165,13 +167,14 @@ OBJ_MC* mc_obj_new()
 }
 
 /* add item into mc hash */
-int mc_obj_add(OBJ_MC* obj)
+void mc_obj_add(OBJ_MC* obj)
 {
-    if(TRUE == g_hash_table_insert(g_table, obj->IMEI, obj))
+	const char* strIMEI = get_IMEI_STRING(obj->IMEI);
+	gboolean rc = g_hash_table_insert(g_table, g_strdup(strIMEI), obj);
+    if(rc != TRUE)
     {
-        return 0;
+        LOG_WARN("duplicate IMEI(%s)", get_IMEI_STRING(obj->IMEI));
     }
-    return -1;
 }
 
 void mc_obj_del(OBJ_MC* obj)
@@ -179,14 +182,14 @@ void mc_obj_del(OBJ_MC* obj)
     OBJ_MC* t_obj = mc_get(obj->IMEI);
     if(NULL != t_obj)
     {
-        g_hash_table_remove(g_table, obj->IMEI);
+        g_hash_table_remove(g_table, get_IMEI_STRING(obj->IMEI));
         free(t_obj);
     }
 }
 
 OBJ_MC* mc_get(char IMEI[])
 {
-    return g_hash_table_lookup(g_table, IMEI);
+    return g_hash_table_lookup(g_table, get_IMEI_STRING(IMEI));
 }
 
 int mc_obj_did_got(OBJ_MC* obj)
