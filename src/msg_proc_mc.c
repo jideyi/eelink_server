@@ -156,7 +156,7 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 	yeelink_saveGPS(obj, ctx);
 
 	leancloud_saveGPS(obj, ctx);
-	dev_sendGpsMsg2App(ctx);
+	dev_sendGpsMsg2App(obj, ctx);
 
 	return 0;
 }

@@ -56,10 +56,8 @@ void dev_sendRspMsg2App(short cmd, short seq, const void* data, const int len, C
 }
 
 
-void dev_sendGpsMsg2App(CB_CTX* ctx)
+void dev_sendGpsMsg2App(OBJ_MC* obj, void* ctx)
 {
-	OBJ_MC* obj = ctx->obj;
-
 	GPS_MSG* msg = malloc(sizeof(GPS_MSG));
 	if (obj)
 	{
@@ -130,7 +128,7 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 		app_sendRawData2mc(pMsg->data, ntohs(pMsg->length) - sizeof(pMsg->seq), ctx, session);
 		break;
 	case CMD_TEST_GPS:
-		dev_sendGpsMsg2App(ctx);
+		dev_sendGpsMsg2App(ctx->obj, ctx);
 		break;
 	case CMD_TEST_ALARM:
 	{
