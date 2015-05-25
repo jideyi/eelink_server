@@ -49,8 +49,8 @@ int main(int argc, char **argv)
     {
     	return rc;
     }
-
-    mc_obj_initial();
+    /* not initial here, initial when connection start */
+    //mc_obj_initial();
 
     /* initial mysql */
     if(mysql_initial())

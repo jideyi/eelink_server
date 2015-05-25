@@ -131,6 +131,9 @@ static void accept_conn_cb(struct evconnlistener *listener,
 	cb_ctx->obj = 0;
 	cb_ctx->pSendMsg = send_msg;
 
+    /* initial OBJ here */
+    mc_obj_initial(cb_ctx);
+
 	//TODO: set the water-mark and timeout
 	bufferevent_setcb(bev, read_cb, write_cb, event_cb, cb_ctx);
 

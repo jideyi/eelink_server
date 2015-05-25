@@ -29,7 +29,7 @@ typedef struct
     int sensor_id;
 }OBJ_SAVED;
 
-void mc_getConfig(void* arg)
+void mc_readConfig(void* arg)
 {
     int ret;
 
@@ -60,12 +60,12 @@ void mc_freeValue(gpointer value)
     g_free(obj);
 }
 
-void mc_obj_initial()
+void mc_obj_initial(void* arg)
 {
     /* create mc hash table */
     g_table = g_hash_table_new_full(g_str_hash, g_str_equal, mc_freeKey, mc_freeValue);
 
-	mc_readConfig();
+	mc_readConfig(arg);
 }
 
 void mc_writeConfig(gpointer key, gpointer value, gpointer user_data)
