@@ -9,6 +9,7 @@
 #include "object_mc.h"
 #include "cJSON.h"
 #include "log.h"
+#include "macro_mc.h"
 
 size_t leancloud_onSaveGPS(void *contents, size_t size, size_t nmemb, void *userp)
 {
@@ -34,4 +35,26 @@ size_t leancloud_onSaveGPS(void *contents, size_t size, size_t nmemb, void *user
 	free(rsp);
 
 	return size * nmemb;
+}
+
+
+
+size_t leancloud_onRev(void *contents, size_t size, size_t nmemb, void *userp)
+{
+    char *rsp;
+    size_t revsize = size * nmemb;
+    CB_CTX *ctx = userp;
+
+    rsp = malloc(revsize + 1);
+    memcpy(rsp, contents, revsize);
+    rsp[revsize] = 0;
+
+    ctx->RevBuffer = realloc(ctx->RevBuffer, ctx->Revsize + revsize +1);
+    memcpy(ctx->RevBuffer + ctx->Revsize, rsp, revsize + 1);
+    ctx->Revsize += revsize;
+
+    LOG_DEBUG("receiving leancloud");
+
+    free(rsp);
+    return revsize;
 }

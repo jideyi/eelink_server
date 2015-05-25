@@ -14,5 +14,4 @@ void leancloud_saveGPS(OBJ_MC* obj, void* ctx);
 
 void leancloud_saveDid(OBJ_MC* obj, void* arg);
 
-
 #endif /* SRC_LEANCLOUD_REQ_H_ */

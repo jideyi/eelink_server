@@ -33,6 +33,8 @@ typedef struct
 	CURL *curlOfYeelink;
 	void* obj;
 	msg_send pSendMsg;
+    size_t Revsize;
+    char* RevBuffer;
 }CB_CTX;
 
 #endif /* SRC_CB_CTX_MC_H_ */

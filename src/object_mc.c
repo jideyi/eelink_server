@@ -29,45 +29,19 @@ typedef struct
     int sensor_id;
 }OBJ_SAVED;
 
-static int mc_readConfig()
+void mc_getConfig(void* arg)
 {
-	int fd = open(CONFIG_FILE, O_RDONLY);
-	if (-1 == fd)
-	{
-        LOG_FATAL("open file for read fail");
-        return -1;
-	}
+    int ret;
 
-	while(1)
-	{
-		OBJ_SAVED objBuf;
-		ssize_t readlen = read(fd, &objBuf, sizeof(OBJ_SAVED));
-		if (sizeof(OBJ_SAVED) == readlen)
-		{
-			OBJ_MC* obj = mc_obj_new();
-            if(NULL == obj)
-            {
-                LOG_ERROR("malloc IMEI(%s) obj failed", get_IMEI_STRING(obj->IMEI));
-                close(fd);
-                return -1;
-            }
-			memcpy(obj->IMEI, objBuf.IMEI, IMEI_LENGTH);
-			memcpy(obj->DID, objBuf.DID, MAX_DID_LEN);
-			memcpy(obj->pwd, objBuf.PWD, MAX_PWD_LEN);
-            obj->device_id = objBuf.device_id;
-            obj->sensor_id = objBuf.sensor_id;
-
-            /* add to mc hash */
-            mc_obj_add(obj);
-		}
-		else
-		{
-			break;
-		}
-	};
-
-    close(fd);
-    return 0;
+    ret = leancloud_getOBJ(arg);
+    if (ret)
+    {
+        LOG_ERROR("get config failed");
+    }
+    else
+    {
+        LOG_DEBUG("get config succeed");
+    }
 }
 
 void mc_freeKey(gpointer key)
@@ -208,6 +182,25 @@ const char* get_IMEI_STRING(const unsigned char* IMEI)
 	strIMEI[IMEI_LENGTH * 2] = 0;
 
 	return strIMEI;
+}
+
+const unsigned char* get_IMEI(const char* strIMEI)
+{
+    static unsigned char IMEI[IMEI_LENGTH];
+    unsigned char temp[2] = {0};
+    int temp_a, temp_b;
+
+    for (int i = 0; i < IMEI_LENGTH * 2; )
+    {
+        temp[0] = strIMEI[i];
+        temp_a = atoi(temp);
+        temp[0] = strIMEI[i + 1];
+        temp_b = atoi(temp);
+        IMEI[i / 2] = temp_a * 16 + temp_b;
+        i += 2;
+    }
+
+    return IMEI;
 }
 
 const char* getMacFromIMEI(const unsigned char* IMEI)

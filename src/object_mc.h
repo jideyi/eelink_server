@@ -1,5 +1,5 @@
 /*
- * mc_object.h
+ * object_mc.h
  *
  *  Created on: Apr 19, 2015
  *      Author: jk
@@ -76,6 +76,7 @@ void mc_obj_destruct();
 int isYeelinkDeviceCreated(OBJ_MC* obj);
 int mc_obj_did_got(OBJ_MC* obj);
 const char* get_IMEI_STRING(const unsigned char* IMEI);
+const unsigned char* get_IMEI(const char* strIMEI);
 const char* getMacFromIMEI(const unsigned char* IMEI);
 
 #endif /* SRC_OBJECT_MC_ */

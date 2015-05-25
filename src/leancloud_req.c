@@ -49,6 +49,140 @@ static void leancloud_post(CURL *curl, const char* class, const void* data, int 
     //cleanup when the connect is down, see server_mc.c
 }
 
+static int leancloud_get(CURL *curl, const char* class)
+{
+    char url[256] = {0};
+
+    snprintf(url, 256, "%s/classes/%s", LEANCLOUD_URL_BASE, class);
+
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+
+    curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
+
+    CURLcode res = curl_easy_perform(curl);
+    if(CURLE_OK != res)
+    {
+        LOG_ERROR("curl_easy_perform() failed: %s",curl_easy_strerror(res));
+        return -1;
+    }
+    return 0;
+}
+
+int leancloud_onGetOBJ(char *RevBuffer)
+{
+    int iSize, iCnt, ret = 0;;
+    cJSON *root, *pRoot, *pSub, *pSubSub;
+    OBJ_MC* obj;
+
+	root = cJSON_Parse(RevBuffer);
+    if (!root)
+    {
+        LOG_ERROR("error parse respone:%s", RevBuffer);
+        ret = -1;
+    }
+    else
+    {
+        /* get the array from array name */
+        pRoot = cJSON_GetObjectItem(root, "results");
+        if(!pRoot)
+        {
+            LOG_ERROR("error get json array");
+            ret = -1;
+        }
+        else
+        {
+            iSize = cJSON_GetArraySize(pRoot);
+            for(iCnt = 0; iCnt < iSize; iCnt++)
+            {
+                pSub = cJSON_GetArrayItem(pRoot, iCnt);
+                if(NULL == pSub)
+                {
+                    LOG_ERROR("error GetArrayItem");
+                    ret = -1;
+                    break;
+                }
+
+                pSubSub = cJSON_GetObjectItem(pSub, "IMEI");
+                if (NULL == pSubSub)
+                {
+                    LOG_ERROR("get IMEI failed");
+                    ret = -1;
+                    break;
+                }
+
+                obj = mc_obj_new();
+                if (NULL == obj)
+                {
+                    LOG_ERROR("new a obj failed");
+                    ret = -1;
+                    break;
+                }
+        		memcpy(obj->IMEI, get_IMEI(pSubSub->valuestring), IMEI_LENGTH);
+
+                pSubSub = cJSON_GetObjectItem(pSub, "did");
+                if (NULL == pSubSub)
+                {
+                    LOG_ERROR("get did failed");
+                    ret = -1;
+                    free(obj);
+                    break;
+                }
+        		memcpy(obj->DID, pSubSub->valuestring, MAX_DID_LEN);
+
+                pSubSub = cJSON_GetObjectItem(pSub, "password");
+                if (NULL == pSubSub)
+                {
+                    LOG_ERROR("get password failed");
+                    ret = -1;
+                    free(obj);
+                    break;
+                }
+        		memcpy(obj->pwd, pSubSub->valuestring, MAX_PWD_LEN);
+
+                /* add to mc hash */
+                if(0 != mc_obj_add(obj))
+                {
+                    LOG_ERROR("add IMEI(%s) failed", get_IMEI_STRING(obj->IMEI));
+                    ret = -1;
+                    free(obj);
+                    break;
+                }
+            }
+        }
+    }
+
+    cJSON_Delete(root);
+    free(RevBuffer);
+    return ret;
+}
+
+
+/* get obj config */
+int leancloud_getOBJ(void *arg)
+{
+    int ret;
+    CB_CTX* ctx = arg;
+    CURL *curl = ctx->curlOfLeancloud;
+    ctx->Revsize = 0;
+    ctx->RevBuffer = malloc(1);
+
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, leancloud_onRev);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, ctx);
+    ret = leancloud_get(curl, "DID");
+    if (ret)
+    {
+        LOG_ERROR("get config failed");
+        return -1;
+    }
+
+    ret = leancloud_onGetOBJ(ctx->RevBuffer);
+    if (ret)
+    {
+        return -1;
+    }
+    return 0;
+}
+
 void leancloud_saveGPS(OBJ_MC* obj, void* arg)
 {
 	CB_CTX* ctx = arg;
