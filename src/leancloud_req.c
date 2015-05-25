@@ -140,13 +140,7 @@ int leancloud_onGetOBJ(char *RevBuffer)
         		memcpy(obj->pwd, pSubSub->valuestring, MAX_PWD_LEN);
 
                 /* add to mc hash */
-                if(0 != mc_obj_add(obj))
-                {
-                    LOG_ERROR("add IMEI(%s) failed", get_IMEI_STRING(obj->IMEI));
-                    ret = -1;
-                    free(obj);
-                    break;
-                }
+                mc_obj_add(obj);
             }
         }
     }
