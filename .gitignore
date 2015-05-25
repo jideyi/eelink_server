@@ -29,12 +29,19 @@
 *.hex
 bin/
 
+# Log
+log
+
+# data
+*.dat
+
 # Debug files
 *.dSYM/
 
 #eclipse project file
 .project
 .cproject
+.settings
 
 #source insight project files
 *.IAB
