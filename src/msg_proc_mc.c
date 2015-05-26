@@ -52,8 +52,13 @@ int mc_login(const void* msg, CB_CTX* ctx)
 			obj = mc_obj_new();
 
 			memcpy(obj->IMEI, req->IMEI, IMEI_LENGTH);
+			const char* strIMEI = get_IMEI_STRING(req->IMEI);
+			memcpy(obj->DID, strIMEI, strlen(strIMEI));
 			obj->language = req->language;
 			obj->locale = req->locale;
+
+			leancloud_saveDid(obj, ctx);
+			mc_obj_add(obj);
 		}
 
 		ctx->obj = obj;
@@ -135,7 +140,8 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 		&& obj->speed == req->speed
 		&& obj->course == ntohs(req->course))
 	{
-		LOG_INFO("No need to upload data");
+		LOG_INFO("No need to save data to leancloud");
+		dev_sendGpsMsg2App(obj, ctx);
 		return 0;
 	}
 
@@ -146,11 +152,14 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 	obj->course = ntohs(req->course);
 	obj->cell = req->cell;
 	obj->timestamp = ntohl(req->timestamp);
+	obj->isGPSlocated = req->location & 0x01;
 
-	yeelink_saveGPS(obj, ctx);
+	dev_sendGpsMsg2App(obj, ctx);
+
+	//stop upload data to yeelink
+	//yeelink_saveGPS(obj, ctx);
 
 	leancloud_saveGPS(obj, ctx);
-	dev_sendGpsMsg2App(ctx);
 
 	return 0;
 }
@@ -210,9 +219,9 @@ int mc_alarm(const void* msg, CB_CTX* ctx)
 	MC_MSG_ALARM_RSP* rsp = alloc_msg(req->header.cmd, rspMsgLength);
 	if (rsp)
 	{
-		set_msg_seq(rsp, get_msg_seq(req));
+		set_msg_seq(&rsp->header, get_msg_seq(req));
 
-		mc_msg_send(rsp, rspMsgLength, ctx);
+		mc_msg_send(&rsp->header, rspMsgLength, ctx);
 	}
 
 	//send the alarm to YUNBA
@@ -226,6 +235,9 @@ int mc_alarm(const void* msg, CB_CTX* ctx)
 	cJSON_AddNumberToObject(alarm,"type", req->type);
 
 	cJSON_AddItemToObject(root, "alarm", alarm);
+
+	cJSON_AddStringToObject(root, "alert", "FENCE alarm");
+	cJSON_AddStringToObject(root, "sound", "alarm.mp3");
 
 	yunba_publish(topic, root);
 
@@ -247,19 +259,34 @@ int mc_status(const void* msg, CB_CTX* ctx)
 
 	LOG_INFO("MC(%s) Status %x", get_IMEI_STRING(obj->IMEI), req->status);
 
-
-	obj->lat = ntohl(req->lat);
-	obj->lon = ntohl(req->lon);
-	obj->speed = req->speed;
-	obj->course = ntohs(req->course);
-	obj->cell = req->cell;
-
-
 	MC_MSG_STATUS_RSP* rsp = alloc_rspMsg(msg);
 	if (rsp)
 	{
 		mc_msg_send(rsp, sizeof(MC_MSG_PING_RSP), ctx);
 	}
+
+	if (obj->lat == ntohl(req->lat)
+		&& obj->lon == ntohl(req->lon)
+		&& obj->speed == req->speed
+		&& obj->course == ntohs(req->course))
+	{
+		LOG_INFO("No need to save data to leancloud");
+		dev_sendGpsMsg2App(obj, ctx);
+		return 0;
+	}
+
+	//update local object
+	obj->lat = ntohl(req->lat);
+	obj->lon = ntohl(req->lon);
+	obj->speed = req->speed;
+	obj->course = ntohs(req->course);
+	obj->cell = req->cell;
+	obj->timestamp = ntohl(req->timestamp);
+	obj->isGPSlocated = req->location & 0x01;
+
+	dev_sendGpsMsg2App(obj, ctx);
+	leancloud_saveGPS(obj, ctx);
+
 	return 0;
 }
 

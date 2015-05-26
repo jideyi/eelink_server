@@ -29,9 +29,28 @@
 *.hex
 bin/
 
+# Log
+log
+
+# data
+*.dat
+
 # Debug files
 *.dSYM/
 
 #eclipse project file
 .project
 .cproject
+.settings
+
+#source insight project files
+*.IAB
+*.IAD
+*.IMB
+*.IMD
+*.PFI
+*.PO
+*.PR
+*.PRI
+*.PS
+*.WK3

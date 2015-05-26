@@ -43,7 +43,7 @@ typedef struct
 	char speed;
 	short course;
 	CGI cell;
-	char location;
+	char isGPSlocated;
 	short status;
 	short voltage;
 	short rxl;
@@ -69,8 +69,9 @@ typedef struct
 
 void mc_obj_initial();
 OBJ_MC* mc_obj_new();
-void mc_obj_del(OBJ_MC* obj);
+void mc_obj_add(OBJ_MC* obj);
 OBJ_MC* mc_get(char IMEI[]);
+void mc_obj_destruct();
 
 int isYeelinkDeviceCreated(OBJ_MC* obj);
 int mc_obj_did_got(OBJ_MC* obj);

@@ -9,6 +9,7 @@
 #include "server_mc.h"
 #include "curl.h"
 #include "yunba_push.h"
+#include "object_mc.h"
 
 struct event_base *base = NULL;
 
