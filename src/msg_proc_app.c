@@ -17,13 +17,13 @@
 #include "cJSON.h"
 
 
-void app_sendRawData2mc(const void* msg, int len, CB_CTX* ctx, int session)
+void app_sendRawData2mc(const void* msg, int len, CB_CTX* ctx, int token)
 {
 	MC_MSG_OPERATOR_REQ* req = alloc_msg(CMD_OPERAT, sizeof(MC_MSG_OPERATOR_REQ) + len);
 	if (req)
 	{
 		req->type = 0x01;	//FIXME: use enum instead
-		req->token = session;
+		req->token = token;
 		memcpy(req->data, msg, len);
 		mc_msg_send(req, sizeof(MC_MSG_OPERATOR_REQ) + len, ctx);
 	}
@@ -82,11 +82,20 @@ void dev_sendGpsMsg2App(OBJ_MC* obj, void* ctx)
 
 int app_handleApp2devMsg(const char* topic, const char* data, const int len, void* userdata)
 {
-	CB_CTX* ctx = userdata;
-	OBJ_MC* obj = ctx->obj;
-
 	LOG_HEX(data, len);
 
+	CB_CTX* ctx = userdata;
+	if(!ctx)
+	{
+		LOG_FATAL("internal error");
+		return -1;
+	}
+	OBJ_MC* obj = ctx->obj;
+	if (!obj)
+	{
+		LOG_FATAL("internal error");
+		return -1;
+	}
 	//check the IMEI
 	const char* pStart = &topic[strlen("app2dev/")];
 	const char* pEnd = strstr(pStart, "/");
@@ -111,21 +120,21 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 		return -1;
 	}
 
-	int session = obj->curSession++ % MAX_SESSION;
-	obj->session[session].cmd = ntohs(pMsg->cmd);
-	obj->session[session].seq = ntohs(pMsg->seq);
+	short cmd = ntohs(pMsg->cmd);
+	short seq = ntohs(pMsg->seq);
+	int token = cmd << 16 + seq;
 
-	switch (ntohs(pMsg->cmd))
+	switch (cmd)
 	{
 	case CMD_WILD:
 		LOG_INFO("receive app wildcard cmd");
-		app_sendRawData2mc(pMsg->data, ntohs(pMsg->length) - sizeof(pMsg->seq), ctx, session);
+		app_sendRawData2mc(pMsg->data, ntohs(pMsg->length) - sizeof(pMsg->seq), ctx, token);
 		break;
 	case CMD_FENCE_SET:
 	case CMD_FENCE_DEL:
 	case CMD_FENCE_GET:
 		LOG_INFO("receive app CMD:%#x", ntohs(pMsg->cmd));
-		app_sendRawData2mc(pMsg->data, ntohs(pMsg->length) - sizeof(pMsg->seq), ctx, session);
+		app_sendRawData2mc(pMsg->data, ntohs(pMsg->length) - sizeof(pMsg->seq), ctx, token);
 		break;
 	case CMD_TEST_GPS:
 		dev_sendGpsMsg2App(ctx->obj, ctx);

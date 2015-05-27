@@ -60,11 +60,6 @@ typedef struct
     int sensor_id;
 
 	struct mosquitto *mosq;
-
-	//FIXME: this is not proper, just for temmp use
-#define MAX_SESSION 10
-	APP_SESSION session[MAX_SESSION];
-	int curSession;
 }OBJ_MC;
 
 void mc_obj_initial();

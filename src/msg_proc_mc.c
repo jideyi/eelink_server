@@ -294,7 +294,9 @@ int mc_operator(const void* msg, CB_CTX* ctx)
 	{
 		int session = req->token;
 
-		dev_sendRspMsg2App(obj->session[session].cmd, obj->session[session].seq, req->data, sizeof(MC_MSG_HEADER) + ntohs(req->header.length) - sizeof(MC_MSG_OPERATOR_RSP), ctx);
+		short cmd = (session & 0xff00) >> 16;
+		short seq = session & 0xff;
+		dev_sendRspMsg2App(cmd, seq, req->data, sizeof(MC_MSG_HEADER) + ntohs(req->header.length) - sizeof(MC_MSG_OPERATOR_RSP), ctx);
 		break;
 	}
 
