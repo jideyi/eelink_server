@@ -272,7 +272,20 @@ int mc_status(const void* msg, CB_CTX* ctx)
 		return -1;
 	}
 
-	LOG_INFO("MC(%s) Status %x", get_IMEI_STRING(obj->IMEI), ntohs(req->status));
+	switch (req->type)
+	{
+	case ACC_ON:
+		LOG_INFO("STATUS: acc on");
+		break;
+	case ACC_OFF:
+		LOG_INFO("STATUS: acc off");
+		break;
+	case DIGTAL:
+		LOG_INFO("STATUS: digital port status changed");
+		break;
+	default:
+		break;
+	}
 
 	MC_MSG_STATUS_RSP* rsp = alloc_rspMsg(msg);
 	if (rsp)
