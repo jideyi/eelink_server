@@ -52,7 +52,10 @@ int mc_login(const void* msg, CB_CTX* ctx)
 
 		if (!obj)
 		{
-			LOG_DEBUG("the first time of IMEI(%s)'s login", get_IMEI_STRING(req->IMEI));
+			LOG_INFO("the first time of IMEI(%s)'s login: language(%s), locale(%d)",
+					get_IMEI_STRING(req->IMEI),
+					req->language ? "EN" : "CN",
+					req->locale / 4);
 
 			obj = mc_obj_new();
 
@@ -123,8 +126,12 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 		return -1;
 	}
 
-	LOG_INFO("GPS: lat(%f), lon(%f), speed(%d), course(%d)",
-			ntohl(req->lat) / 30000.0 / 60.0, ntohl(req->lon) / 30000.0 / 60.0, req->speed, ntohs(req->course));
+	LOG_INFO("GPS: lat(%f), lng(%f), speed(%d), course(%d), GPS(%s)",
+			ntohl(req->lat) / 30000.0 / 60.0,
+			ntohl(req->lon) / 30000.0 / 60.0,
+			req->speed,
+			ntohs(req->course),
+			req->location & 0x01 ? "YES" : "NO");
 
 	OBJ_MC* obj = ctx->obj;
 	if (!obj)
@@ -247,6 +254,7 @@ int mc_alarm(const void* msg, CB_CTX* ctx)
 	cJSON_AddStringToObject(root, "sound", "alarm.mp3");
 
 	yunba_publish(topic, root);
+	LOG_INFO("send alarm: %s", topic);
 
 	cJSON_Delete(root);
 
@@ -264,7 +272,7 @@ int mc_status(const void* msg, CB_CTX* ctx)
 		return -1;
 	}
 
-	LOG_INFO("MC(%s) Status %x", get_IMEI_STRING(obj->IMEI), req->status);
+	LOG_INFO("MC(%s) Status %x", get_IMEI_STRING(obj->IMEI), ntohs(req->status));
 
 	MC_MSG_STATUS_RSP* rsp = alloc_rspMsg(msg);
 	if (rsp)
@@ -278,6 +286,8 @@ int mc_status(const void* msg, CB_CTX* ctx)
 int mc_sms(const void* msg, CB_CTX* ctx)
 {
 	const MC_MSG_SMS_REQ* req = msg;
+
+	LOG_INFO("GPS located:%s", (req->location & 1) ? "YES" : "NO");
 
 	MC_MSG_SMS_RSP* rsp = alloc_rspMsg(msg);
 	if (rsp)
@@ -313,7 +323,7 @@ int mc_operator(const void* msg, CB_CTX* ctx)
 		break;
 	}
 
-	LOG_INFO("MC operator response %s", req->data);
+	LOG_INFO("MC operator response: %s", req->data);
 
 	return 0; //TODO:
 }
