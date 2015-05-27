@@ -1,6 +1,7 @@
 #include <event2/listener.h>
 #include <event2/bufferevent.h>
 #include <event2/buffer.h>
+#include <mosquitto.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -72,6 +73,16 @@ static void event_cb(struct bufferevent *bev, short events, void *arg)
 		cleanupLeancloudCurlHandle(ctx->curlOfLeancloud);
 		cleanupYeelinkCurlHandle(ctx->curlOfYeelink);
 		ctx->pSendMsg = NULL;
+
+	    if (ctx->mosq)
+		{
+			int rc = mosquitto_disconnect(ctx->mosq);
+			if (rc != MOSQ_ERR_SUCCESS)
+			{
+				LOG_ERROR("mosq disconnect error:rc=%d", rc);
+			}
+		}
+
 		free(ctx);
 
 		bufferevent_free(bev);
@@ -94,6 +105,15 @@ static void event_cb(struct bufferevent *bev, short events, void *arg)
 		cleanupLeancloudCurlHandle(ctx->curlOfLeancloud);
 		cleanupYeelinkCurlHandle(ctx->curlOfYeelink);
 		ctx->pSendMsg = NULL;
+
+	    if (ctx->mosq)
+	    {
+			int rc = mosquitto_disconnect(ctx->mosq);
+			if (rc != MOSQ_ERR_SUCCESS)
+			{
+				LOG_ERROR("mosq disconnect error:rc=%d", rc);
+			}
+	    }
 
 		free(ctx);
 
@@ -130,7 +150,8 @@ static void accept_conn_cb(struct evconnlistener *listener,
 	cb_ctx->bev = bev;
 	cb_ctx->curlOfLeancloud = initCurlHandleOfLeancloud();
 	cb_ctx->curlOfYeelink = initCurlHandleOfYeelink();
-	cb_ctx->obj = 0;
+	cb_ctx->mosq = NULL;
+	cb_ctx->obj = NULL;
 	cb_ctx->pSendMsg = send_msg;
 
 	//TODO: set the water-mark and timeout

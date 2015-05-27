@@ -83,7 +83,7 @@ int mc_login(const void* msg, CB_CTX* ctx)
 		//TODO: LOG_ERROR
 	}
 
-	if (!obj->mosq)
+	if (!ctx->mosq)
 	{
 		struct mosquitto* mosq = mqtt_login(get_IMEI_STRING(req->IMEI), "127.0.0.1", 1883,
 				app_log_callback,
@@ -96,7 +96,7 @@ int mc_login(const void* msg, CB_CTX* ctx)
 		if (mosq)
 		{
 			LOG_INFO("%s connect to MQTT successfully", get_IMEI_STRING(req->IMEI));
-			obj->mosq = mosq;
+			ctx->mosq = mosq;
 		}
 		else
 		{

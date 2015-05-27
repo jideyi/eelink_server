@@ -58,8 +58,6 @@ typedef struct
 
     int device_id;
     int sensor_id;
-
-	struct mosquitto *mosq;
 }OBJ_MC;
 
 void mc_obj_initial();

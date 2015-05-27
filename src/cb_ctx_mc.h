@@ -31,6 +31,8 @@ typedef struct
 	struct bufferevent* bev;
 	CURL *curlOfLeancloud;
 	CURL *curlOfYeelink;
+	struct mosquitto *mosq;
+
 	void* obj;
 	msg_send pSendMsg;
 }CB_CTX;
