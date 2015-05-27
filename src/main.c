@@ -97,20 +97,27 @@ int main(int argc, char **argv)
     LOG_INFO("start the event loop");
     event_base_dispatch(base);
 
-    //cleanup all resouce
-    mc_obj_destruct();
-    evconnlistener_free(listener);
-    event_base_free(base);
-    yunba_disconnect();
-	mosquitto_lib_cleanup();
-    curl_global_cleanup();
+
+//    sk_free(SSL_COMP_get_compression_methods());
+    LOG_INFO("stop mc server...");
+
+    //cleanup all resource
     clcanupLeancloudHeader();
     cleanupYeelinkHeader();
 
-//    sk_free(SSL_COMP_get_compression_methods());
-    LOG_INFO("stop mc server sucessfully");
+    curl_global_cleanup();
+
+    yunba_disconnect();
+
+    mosquitto_lib_cleanup();
+
+    evconnlistener_free(listener);
+
+    mc_obj_destruct();
 
     zlog_fini();
+
+    event_base_free(base);
 
     return 0;
 }
