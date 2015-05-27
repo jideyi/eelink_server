@@ -52,7 +52,7 @@ static void app_sendRawData2App(const char* topic, const char* data, const int l
 	int rc = mosquitto_publish(ctx->mosq, NULL, topic, len, data, 0, false);	//TODO: determine the parameter
 	if (rc != MOSQ_ERR_SUCCESS)
 	{
-		LOG_ERROR("mosq pub error: rc = %d", rc);
+		LOG_ERROR("mosq pub error: rc = %d(%s)", rc, mosquitto_strerror(rc));
 	}
 }
 
