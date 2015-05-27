@@ -66,7 +66,7 @@ static int mc_readConfig()
 
 void mc_freeKey(gpointer key)
 {
-    LOG_DEBUG("free key IMEI:%s", get_IMEI_STRING(key));
+    LOG_DEBUG("free key IMEI:%s", key);
     g_free(key);
 }
 
@@ -166,6 +166,10 @@ void mc_obj_add(OBJ_MC* obj)
     if(rc != TRUE)
     {
         LOG_WARN("duplicate IMEI(%s)", get_IMEI_STRING(obj->IMEI));
+    }
+    else
+    {
+    	LOG_INFO("obj %s added", strIMEI);
     }
 }
 
