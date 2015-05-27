@@ -77,10 +77,13 @@ void mc_freeValue(gpointer value)
 
     LOG_DEBUG("free value IMEI:%s", get_IMEI_STRING(obj->IMEI));
 
-    int rc = mosquitto_disconnect(obj->mosq);
-    if (rc != MOSQ_ERR_SUCCESS)
+    if (obj->mosq)
     {
-    	LOG_ERROR("mosq disconnect error:rc=%d", rc);
+		int rc = mosquitto_disconnect(obj->mosq);
+		if (rc != MOSQ_ERR_SUCCESS)
+		{
+			LOG_ERROR("mosq disconnect error:rc=%d", rc);
+		}
     }
     g_free(obj);
 }
@@ -203,6 +206,13 @@ int mc_obj_did_got(OBJ_MC* obj)
 const char* get_IMEI_STRING(const unsigned char* IMEI)
 {
 	static char strIMEI[IMEI_LENGTH * 2 + 1];
+	strcpy(strIMEI, "unknown imei");
+
+	if (!IMEI)
+	{
+		return strIMEI;
+	}
+
 	for (int i = 0; i < IMEI_LENGTH; i++)
 	{
 		sprintf(strIMEI + i * 2, "%02x", IMEI[i]);

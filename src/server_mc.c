@@ -68,8 +68,7 @@ static void event_cb(struct bufferevent *bev, short events, void *arg)
 	}
 	else if (events & BEV_EVENT_TIMEOUT)
 	{
-//		LOG_INFO("%s connection timeout!", get_IMEI_STRING(ctx->obj));
-		LOG_INFO("connection timeout!");
+		LOG_INFO("mc(%s) connection timeout!", get_IMEI_STRING(ctx->obj));
 		cleanupLeancloudCurlHandle(ctx->curlOfLeancloud);
 		cleanupYeelinkCurlHandle(ctx->curlOfYeelink);
 		free(ctx);
@@ -89,7 +88,7 @@ static void event_cb(struct bufferevent *bev, short events, void *arg)
 //			 }
 			LOG_ERROR("BEV_EVENT_ERROR:%s", evutil_socket_error_to_string(EVUTIL_SOCKET_ERROR()));
 		}
-		LOG_ERROR("Closing the connection");
+		LOG_INFO("Closing the connection");
 		//TODO: cleanup the mosquitto
 		cleanupLeancloudCurlHandle(ctx->curlOfLeancloud);
 		cleanupYeelinkCurlHandle(ctx->curlOfYeelink);
