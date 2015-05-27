@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <glib.h>
+#include <mosquitto.h>
 
 #include "log.h"
 #include "object_mc.h"
@@ -76,7 +77,11 @@ void mc_freeValue(gpointer value)
 
     LOG_DEBUG("free value IMEI:%s", get_IMEI_STRING(obj->IMEI));
 
-    mosquitto_disconnect(obj->mosq);
+    int rc = mosquitto_disconnect(obj->mosq);
+    if (rc != MOSQ_ERR_SUCCESS)
+    {
+    	LOG_ERROR("mosq disconnect error:rc=%d", rc);
+    }
     g_free(obj);
 }
 
