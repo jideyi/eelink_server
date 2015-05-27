@@ -149,9 +149,23 @@ void yunba_disconnect()
     MQTTClient_destroy(&client);
 }
 
-void yunba_publish(char* topicName, cJSON* data)
+void yunba_publish(char* topicName, void* payload, int payloadLen)
 {
-	int rc = MQTTClient_publish_json(client, topicName, data);
+//	int rc = MQTTClient_publish_json(client, topicName, data);
+	cJSON *apn_json, *aps;
+	cJSON *Opt = cJSON_CreateObject();
+	cJSON_AddStringToObject(Opt,"time_to_live",  "120");
+	cJSON_AddStringToObject(Opt,"time_delay",  "1100");
+#if 0
+	cJSON_AddStringToObject(Opt,"apn_json",  "{aps:{\"alert\":\"hello\"}}");
+#else
+	cJSON_AddItemToObject(Opt,"apn_json",  apn_json=cJSON_CreateObject());
+	cJSON_AddItemToObject(apn_json,"aps",  aps=cJSON_CreateObject());
+	cJSON_AddStringToObject(aps,"alert",  "FENCE alarm");
+	cJSON_AddStringToObject(aps,"sound",  "alarm.mp3");
+#endif
+
+	int rc = MQTTClient_publish2(client, topicName, payloadLen, payload, Opt);
 	if (rc != MQTTCLIENT_SUCCESS)
 	{
 		LOG_ERROR("yunba push error:rc = %d", rc);

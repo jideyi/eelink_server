@@ -14,6 +14,6 @@
 
 int yunba_connect();
 void yunba_disconnect();
-void yunba_publish(char* topicName, cJSON* data);
+void yunba_publish(char* topicName, void* payload, int payloadLen);
 
 #endif /* SRC_YUNBA_PUSH_H_ */

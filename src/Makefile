@@ -3,7 +3,7 @@ CC= gcc -std=gnu99
 #CFLAGS= -p -g -Wall -Wextra -DWITH_LOG -I../inc `pkg-config --cflags glib-2.0`
 CFLAGS= -O2 -Wall -Wextra -DWITH_LOG -I../inc `pkg-config --cflags glib-2.0`
 LDFLAGS= -L../lib
-LIBS= -lm -levent -lzlog -lmosquitto -lcurl -lyunba `pkg-config --libs glib-2.0`
+LIBS= -lm -levent -lzlog -lmosquitto -lcurl -lpaho-mqtt3c `pkg-config --libs glib-2.0`
 
 
 RM= rm -f
