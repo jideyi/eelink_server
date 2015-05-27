@@ -11,7 +11,7 @@
 #include "log.h"
 #include "curl.h"
 #include "server_mc.h"
-
+#include "object_mc.h"
 #include "msg_sch_mc.h"
 
 #ifdef WITH_CATEGORY
@@ -70,8 +70,7 @@ static void event_cb(struct bufferevent *bev, short events, void *arg)
 	else if (events & BEV_EVENT_TIMEOUT)
 	{
 		LOG_INFO("mc(%s) connection timeout!", get_IMEI_STRING(ctx->obj));
-		cleanupLeancloudCurlHandle(ctx->curlOfLeancloud);
-		cleanupYeelinkCurlHandle(ctx->curlOfYeelink);
+
 		ctx->pSendMsg = NULL;
 
 	    if (ctx->mosq)
@@ -100,10 +99,9 @@ static void event_cb(struct bufferevent *bev, short events, void *arg)
 //			 }
 			LOG_ERROR("BEV_EVENT_ERROR:%s", evutil_socket_error_to_string(EVUTIL_SOCKET_ERROR()));
 		}
-		LOG_INFO("Closing the connection %s", get_IMEI_STRING(ctx->obj));
-		//TODO: cleanup the mosquitto
-		cleanupLeancloudCurlHandle(ctx->curlOfLeancloud);
-		cleanupYeelinkCurlHandle(ctx->curlOfYeelink);
+//		LOG_INFO("Closing the connection %s", get_IMEI_STRING(ctx->obj));
+		//FIXME: the above will coredump, why?
+		LOG_INFO("Closing the connection");
 		ctx->pSendMsg = NULL;
 
 	    if (ctx->mosq)
@@ -148,8 +146,7 @@ static void accept_conn_cb(struct evconnlistener *listener,
 	CB_CTX* cb_ctx = malloc(sizeof(CB_CTX));
 	cb_ctx->base = base;
 	cb_ctx->bev = bev;
-	cb_ctx->curlOfLeancloud = initCurlHandleOfLeancloud();
-	cb_ctx->curlOfYeelink = initCurlHandleOfYeelink();
+
 	cb_ctx->mosq = NULL;
 	cb_ctx->obj = NULL;
 	cb_ctx->pSendMsg = send_msg;

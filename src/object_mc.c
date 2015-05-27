@@ -84,7 +84,9 @@ void mc_obj_initial()
     /* create mc hash table */
     g_table = g_hash_table_new_full(g_str_hash, g_str_equal, mc_freeKey, mc_freeValue);
 
-	mc_readConfig();
+	//mc_readConfig();
+
+	leancloud_getOBJ();
 }
 
 void mc_writeConfig(gpointer key, gpointer value, gpointer user_data)
@@ -211,6 +213,25 @@ const char* get_IMEI_STRING(const unsigned char* IMEI)
 	strIMEI[IMEI_LENGTH * 2] = 0;
 
 	return strIMEI;
+}
+
+const unsigned char* get_IMEI(const char* strIMEI)
+{
+    static unsigned char IMEI[IMEI_LENGTH];
+    unsigned char temp[2] = {0};
+    int temp_a, temp_b;
+
+    for (int i = 0; i < IMEI_LENGTH * 2; )
+    {
+        temp[0] = strIMEI[i];
+        temp_a = atoi(temp);
+        temp[0] = strIMEI[i + 1];
+        temp_b = atoi(temp);
+        IMEI[i / 2] = temp_a * 16 + temp_b;
+        i += 2;
+    }
+
+    return IMEI;
 }
 
 const char* getMacFromIMEI(const unsigned char* IMEI)

@@ -9,7 +9,7 @@ LIBS= -lm -levent -lzlog -lmosquitto -lcurl -lyunba `pkg-config --libs glib-2.0`
 RM= rm -f
 
 
-OBJS= main.o server_mc.o log.o msg_sch_mc.o msg_proc_mc.o object_mc.o msg_mc.o leancloud_req.o leancloud_rsp.o cJSON.o yeelink_req.o yeelink_rsp.o curl.o mqtt.o msg_proc_app.o yunba_push.o
+OBJS= main.o server_mc.o log.o msg_sch_mc.o msg_proc_mc.o object_mc.o msg_mc.o leancloud_req.o leancloud_rsp.o cJSON.o yeelink_req.o yeelink_rsp.o curl.o mqtt.o msg_proc_app.o yunba_push.o env.o
 TARGET= ../bin/server
 
 all: $(TARGET)

@@ -244,7 +244,7 @@ void app_unsubscribe(struct mosquitto *mosq, void *userdata)
 	mosquitto_unsubscribe(mosq, NULL, topic);
 }
 
-void app_message_callback(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message)
+void app_message_callback(struct mosquitto *mosq __attribute__((unused)), void *userdata, const struct mosquitto_message *message)
 {
 	if(message->payloadlen){
 		LOG_DEBUG("%s %p", message->topic, message->payload);
@@ -281,7 +281,7 @@ void app_connect_callback(struct mosquitto *mosq, void *userdata, int result)
 	}
 }
 
-void app_disconnect_callback(struct mosquitto *mosq, void *userdata, int rc)
+void app_disconnect_callback(struct mosquitto *mosq __attribute__((unused)), void *userdata, int rc)
 {
 	CB_CTX* ctx = userdata;
 	OBJ_MC* obj = ctx->obj;
@@ -299,7 +299,7 @@ void app_disconnect_callback(struct mosquitto *mosq, void *userdata, int rc)
 }
 
 
-void app_subscribe_callback(struct mosquitto *mosq, void *userdata, int mid, int qos_count, const int *granted_qos)
+void app_subscribe_callback(struct mosquitto *mosq __attribute__((unused)), void *userdata __attribute__((unused)), int mid, int qos_count, const int *granted_qos)
 {
 	LOG_DEBUG("Subscribed (mid: %d): %d", mid, granted_qos[0]);
 	for(int i=1; i<qos_count; i++){
@@ -307,7 +307,7 @@ void app_subscribe_callback(struct mosquitto *mosq, void *userdata, int mid, int
 	}
 }
 
-void app_log_callback(struct mosquitto *mosq, void *userdata, int level, const char *str)
+void app_log_callback(struct mosquitto *mosq __attribute__((unused)), void *userdata __attribute__((unused)), int level, const char *str)
 {
 	switch (level)
 	{
@@ -336,8 +336,7 @@ void app_log_callback(struct mosquitto *mosq, void *userdata, int level, const c
 
 }
 
-void app_publish_callback(struct mosquitto *mosq, void *userdata, int mid)
+void app_publish_callback(struct mosquitto *mosq __attribute__((unused)), void *userdata __attribute__((unused)), int mid __attribute__((unused)))
 {
-	OBJ_MC* obj = userdata;
 
 }

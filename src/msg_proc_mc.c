@@ -62,7 +62,7 @@ int mc_login(const void* msg, CB_CTX* ctx)
 			obj->language = req->language;
 			obj->locale = req->locale;
 
-			leancloud_saveDid(obj, ctx);
+			leancloud_saveDid(obj);
 			mc_obj_add(obj);
 		}
 
@@ -166,7 +166,7 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 	//stop upload data to yeelink
 	//yeelink_saveGPS(obj, ctx);
 
-	leancloud_saveGPS(obj, ctx);
+	leancloud_saveGPS(obj);
 
 	return 0;
 }

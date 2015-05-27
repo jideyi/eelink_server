@@ -1,8 +1,8 @@
 #include <event2/event.h>
 #include <mosquitto.h>
 #include <curl/curl.h>
- #include <signal.h>
- #include <openssl/ssl.h>
+#include <signal.h>
+#include <openssl/ssl.h>
 
 #include "log.h"
 #include "version.h"
@@ -10,8 +10,10 @@
 #include "curl.h"
 #include "yunba_push.h"
 #include "object_mc.h"
+#include "env.h"
 
 struct event_base *base = NULL;
+
 
 static void sig_usr(int signo)
 {
@@ -60,20 +62,6 @@ int main(int argc, char **argv)
     	return rc;
     }
 
-    mc_obj_initial();
-
-    struct evconnlistener* listener = server_mc_start(base, port);
-    if (listener)
-    {
-    	LOG_INFO("start mc server sucessfully at port:%d", port);
-    }
-    else
-    {
-    	LOG_FATAL("start mc server failed at port:%d", port);
-    	return 2;
-    }
-    
-
     if (signal(SIGINT, sig_usr) == SIG_ERR)
     {
         LOG_ERROR("Can't catch SIGINT");
@@ -103,6 +91,20 @@ int main(int argc, char **argv)
     	LOG_FATAL("curl lib initial failed:%d", rc);
     }
 
+    env_initial();
+
+    mc_obj_initial();
+
+    struct evconnlistener* listener = server_mc_start(base, port);
+    if (listener)
+    {
+    	LOG_INFO("start mc server sucessfully at port:%d", port);
+    }
+    else
+    {
+    	LOG_FATAL("start mc server failed at port:%d", port);
+    	return 2;
+    }
 
     //start the event loop
     LOG_INFO("start the event loop");
@@ -111,24 +113,21 @@ int main(int argc, char **argv)
 
 //    sk_free(SSL_COMP_get_compression_methods());
     LOG_INFO("stop mc server...");
+    evconnlistener_free(listener);
+    event_base_free(base);
 
-    //cleanup all resource
-    clcanupLeancloudHeader();
-    cleanupYeelinkHeader();
+    mc_obj_destruct();
 
+    env_cleanup();
     curl_global_cleanup();
 
     yunba_disconnect();
 
     mosquitto_lib_cleanup();
 
-    evconnlistener_free(listener);
-
-    mc_obj_destruct();
 
     zlog_fini();
 
-    event_base_free(base);
 
     return 0;
 }

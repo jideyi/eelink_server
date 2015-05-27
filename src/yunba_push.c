@@ -15,7 +15,7 @@ MQTTClient client;
 MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
 
 
-static int extendedCmdArrive(void *context, EXTED_CMD cmd, int status, int ret_string_len, char *ret_string)
+static int extendedCmdArrive(void *context __attribute__((unused)), EXTED_CMD cmd, int status, int ret_string_len, char *ret_string)
 {
 	char buf[1024];
 	memset(buf, 0, 1024);
@@ -25,7 +25,7 @@ static int extendedCmdArrive(void *context, EXTED_CMD cmd, int status, int ret_s
 	return 0;
 }
 
-static int messageArrived(void* context, char* topicName, int topicLen, MQTTClient_message* m)
+static int messageArrived(void* context __attribute__((unused)), char* topicName, int topicLen, MQTTClient_message* m)
 {
 	char action[30];
 	char alias[60];
@@ -58,7 +58,7 @@ static int messageArrived(void* context, char* topicName, int topicLen, MQTTClie
 	return 1;
 }
 
-static void connectionLost(void *context, char *cause)
+static void connectionLost(void *context __attribute__((unused)), char *cause)
 {
 	LOG_WARN("yunba connect lost:%s", cause);
 	if (MQTTClient_connect(client, &conn_opts) != MQTTCLIENT_SUCCESS)

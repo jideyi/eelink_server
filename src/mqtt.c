@@ -75,7 +75,7 @@ struct mosquitto* mqtt_login(const char* id, const char* host, int port,
 	}
 	else
 	{
-		LOG_INFO("MC:%s connect to %s:%d successfully");
+		LOG_INFO("MC:%s connect to %s:%d successfully", id, host, port);
 	}
 
     mosquitto_loop_start(mosq);
