@@ -11,16 +11,22 @@
 
 ENVIRONMENT env = {
 		.curl_leancloud = NULL,
-		.curl_yeelink = NULL
+		.curl_yeelink = NULL,
+		.chunk = {NULL, 0},
 };
+
+void env_resetChunk(MemroyBuf* chunk)
+{
+	chunk->memory = realloc(chunk->memory, 1);
+	chunk->size = 0;
+}
 
 void env_initial()
 {
     env.curl_leancloud = initCurlHandleOfLeancloud();
     env.curl_yeelink = initCurlHandleOfYeelink();
 
-    env.chunk.memory = malloc(1);
-    env.chunk.size = 0;
+    env_resetChunk(&(env.chunk));
 }
 
 void env_cleanup()

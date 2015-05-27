@@ -191,7 +191,8 @@ int leancloud_getOBJ()
     }
 
     ret = leancloud_onGetOBJ(chunk);
-    free(chunk->memory);
+
+    env_resetChunk(chunk);
 
     if (ret)
     {

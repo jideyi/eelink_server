@@ -29,4 +29,6 @@ void env_cleanup();
 
 ENVIRONMENT* env_get();
 
+void env_resetChunk(MemroyBuf* chunk);
+
 #endif /* SRC_ENV_H_ */
