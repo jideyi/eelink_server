@@ -85,7 +85,7 @@ void app_sendRspMsg2App(short cmd, short seq, const void* data, const int len, C
 	memcpy(msg->data, data, len);
 
 	char topic[IMEI_LENGTH * 2 + 20] = {0};
-	snprintf(topic, 1024, "dev2app/%s/e2link/cmd", get_IMEI_STRING(obj->IMEI));
+	snprintf(topic, IMEI_LENGTH * 2 + 20, "dev2app/%s/e2link/cmd", get_IMEI_STRING(obj->IMEI));
 
 	app_sendRawData2App(topic, msg, sizeof(APP_MSG) + len, ctx);
 }
@@ -117,7 +117,7 @@ void app_sendGpsMsg2App(OBJ_MC* obj, void* ctx)
 
 
 	char topic[IMEI_LENGTH * 2 + 20] = {0};
-	snprintf(topic, 1024, "dev2app/%s/e2link/gps", get_IMEI_STRING(obj->IMEI));
+	snprintf(topic, IMEI_LENGTH * 2 + 20, "dev2app/%s/e2link/gps", get_IMEI_STRING(obj->IMEI));
 
 	app_sendRawData2App(topic, msg, sizeof(GPS_MSG), ctx);
 }
@@ -170,7 +170,7 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 
 	short cmd = ntohs(pMsg->cmd);
 	short seq = ntohs(pMsg->seq);
-	int token = cmd << 16 + seq;
+	int token = (cmd << 16) + seq;
 
 	switch (cmd)
 	{
@@ -246,11 +246,11 @@ void app_connect_callback(struct mosquitto *mosq, void *userdata, int result)
 
 	if(!result)
 	{
-		char topic[100];	//TODO: fix magic number
+		char topic[IMEI_LENGTH * 2 + 20];
 		memset(topic, 0, sizeof(topic));
 		/* Subscribe to broker information topics on successful connect. */
 
-		snprintf(topic, 100, "app2dev/%s/e2link/cmd", get_IMEI_STRING(obj->IMEI));
+		snprintf(topic, IMEI_LENGTH * 2 + 20, "app2dev/%s/e2link/cmd", get_IMEI_STRING(obj->IMEI));
 		mosquitto_subscribe(mosq, NULL, topic, 0);
 	}
 	else
@@ -272,7 +272,8 @@ void app_disconnect_callback(struct mosquitto *mosq, void *userdata, int rc)
 	}
 	else
 	{
-		LOG_ERROR("client disconnect\n");	}
+		LOG_INFO("client %s disconnect successfully", get_IMEI_STRING(obj->IMEI));
+	}
 }
 
 
