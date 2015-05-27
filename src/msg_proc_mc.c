@@ -141,6 +141,8 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 		&& obj->course == ntohs(req->course))
 	{
 		LOG_INFO("No need to save data to leancloud");
+	        obj->timestamp = ntohl(req->timestamp);
+		obj->isGPSlocated = req->location & 0x01;
 		dev_sendGpsMsg2App(obj, ctx);
 		return 0;
 	}
@@ -264,28 +266,6 @@ int mc_status(const void* msg, CB_CTX* ctx)
 	{
 		mc_msg_send(rsp, sizeof(MC_MSG_PING_RSP), ctx);
 	}
-
-	if (obj->lat == ntohl(req->lat)
-		&& obj->lon == ntohl(req->lon)
-		&& obj->speed == req->speed
-		&& obj->course == ntohs(req->course))
-	{
-		LOG_INFO("No need to save data to leancloud");
-		dev_sendGpsMsg2App(obj, ctx);
-		return 0;
-	}
-
-	//update local object
-	obj->lat = ntohl(req->lat);
-	obj->lon = ntohl(req->lon);
-	obj->speed = req->speed;
-	obj->course = ntohs(req->course);
-	obj->cell = req->cell;
-	obj->timestamp = ntohl(req->timestamp);
-	obj->isGPSlocated = req->location & 0x01;
-
-	dev_sendGpsMsg2App(obj, ctx);
-	leancloud_saveGPS(obj, ctx);
 
 	return 0;
 }
