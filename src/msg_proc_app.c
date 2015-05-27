@@ -17,7 +17,7 @@
 #include "cJSON.h"
 
 
-void app_sendRawData2mc(const void* msg, int len, CB_CTX* ctx, int token)
+static void app_sendRawData2mc(const void* msg, int len, CB_CTX* ctx, int token)
 {
 	MC_MSG_OPERATOR_REQ* req = alloc_msg(CMD_OPERAT, sizeof(MC_MSG_OPERATOR_REQ) + len);
 	if (req)
@@ -27,57 +27,99 @@ void app_sendRawData2mc(const void* msg, int len, CB_CTX* ctx, int token)
 		memcpy(req->data, msg, len);
 		mc_msg_send(req, sizeof(MC_MSG_OPERATOR_REQ) + len, ctx);
 	}
+	else
+	{
+		LOG_FATAL("insufficient memory");
+	}
 }
 
-void dev_sendRawData2App(const char* topic, const char* data, const int len, CB_CTX* ctx)
+static void app_sendRawData2App(const char* topic, const char* data, const int len, CB_CTX* ctx)
 {
+	if (!ctx)
+	{
+		LOG_FATAL("internal error: ctx null");
+		return;
+	}
+
 	OBJ_MC* obj = ctx->obj;
+	if (!obj)
+	{
+		LOG_FATAL("internal error: obj null");
+		return;
+	}
 
 	LOG_HEX(data, len);
-	mosquitto_publish(obj->mosq, NULL, topic, len, data, 0, false);	//TODO: determine the parameter
-
+	int rc = mosquitto_publish(obj->mosq, NULL, topic, len, data, 0, false);	//TODO: determine the parameter
+	if (rc != MOSQ_ERR_SUCCESS)
+	{
+		LOG_ERROR("mosq pub error: rc = %d", rc);
+	}
 }
 
-void dev_sendRspMsg2App(short cmd, short seq, const void* data, const int len, CB_CTX* ctx)
+void app_sendRspMsg2App(short cmd, short seq, const void* data, const int len, CB_CTX* ctx)
 {
+	if (!ctx)
+	{
+		LOG_FATAL("internal error: ctx null");
+		return;
+	}
+
 	OBJ_MC* obj = ctx->obj;
+	if (!obj)
+	{
+		LOG_FATAL("internal error: obj null");
+		return;
+	}
 
 	APP_MSG* msg = malloc(sizeof(APP_MSG) + len);
+	if (!msg)
+	{
+		LOG_FATAL("insufficient memory");
+		return;
+	}
+
 	msg->header = htons(0xAA55);
 	msg->cmd = htons(cmd);
 	msg->length = htons(len + sizeof(msg->seq));
 	msg->seq = htons(seq);
 	memcpy(msg->data, data, len);
 
-	char topic[1024] = {0}; //FIXME: how long should be?
+	char topic[IMEI_LENGTH * 2 + 20] = {0};
 	snprintf(topic, 1024, "dev2app/%s/e2link/cmd", get_IMEI_STRING(obj->IMEI));
 
-	dev_sendRawData2App(topic, msg, sizeof(APP_MSG) + len, ctx);
+	app_sendRawData2App(topic, msg, sizeof(APP_MSG) + len, ctx);
 }
 
 
-void dev_sendGpsMsg2App(OBJ_MC* obj, void* ctx)
+void app_sendGpsMsg2App(OBJ_MC* obj, void* ctx)
 {
-	GPS_MSG* msg = malloc(sizeof(GPS_MSG));
-	if (obj)
+	if (!obj)
 	{
-		msg->header = htons(0xAA55);
-		msg->timestamp = htonl(obj->timestamp);
-		msg->lat = htonl(obj->lat);
-		msg->lng = htonl(obj->lon);
-		msg->course = htons(obj->course);
-		msg->speed = obj->speed;
-		msg->isGPS = obj->isGPSlocated;
-	}
-	else
-	{
-		memset(msg, 0, sizeof(GPS_MSG));
+		LOG_ERROR("obj null, no data to upload");
+		return;
 	}
 
-	char topic[1024] = {0}; //FIXME: how long should be?
+	GPS_MSG* msg = malloc(sizeof(GPS_MSG));
+	if (!msg)
+	{
+		LOG_FATAL("insufficient memory");
+		return;
+	}
+
+
+	msg->header = htons(0xAA55);
+	msg->timestamp = htonl(obj->timestamp);
+	msg->lat = htonl(obj->lat);
+	msg->lng = htonl(obj->lon);
+	msg->course = htons(obj->course);
+	msg->speed = obj->speed;
+	msg->isGPS = obj->isGPSlocated;
+
+
+	char topic[IMEI_LENGTH * 2 + 20] = {0};
 	snprintf(topic, 1024, "dev2app/%s/e2link/gps", get_IMEI_STRING(obj->IMEI));
 
-	dev_sendRawData2App(topic, msg, sizeof(GPS_MSG), ctx);
+	app_sendRawData2App(topic, msg, sizeof(GPS_MSG), ctx);
 }
 
 int app_handleApp2devMsg(const char* topic, const char* data, const int len, void* userdata)
@@ -87,13 +129,13 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 	CB_CTX* ctx = userdata;
 	if(!ctx)
 	{
-		LOG_FATAL("internal error");
+		LOG_FATAL("internal error: ctx null");
 		return -1;
 	}
 	OBJ_MC* obj = ctx->obj;
 	if (!obj)
 	{
-		LOG_FATAL("internal error");
+		LOG_FATAL("internal error: obj null");
 		return -1;
 	}
 	//check the IMEI
@@ -101,11 +143,17 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 	const char* pEnd = strstr(pStart, "/");
 	if (strncmp(get_IMEI_STRING(obj->IMEI), pStart, pEnd - pStart) != 0)
 	{
-		LOG_ERROR("App2dev msg IMEI error");
+		LOG_ERROR("App2dev msg IMEI not match");
 		return -1;
 	}
 
 	APP_MSG* pMsg = data;
+	if (!pMsg)
+	{
+		LOG_FATAL("internal error: msg null");
+		return -1;
+	}
+
 	//check the msg header
 	if (ntohs(pMsg->header) != 0xAA55)
 	{
@@ -116,7 +164,7 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 	//check the msg length
 	if ((ntohs(pMsg->length) + sizeof(short) * 3) != len)
 	{
-		LOG_ERROR("App2dev msg format error");
+		LOG_ERROR("App2dev msg length error");
 		return -1;
 	}
 
@@ -137,7 +185,7 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 		app_sendRawData2mc(pMsg->data, ntohs(pMsg->length) - sizeof(pMsg->seq), ctx, token);
 		break;
 	case CMD_TEST_GPS:
-		dev_sendGpsMsg2App(ctx->obj, ctx);
+		app_sendGpsMsg2App(ctx->obj, ctx);
 		break;
 	case CMD_TEST_ALARM:
 	{
@@ -152,6 +200,8 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 		cJSON_AddNumberToObject(alarm,"type", 0x81);
 
 		cJSON_AddItemToObject(root, "alarm", alarm);
+		cJSON_AddStringToObject(root, "alert", "TEST alarm");
+		cJSON_AddStringToObject(root, "sound", "alarm.mp3");
 
 		yunba_publish(topic, root);
 		LOG_INFO("send test alarm to app");

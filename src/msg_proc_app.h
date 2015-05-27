@@ -15,7 +15,8 @@ void app_subscribe_callback(struct mosquitto *mosq, void *userdata, int mid, int
 void app_log_callback(struct mosquitto *mosq, void *userdata, int level, const char *str);
 void app_publish_callback(struct mosquitto *mosq, void *userdata, int mid);
 
-void dev_sendGpsMsg2App(OBJ_MC* obj, void* ctx);
+void app_sendGpsMsg2App(OBJ_MC* obj, void* ctx);
+void app_sendRspMsg2App(short cmd, short seq, const void* data, const int len, CB_CTX* ctx);
 
 
 #endif /* SRC_MSG_PROC_APP_H_ */

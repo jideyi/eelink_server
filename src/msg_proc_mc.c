@@ -25,7 +25,7 @@ int mc_msg_send(void* msg, size_t len, CB_CTX* ctx)
 
 	pfn(ctx->bev, msg, len);
 
-	LOG_DEBUG("send response msg of cmd(%d), length(%ld)", get_msg_cmd(msg), len);
+	LOG_DEBUG("send msg(cmd=%d), length(%ld)", get_msg_cmd(msg), len);
 	LOG_HEX(msg, len);
 
 	free(msg);
@@ -143,7 +143,7 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 		LOG_INFO("No need to save data to leancloud");
 	        obj->timestamp = ntohl(req->timestamp);
 		obj->isGPSlocated = req->location & 0x01;
-		dev_sendGpsMsg2App(obj, ctx);
+		app_sendGpsMsg2App(obj, ctx);
 		return 0;
 	}
 
@@ -156,7 +156,7 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 	obj->timestamp = ntohl(req->timestamp);
 	obj->isGPSlocated = req->location & 0x01;
 
-	dev_sendGpsMsg2App(obj, ctx);
+	app_sendGpsMsg2App(obj, ctx);
 
 	//stop upload data to yeelink
 	//yeelink_saveGPS(obj, ctx);
@@ -296,7 +296,7 @@ int mc_operator(const void* msg, CB_CTX* ctx)
 
 		short cmd = (session & 0xff00) >> 16;
 		short seq = session & 0xff;
-		dev_sendRspMsg2App(cmd, seq, req->data, sizeof(MC_MSG_HEADER) + ntohs(req->header.length) - sizeof(MC_MSG_OPERATOR_RSP), ctx);
+		app_sendRspMsg2App(cmd, seq, req->data, sizeof(MC_MSG_HEADER) + ntohs(req->header.length) - sizeof(MC_MSG_OPERATOR_RSP), ctx);
 		break;
 	}
 
