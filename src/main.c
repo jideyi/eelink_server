@@ -30,8 +30,19 @@ static void sig_usr(int signo)
 
 int main(int argc, char **argv)
 {
+    int port = 9876;
 
     setvbuf(stdout, NULL, _IONBF, 0);
+
+    if (argc == 2)
+    {
+    	char* strPort = argv[1];
+    	int num = atoi(strPort);
+    	if (num)
+    	{
+    		port = num;
+    	}
+    }
 
     printf("Electrombile Server %s, with event %s, mosquitto %d, curl %s\n",
     		VERSION_STR,
@@ -51,14 +62,14 @@ int main(int argc, char **argv)
 
     mc_obj_initial();
 
-    struct evconnlistener* listener = server_mc_start(base);
+    struct evconnlistener* listener = server_mc_start(base, port);
     if (listener)
     {
-    	LOG_INFO("start mc server sucessfully");
+    	LOG_INFO("start mc server sucessfully at port:%d", port);
     }
     else
     {
-    	LOG_FATAL("start mc server failed");
+    	LOG_FATAL("start mc server failed at port:%d", port);
     	return 2;
     }
     

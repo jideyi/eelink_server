@@ -154,11 +154,10 @@ static void accept_error_cb(struct evconnlistener *listener, void *ctx)
     event_base_loopexit(base, NULL);
 }
 
-struct evconnlistener* server_mc_start(struct event_base* base)
+struct evconnlistener* server_mc_start(struct event_base* base, int port)
 {
     struct evconnlistener *listener;
     struct sockaddr_in sin;
-    int port = 9876;
 
     /* Clear the sockaddr before using it, in case there are extra
      * platform-specific fields that can mess us up. */
