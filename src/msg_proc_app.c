@@ -218,6 +218,32 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 	return 0;
 }
 
+void app_subscribe(struct mosquitto *mosq, void *userdata)
+{
+	CB_CTX* ctx = userdata;
+	OBJ_MC* obj = ctx->obj;
+
+
+	char topic[IMEI_LENGTH * 2 + 20];
+	memset(topic, 0, sizeof(topic));
+
+	snprintf(topic, IMEI_LENGTH * 2 + 20, "app2dev/%s/e2link/cmd", get_IMEI_STRING(obj->IMEI));
+	mosquitto_subscribe(mosq, NULL, topic, 0);
+}
+
+void app_unsubscribe(struct mosquitto *mosq, void *userdata)
+{
+	CB_CTX* ctx = userdata;
+	OBJ_MC* obj = ctx->obj;
+
+
+	char topic[IMEI_LENGTH * 2 + 20];
+	memset(topic, 0, sizeof(topic));
+
+	snprintf(topic, IMEI_LENGTH * 2 + 20, "app2dev/%s/e2link/cmd", get_IMEI_STRING(obj->IMEI));
+	mosquitto_unsubscribe(mosq, NULL, topic);
+}
+
 void app_message_callback(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message)
 {
 	if(message->payloadlen){
@@ -246,12 +272,7 @@ void app_connect_callback(struct mosquitto *mosq, void *userdata, int result)
 
 	if(!result)
 	{
-		char topic[IMEI_LENGTH * 2 + 20];
-		memset(topic, 0, sizeof(topic));
-		/* Subscribe to broker information topics on successful connect. */
-
-		snprintf(topic, IMEI_LENGTH * 2 + 20, "app2dev/%s/e2link/cmd", get_IMEI_STRING(obj->IMEI));
-		mosquitto_subscribe(mosq, NULL, topic, 0);
+		app_subscribe(mosq, userdata);
 	}
 	else
 	{
@@ -259,6 +280,7 @@ void app_connect_callback(struct mosquitto *mosq, void *userdata, int result)
 		LOG_ERROR("Connect failed: result = %s", mosquitto_connack_string(result));
 	}
 }
+
 void app_disconnect_callback(struct mosquitto *mosq, void *userdata, int rc)
 {
 	CB_CTX* ctx = userdata;

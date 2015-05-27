@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <mosquitto.h>
+
+#include "object_mc.h"
 #include "log.h"
 
 #ifdef WITH_CATEGORY
@@ -59,10 +61,10 @@ struct mosquitto* mqtt_login(const char* id, const char* host, int port,
 	mosquitto_publish_callback_set(mosq, on_publish);
 	mosquitto_reconnect_delay_set(mosq, 10, 120, false);
 
-//	OBJ_MC* obj = ctx;
+	OBJ_MC* obj = ctx;
 //
-//	LOG_DEBUG("set MQTT username:%s, password:%s", obj->DID, obj->pwd);
-//	mosquitto_username_pw_set(mosq, obj->DID, obj->pwd);
+	LOG_DEBUG("set MQTT username:%s, password:%s", obj->DID, obj->pwd);
+	mosquitto_username_pw_set(mosq, obj->DID, obj->pwd);
 
 	int rc = mosquitto_connect(mosq, host, port, keepalive);
 	if(rc != MOSQ_ERR_SUCCESS)

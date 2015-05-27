@@ -22,6 +22,11 @@
 int mc_msg_send(void* msg, size_t len, CB_CTX* ctx)
 {
 	msg_send pfn = ctx->pSendMsg;
+	if (!pfn)
+	{
+		LOG_ERROR("device offline");
+		return -1;
+	}
 
 	pfn(ctx->bev, msg, len);
 
