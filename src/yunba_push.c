@@ -156,14 +156,18 @@ void yunba_publish(char* topicName, void* payload, int payloadLen)
 	cJSON *Opt = cJSON_CreateObject();
 	cJSON_AddStringToObject(Opt,"time_to_live",  "120");
 	cJSON_AddStringToObject(Opt,"time_delay",  "1100");
-#if 0
-	cJSON_AddStringToObject(Opt,"apn_json",  "{aps:{\"alert\":\"hello\"}}");
+#if 1
+	cJSON_AddStringToObject(Opt,"apn_json", "{\"aps\":{\"alert\":\"FENCE alarm\", \"sound\":\"alarm.mp3\"}}"); 
 #else
+	//云巴的坑，不支持以下的写法
 	cJSON_AddItemToObject(Opt,"apn_json",  apn_json=cJSON_CreateObject());
 	cJSON_AddItemToObject(apn_json,"aps",  aps=cJSON_CreateObject());
 	cJSON_AddStringToObject(aps,"alert",  "FENCE alarm");
 	cJSON_AddStringToObject(aps,"sound",  "alarm.mp3");
 #endif
+        char* json = cJSON_PrintUnformatted(Opt);
+	LOG_DEBUG("push to yunba: topic=%s,payload=%s, len=%d,opt=%s", topicName, payload, payloadLen, json);
+        free(json);
 
 	int rc = MQTTClient_publish2(client, topicName, payloadLen, payload, Opt);
 	if (rc != MQTTCLIENT_SUCCESS)
