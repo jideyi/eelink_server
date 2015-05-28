@@ -171,6 +171,7 @@ void yunba_publish(char* topicName, void* payload, int payloadLen)
 		LOG_ERROR("yunba push error:rc = %d", rc);
 		return;
 	}
+	cJSON_Delete(Opt);
 
 	return;
 }
