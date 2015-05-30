@@ -79,6 +79,14 @@ MC_MSG_HEADER* alloc_rspMsg(const MC_MSG_HEADER* pMsg)
 		msgLen = sizeof(MC_MSG_PING_RSP);
 		break;
 
+	case CMD_STATUS:
+		msgLen = sizeof(MC_MSG_STATUS_RSP);
+		break;
+
+	case CMD_SMS:
+		msgLen = sizeof(MC_MSG_SMS_RSP); 	//FIXME: without any sms contents
+		break;
+
 	default:
 		return NULL;
 	}
