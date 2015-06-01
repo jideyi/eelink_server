@@ -80,6 +80,8 @@ static void event_cb(struct bufferevent *bev, short events, void *arg)
 			{
 				LOG_ERROR("mosq disconnect error:rc=%d", rc);
 			}
+			mosquitto_destroy(ctx->mosq);
+
 		}
 
 		free(ctx);
