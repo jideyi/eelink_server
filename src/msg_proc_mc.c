@@ -16,6 +16,7 @@
 #include "msg_proc_app.h"
 #include "cJSON.h"
 #include "yunba_push.h"
+#include "time.h"
 #include "log.h"
 
 
@@ -88,7 +89,9 @@ int mc_login(const void* msg, CB_CTX* ctx)
 
 	if (!ctx->mosq)
 	{
-		struct mosquitto* mosq = mqtt_login(get_IMEI_STRING(req->IMEI), "127.0.0.1", 1883,
+		char mqtt_id[32];
+		sprintf(mqtt_id,"%s_%x",get_IMEI_STRING(req->IMEI),rand()%100);
+		struct mosquitto* mosq = mqtt_login(mqtt_id, "127.0.0.1", 1883,
 				app_log_callback,
 				app_connect_callback,
 				app_disconnect_callback,
@@ -98,12 +101,12 @@ int mc_login(const void* msg, CB_CTX* ctx)
 				ctx);
 		if (mosq)
 		{
-			LOG_INFO("%s connect to MQTT successfully", get_IMEI_STRING(req->IMEI));
+			LOG_INFO("%s connect to MQTT successfully", mqtt_id);
 			ctx->mosq = mosq;
 		}
 		else
 		{
-			LOG_ERROR("%s failed to connect to MQTT", get_IMEI_STRING(req->IMEI));
+			LOG_ERROR("%s failed to connect to MQTT", mqtt_id);
 		}
 	}
 
@@ -146,7 +149,16 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 		yeelink_createDevice(obj, ctx);
 	}
 
-
+	if(!(req->location&0x01) && obj->lon != 0)
+	{
+		LOG_INFO("no gps,only send to app");
+		time_t rawtime;
+		time ( &rawtime );
+		obj->timestamp = rawtime;
+		obj->isGPSlocated = 0;
+		app_sendGpsMsg2App(obj, ctx);
+		return 0;
+	}
 	if (obj->lat == ntohl(req->lat)
 		&& obj->lon == ntohl(req->lon)
 		&& obj->speed == req->speed
@@ -228,15 +240,16 @@ int mc_alarm(const void* msg, CB_CTX* ctx)
 	obj->speed = req->speed;
 	obj->course = ntohs(req->course);
 	obj->cell = req->cell;
-
-	size_t rspMsgLength = sizeof(MC_MSG_ALARM_RSP) + 0; //TODO: currently without any message content
+	char alarm_message[]={0xE7,0x94,0xB5,0xE5,0x8A,0xA8,0xE8,0xBD,0xA6,0xe7,0xa7,0xbb,0xe5,0x8a,0xa8,0xe6,0x8a,0xa5,0xe8,0xad,0xa6};
+	size_t rspMsgLength = sizeof(MC_MSG_ALARM_RSP) + sizeof(alarm_message); //TODO: currently without any message content
 	MC_MSG_ALARM_RSP* rsp = alloc_msg(req->header.cmd, rspMsgLength);
+	memcpy(rsp->sms,alarm_message,sizeof(alarm_message));
 	if (rsp)
 	{
 		set_msg_seq(&rsp->header, get_msg_seq(req));
-
 		mc_msg_send(&rsp->header, rspMsgLength, ctx);
 	}
+
 
 	//send the alarm to YUNBA
 	char topic[128];
