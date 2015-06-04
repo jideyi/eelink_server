@@ -98,7 +98,7 @@ int main(int argc, char **argv)
     struct evconnlistener* listener = server_mc_start(base, port);
     if (listener)
     {
-    	LOG_INFO("start mc server sucessfully at port:%d", port);
+        LOG_INFO("start mc server successfully at port:%d", port);
     }
     else
     {
