@@ -8,16 +8,6 @@
 #ifndef SRC_MSG_APP_H_
 #define SRC_MSG_APP_H_
 
-enum CMD
-{
-	CMD_WILD		= 0x0,
-	CMD_FENCE_SET	= 0x01,
-	CMD_FENCE_DEL,
-	CMD_FENCE_GET,
-	CMD_TEST_GPS    = 0xfe,
-	CMD_TEST_ALARM	= 0xff,
-
-};
 
 //Message definition
 typedef struct

@@ -172,48 +172,8 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 	short seq = ntohs(pMsg->seq);
 	int token = (cmd << 16) + seq;
 
-	switch (cmd)
-	{
-	case CMD_WILD:
-		LOG_INFO("receive app wildcard cmd");
-		app_sendRawData2mc(pMsg->data, ntohs(pMsg->length) - sizeof(pMsg->seq), ctx, token);
-		break;
-	case CMD_FENCE_SET:
-	case CMD_FENCE_DEL:
-	case CMD_FENCE_GET:
-		LOG_INFO("receive app CMD:%#x", ntohs(pMsg->cmd));
-		app_sendRawData2mc(pMsg->data, ntohs(pMsg->length) - sizeof(pMsg->seq), ctx, token);
-		break;
-	case CMD_TEST_GPS:
-		app_sendGpsMsg2App(ctx->obj, ctx);
-		break;
-	case CMD_TEST_ALARM:
-	{
-		//send the alarm to YUNBA
-		char topic[128];
-		memset(topic, 0, sizeof(topic));
-		snprintf(topic, 128, "e2link_%s", get_IMEI_STRING(obj->IMEI));
-
-		cJSON *root = cJSON_CreateObject();
-
-		cJSON *alarm = cJSON_CreateObject();
-		cJSON_AddNumberToObject(alarm,"type", 0x81);
-
-		cJSON_AddItemToObject(root, "alarm", alarm);
-		cJSON_AddStringToObject(root, "alert", "TEST alarm");
-		cJSON_AddStringToObject(root, "sound", "alarm.mp3");
-
-		yunba_publish(topic, root);
-		LOG_INFO("send test alarm to app");
-
-		cJSON_Delete(root);
-		break;
-	}
-
-	default:
-		LOG_ERROR("Unknown cmd: %#x", ntohs(pMsg->cmd));
-		break;
-	}
+	LOG_INFO("receive app CMD:%#x", ntohs(pMsg->cmd));
+	app_sendRawData2mc(pMsg->data, ntohs(pMsg->length) - sizeof(pMsg->seq), ctx, token);
 
 	return 0;
 }
