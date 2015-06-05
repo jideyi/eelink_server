@@ -254,7 +254,7 @@ void app_disconnect_callback(struct mosquitto *mosq __attribute__((unused)), voi
 	}
 	else
 	{
-		LOG_INFO("client %s disconnect successfully", get_IMEI_STRING(obj->IMEI));
+		LOG_INFO("client disconnect successfully");
 	}
 }
 

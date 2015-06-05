@@ -269,6 +269,12 @@ int mc_alarm(const void* msg, CB_CTX* ctx)
 		LOG_FATAL("no memory");
 	}
 
+	if (!(req->location & 0x01))
+	{
+		LOG_WARN("GPS not located, don't send alarm");
+		return 0;
+	}
+
 
 	//send the alarm to YUNBA
 	char topic[128];
