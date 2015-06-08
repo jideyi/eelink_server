@@ -22,21 +22,26 @@
 
 int mc_msg_send(void* msg, size_t len, CB_CTX* ctx)
 {
-	msg_send pfn = ctx->pSendMsg;
-	if (!pfn)
-	{
-		LOG_ERROR("device offline");
-		return -1;
-	}
+    if (!ctx)
+    {
+        return -1;
+    }
+    
+    msg_send pfn = ctx->pSendMsg;
+    if (!pfn)
+    {
+            LOG_ERROR("device offline");
+            return -1;
+    }
 
-	pfn(ctx->bev, msg, len);
+    pfn(ctx->bev, msg, len);
 
-	LOG_DEBUG("send msg(cmd=%d), length(%ld)", get_msg_cmd(msg), len);
-	LOG_HEX(msg, len);
+    LOG_DEBUG("send msg(cmd=%d), length(%ld)", get_msg_cmd(msg), len);
+    LOG_HEX(msg, len);
 
-	free(msg);
+    free(msg);
 
-	return 0;
+    return 0;
 }
 
 int mc_login(const void* msg, CB_CTX* ctx)
@@ -49,7 +54,7 @@ int mc_login(const void* msg, CB_CTX* ctx)
 	{
 		LOG_DEBUG("mc IMEI(%s) login", get_IMEI_STRING(req->IMEI));
 
-		obj = mc_get(req->IMEI);
+		obj = mc_get(get_IMEI_STRING(req->IMEI));
 
 		if (!obj)
 		{
@@ -77,6 +82,9 @@ int mc_login(const void* msg, CB_CTX* ctx)
 		LOG_DEBUG("mc IMEI(%s) already login", get_IMEI_STRING(req->IMEI));
 	}
 
+	obj->isOnline = 1;
+        obj->session = ctx;
+
 	MC_MSG_LOGIN_RSP *rsp = alloc_rspMsg(msg);
 	if (rsp)
 	{
@@ -85,29 +93,6 @@ int mc_login(const void* msg, CB_CTX* ctx)
 	else
 	{
 		//TODO: LOG_ERROR
-	}
-
-	if (!ctx->mosq)
-	{
-		char mqtt_id[32];
-		sprintf(mqtt_id,"%s_%x",get_IMEI_STRING(req->IMEI),rand()%100);
-		struct mosquitto* mosq = mqtt_login(mqtt_id, "127.0.0.1", 1883,
-				app_log_callback,
-				app_connect_callback,
-				app_disconnect_callback,
-				app_message_callback,
-				app_subscribe_callback,
-				app_publish_callback,
-				ctx);
-		if (mosq)
-		{
-			LOG_INFO("%s connect to MQTT successfully", mqtt_id);
-			ctx->mosq = mosq;
-		}
-		else
-		{
-			LOG_ERROR("%s failed to connect to MQTT", mqtt_id);
-		}
 	}
 
 	return 0;

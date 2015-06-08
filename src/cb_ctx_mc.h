@@ -32,7 +32,6 @@ typedef struct
 	ENVIRONMENT* env;
 	struct event_base* base;
 	struct bufferevent* bev;
-	struct mosquitto *mosq;
 
 	void* obj;
 	msg_send pSendMsg;

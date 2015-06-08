@@ -181,13 +181,12 @@ void mc_obj_del(OBJ_MC* obj)
     if(NULL != t_obj)
     {
         g_hash_table_remove(g_table, get_IMEI_STRING(obj->IMEI));
-        free(t_obj);
     }
 }
 
 OBJ_MC* mc_get(char IMEI[])
 {
-    return g_hash_table_lookup(g_table, get_IMEI_STRING(IMEI));
+    return g_hash_table_lookup(g_table, IMEI);
 }
 
 int mc_obj_did_got(OBJ_MC* obj)

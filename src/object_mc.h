@@ -9,7 +9,7 @@
 #define SRC_OBJECT_MC_
 
 #include "macro_mc.h"
-
+#include "cb_ctx_mc.h"
 
 
 typedef struct
@@ -58,6 +58,9 @@ typedef struct
 
     int device_id;
     int sensor_id;
+
+    int isOnline;
+    CB_CTX* session;
 }OBJ_MC;
 
 void mc_obj_initial();

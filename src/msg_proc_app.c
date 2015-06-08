@@ -17,20 +17,26 @@
 #include "cJSON.h"
 
 
-static void app_sendRawData2mc(const void* msg, int len, CB_CTX* ctx, int token)
+static void app_sendRawData2mc(const void* msg, int len, OBJ_MC* obj, int token)
 {
-	MC_MSG_OPERATOR_REQ* req = alloc_msg(CMD_OPERAT, sizeof(MC_MSG_OPERATOR_REQ) + len);
-	if (req)
-	{
-		req->type = 0x01;	//FIXME: use enum instead
-		req->token = token;
-		memcpy(req->data, msg, len);
-		mc_msg_send(req, sizeof(MC_MSG_OPERATOR_REQ) + len, ctx);
-	}
-	else
-	{
-		LOG_FATAL("insufficient memory");
-	}
+    if (!obj->isOnline)
+    {
+        LOG_ERROR("obj %s offline", get_IMEI_STRING(obj->IMEI));
+        return;
+    }
+    
+    MC_MSG_OPERATOR_REQ* req = alloc_msg(CMD_OPERAT, sizeof(MC_MSG_OPERATOR_REQ) + len);
+    if (req)
+    {
+            req->type = 0x01;	//FIXME: use enum instead
+            req->token = token;
+            memcpy(req->data, msg, len);
+            mc_msg_send(req, sizeof(MC_MSG_OPERATOR_REQ) + len, obj->session);
+    }
+    else
+    {
+            LOG_FATAL("insufficient memory");
+    }
 }
 
 static void app_sendRawData2App(const char* topic, const char* data, const int len, CB_CTX* ctx)
@@ -49,7 +55,7 @@ static void app_sendRawData2App(const char* topic, const char* data, const int l
 	}
 
 	LOG_HEX(data, len);
-	int rc = mosquitto_publish(ctx->mosq, NULL, topic, len, data, 0, false);	//TODO: determine the parameter
+	int rc = mosquitto_publish(ctx->env->mosq, NULL, topic, len, data, 0, false);	//TODO: determine the parameter
 	if (rc != MOSQ_ERR_SUCCESS)
 	{
 		LOG_ERROR("mosq pub error: rc = %d(%s)", rc, mosquitto_strerror(rc));
@@ -126,26 +132,24 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 {
 	LOG_HEX(data, len);
 
-	CB_CTX* ctx = userdata;
-	if(!ctx)
-	{
-		LOG_FATAL("internal error: ctx null");
-		return -1;
-	}
-	OBJ_MC* obj = ctx->obj;
-	if (!obj)
-	{
-		LOG_FATAL("internal error: obj null");
-		return -1;
-	}
 	//check the IMEI
 	const char* pStart = &topic[strlen("app2dev/")];
 	const char* pEnd = strstr(pStart, "/");
-	if (strncmp(get_IMEI_STRING(obj->IMEI), pStart, pEnd - pStart) != 0)
-	{
-		LOG_ERROR("App2dev msg IMEI not match");
-		return -1;
-	}
+        char strIMEI[IMEI_LENGTH * 2 + 1] = {0};
+        if (pEnd - pStart > IMEI_LENGTH * 2)
+        {
+            LOG_ERROR("app2dev: imei length too long");
+            return -1;
+        }
+        
+        strncpy(strIMEI, pStart, pEnd - pStart);
+        
+        OBJ_MC* obj = mc_get(strIMEI);
+        if (!obj)
+        {
+            LOG_ERROR("obj %s not exist", strIMEI);
+            return -1;
+        }
 
 	APP_MSG* pMsg = data;
 	if (!pMsg)
@@ -173,34 +177,28 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 	int token = (cmd << 16) + seq;
 
 	LOG_INFO("receive app CMD:%#x", ntohs(pMsg->cmd));
-	app_sendRawData2mc(pMsg->data, ntohs(pMsg->length) - sizeof(pMsg->seq), ctx, token);
+	app_sendRawData2mc(pMsg->data, ntohs(pMsg->length) - sizeof(pMsg->seq), obj, token);
 
 	return 0;
 }
 
-void app_subscribe(struct mosquitto *mosq, void *userdata)
+void app_subscribe(struct mosquitto *mosq, OBJ_MC *obj)
 {
-	CB_CTX* ctx = userdata;
-	OBJ_MC* obj = ctx->obj;
-
-
 	char topic[IMEI_LENGTH * 2 + 20];
 	memset(topic, 0, sizeof(topic));
 
 	snprintf(topic, IMEI_LENGTH * 2 + 20, "app2dev/%s/e2link/cmd", get_IMEI_STRING(obj->IMEI));
+        LOG_INFO("subscribe topic: %s", topic);
 	mosquitto_subscribe(mosq, NULL, topic, 0);
 }
 
-void app_unsubscribe(struct mosquitto *mosq, void *userdata)
+void app_unsubscribe(struct mosquitto *mosq, OBJ_MC *obj)
 {
-	CB_CTX* ctx = userdata;
-	OBJ_MC* obj = ctx->obj;
-
-
 	char topic[IMEI_LENGTH * 2 + 20];
 	memset(topic, 0, sizeof(topic));
 
 	snprintf(topic, IMEI_LENGTH * 2 + 20, "app2dev/%s/e2link/cmd", get_IMEI_STRING(obj->IMEI));
+        LOG_INFO("unsubscribe topic: %s", topic);
 	mosquitto_unsubscribe(mosq, NULL, topic);
 }
 
@@ -227,12 +225,9 @@ void app_message_callback(struct mosquitto *mosq __attribute__((unused)), void *
 
 void app_connect_callback(struct mosquitto *mosq, void *userdata, int result)
 {
-	CB_CTX* ctx = userdata;
-	OBJ_MC* obj = ctx->obj;
-
 	if(!result)
 	{
-		app_subscribe(mosq, userdata);
+		LOG_INFO("Connect to MQTT server successfully");
 	}
 	else
 	{
@@ -243,12 +238,10 @@ void app_connect_callback(struct mosquitto *mosq, void *userdata, int result)
 
 void app_disconnect_callback(struct mosquitto *mosq __attribute__((unused)), void *userdata, int rc)
 {
-	CB_CTX* ctx = userdata;
-	OBJ_MC* obj = ctx->obj;
 
 	if(rc)
 	{
-		LOG_ERROR("%s disconnect rc = %d(%s)\n", get_IMEI_STRING(obj->IMEI), rc, mosquitto_strerror(rc));
+		LOG_ERROR("disconnect rc = %d(%s)\n",  rc, mosquitto_strerror(rc));
 
 		//mosquitto_reconnect(mosq);
 	}
