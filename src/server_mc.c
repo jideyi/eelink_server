@@ -73,10 +73,12 @@ static void event_cb(struct bufferevent *bev, short events, void *arg)
 		LOG_INFO("mc(%s) connection timeout!", get_IMEI_STRING(ctx->obj));
 
 		ctx->pSendMsg = NULL;
-                obj->isOnline = 0;
-                obj->session = NULL;
-                app_unsubscribe(env_get()->mosq, obj);
-
+		if (obj)
+		{
+			obj->isOnline = 0;
+			obj->session = NULL;
+			app_unsubscribe(env_get()->mosq, obj);
+		}
 		free(ctx);
 
 		bufferevent_free(bev);
@@ -98,8 +100,12 @@ static void event_cb(struct bufferevent *bev, short events, void *arg)
 		//FIXME: the above will coredump, why?
 		LOG_INFO("Closing the connection");
 		ctx->pSendMsg = NULL;
-                obj->isOnline = 0;
-                obj->session = NULL;
+		if (obj)
+		{
+			obj->isOnline = 0;
+			obj->session = NULL;
+			app_unsubscribe(env_get()->mosq, obj);
+		}
 
 		free(ctx);
 
