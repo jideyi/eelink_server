@@ -43,6 +43,9 @@ log
 .cproject
 .settings
 
+#netbeans project files
+nbproject/
+
 #source insight project files
 *.IAB
 *.IAD
