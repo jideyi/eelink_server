@@ -7,6 +7,7 @@
 #include "log.h"
 #include "version.h"
 #include "server_mc.h"
+#include "slb.h"
 #include "curl.h"
 #include "yunba_push.h"
 #include "object_mc.h"
@@ -106,6 +107,17 @@ int main(int argc, char **argv)
     	return 2;
     }
 
+    struct evconnlistener* slb = slb_start(base, 9870);
+    if (listener)
+    {
+        LOG_INFO("start SLB check server successfully at port:%d", 9870);
+    }
+    else
+    {
+        LOG_FATAL("start SLB check server failed at port:%d", 9870);
+        return 2;
+    }
+
     //start the event loop
     LOG_INFO("start the event loop");
     event_base_dispatch(base);
@@ -113,6 +125,7 @@ int main(int argc, char **argv)
 
 //    sk_free(SSL_COMP_get_compression_methods());
     LOG_INFO("stop mc server...");
+    evconnlistener_free(slb);
     evconnlistener_free(listener);
     event_base_free(base);
 

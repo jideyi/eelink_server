@@ -5,6 +5,16 @@
  *      Author: jk
  */
 
+#include <event2/listener.h>
+#include <event2/bufferevent.h>
+#include <event2/buffer.h>
+
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+
+#include "log.h"
 
 #include "slb.h"
 
@@ -82,7 +92,7 @@ static void accept_conn_cb(struct evconnlistener *listener,
 
 
 	//TODO: set the water-mark and timeout
-	bufferevent_setcb(bev, read_cb, write_cb, event_cb, cb_ctx);
+	bufferevent_setcb(bev, read_cb, write_cb, event_cb, arg);
 
 	bufferevent_enable(bev, EV_READ|EV_WRITE);
 
