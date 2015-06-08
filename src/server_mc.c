@@ -1,7 +1,6 @@
 #include <event2/listener.h>
 #include <event2/bufferevent.h>
 #include <event2/buffer.h>
-#include <mosquitto.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -63,6 +62,8 @@ static void write_cb(struct bufferevent* bev, void *ctx)
 static void event_cb(struct bufferevent *bev, short events, void *arg)
 {
 	CB_CTX* ctx = arg;
+        OBJ_MC* obj = ctx->obj;
+        
 	if (events & BEV_EVENT_CONNECTED)
 	{
 		LOG_DEBUG("Connect okay.\n");
@@ -72,17 +73,9 @@ static void event_cb(struct bufferevent *bev, short events, void *arg)
 		LOG_INFO("mc(%s) connection timeout!", get_IMEI_STRING(ctx->obj));
 
 		ctx->pSendMsg = NULL;
-
-	    if (ctx->mosq)
-		{
-			int rc = mosquitto_disconnect(ctx->mosq);
-			if (rc != MOSQ_ERR_SUCCESS)
-			{
-				LOG_ERROR("mosq disconnect error:rc=%d", rc);
-			}
-			mosquitto_destroy(ctx->mosq);
-
-		}
+                obj->isOnline = 0;
+                obj->session = NULL;
+                app_unsubscribe(env_get()->mosq, obj);
 
 		free(ctx);
 
@@ -105,15 +98,8 @@ static void event_cb(struct bufferevent *bev, short events, void *arg)
 		//FIXME: the above will coredump, why?
 		LOG_INFO("Closing the connection");
 		ctx->pSendMsg = NULL;
-
-	    if (ctx->mosq)
-	    {
-			int rc = mosquitto_disconnect(ctx->mosq);
-			if (rc != MOSQ_ERR_SUCCESS)
-			{
-				LOG_ERROR("mosq disconnect error:rc=%d", rc);
-			}
-	    }
+                obj->isOnline = 0;
+                obj->session = NULL;
 
 		free(ctx);
 
@@ -148,8 +134,8 @@ static void accept_conn_cb(struct evconnlistener *listener,
 	CB_CTX* cb_ctx = malloc(sizeof(CB_CTX));
 	cb_ctx->base = base;
 	cb_ctx->bev = bev;
+        cb_ctx->env = env_get();
 
-	cb_ctx->mosq = NULL;
 	cb_ctx->obj = NULL;
 	cb_ctx->pSendMsg = send_msg;
 

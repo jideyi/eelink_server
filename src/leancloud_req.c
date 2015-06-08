@@ -165,6 +165,9 @@ int leancloud_onGetOBJ(MemroyBuf *chunk)
 
 		/* add to mc hash */
 		mc_obj_add(obj);
+
+		//subscribe
+		app_subscribe(env_get()->mosq, obj);
 	}
 
 
@@ -176,9 +179,9 @@ int leancloud_onGetOBJ(MemroyBuf *chunk)
 /* get obj config */
 int leancloud_getOBJ()
 {
-	ENVIRONMENT* env = env_get();
-	CURL* curl = env->curl_leancloud;
-	MemroyBuf* chunk = &(env->chunk);
+    ENVIRONMENT* env = env_get();
+    CURL* curl = env->curl_leancloud;
+    MemroyBuf* chunk = &(env->chunk);
 
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, leancloud_onRev);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, chunk);

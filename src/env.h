@@ -19,6 +19,8 @@ typedef struct
 
 typedef struct
 {
+    	struct mosquitto *mosq;
+
 	CURL* curl_leancloud;
 	CURL* curl_yeelink;
 	MemroyBuf chunk;
