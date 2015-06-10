@@ -17,7 +17,7 @@
 #include "cJSON.h"
 
 
-static void app_sendRawData2mc(const void* msg, int len, OBJ_MC* obj, int token)
+static void app_sendRawData2TK115(const void* msg, int len, OBJ_MC* obj, int token)
 {
     if (!obj->isOnline)
     {
@@ -135,21 +135,21 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 	//check the IMEI
 	const char* pStart = &topic[strlen("app2dev/")];
 	const char* pEnd = strstr(pStart, "/");
-        char strIMEI[IMEI_LENGTH * 2 + 1] = {0};
-        if (pEnd - pStart > IMEI_LENGTH * 2)
-        {
-            LOG_ERROR("app2dev: imei length too long");
-            return -1;
-        }
-        
-        strncpy(strIMEI, pStart, pEnd - pStart);
-        
-        OBJ_MC* obj = mc_get(strIMEI);
-        if (!obj)
-        {
-            LOG_ERROR("obj %s not exist", strIMEI);
-            return -1;
-        }
+	char strIMEI[IMEI_LENGTH * 2 + 1] = {0};
+	if (pEnd - pStart > IMEI_LENGTH * 2)
+	{
+		LOG_ERROR("app2dev: imei length too long");
+		return -1;
+	}
+
+	strncpy(strIMEI, pStart, pEnd - pStart);
+
+	OBJ_MC* obj = mc_get(strIMEI);
+	if (!obj)
+	{
+		LOG_ERROR("obj %s not exist", strIMEI);
+		return -1;
+	}
 
 	APP_MSG* pMsg = data;
 	if (!pMsg)
@@ -177,7 +177,7 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 	int token = (cmd << 16) + seq;
 
 	LOG_INFO("receive app CMD:%#x", ntohs(pMsg->cmd));
-	app_sendRawData2mc(pMsg->data, ntohs(pMsg->length) - sizeof(pMsg->seq), obj, token);
+	app_sendRawData2TK115(pMsg->data, ntohs(pMsg->length) - sizeof(pMsg->seq), obj, token);
 
 	return 0;
 }
