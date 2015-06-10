@@ -19,7 +19,7 @@
 static GHashTable *g_table = NULL;
 
 
-#if 0
+#ifdef __LOCAL_STORARY__
 #define CONFIG_FILE "../conf/config.dat"
 
 typedef struct
@@ -190,11 +190,29 @@ OBJ_MC* mc_get(char IMEI[])
     return g_hash_table_lookup(g_table, IMEI);
 }
 
+#ifdef __GIZWITS_SUPPORT__
 int mc_obj_did_got(OBJ_MC* obj)
 {
 	return strlen(obj->DID) != 0;
 }
 
+const char* getMacFromIMEI(const unsigned char* IMEI)
+{
+	/*
+	 *
+	 * IMEI:  xx xx xx xx xx xx xx xx
+	 * MAC:         ~~ ~~ ~~ ~~ ~~ ~~
+	 */
+
+	static char mac[MAC_MAC_LEN * 2 + 1] = {0};
+
+    sprintf(mac,"%02X%02X%02X%02X%02X%02X", IMEI[2], IMEI[3],IMEI[4],IMEI[5],IMEI[6],IMEI[7]);
+
+
+	return mac;
+}
+
+#endif
 
 const char* get_IMEI_STRING(const unsigned char* IMEI)
 {
@@ -234,21 +252,6 @@ const unsigned char* get_IMEI(const char* strIMEI)
     return IMEI;
 }
 
-const char* getMacFromIMEI(const unsigned char* IMEI)
-{
-	/*
-	 *
-	 * IMEI:  xx xx xx xx xx xx xx xx
-	 * MAC:         ~~ ~~ ~~ ~~ ~~ ~~
-	 */
-
-	static char mac[MAC_MAC_LEN * 2 + 1] = {0};
-
-    sprintf(mac,"%02X%02X%02X%02X%02X%02X", IMEI[2], IMEI[3],IMEI[4],IMEI[5],IMEI[6],IMEI[7]);
-
-
-	return mac;
-}
 
 int isYeelinkDeviceCreated(OBJ_MC* obj)
 {
