@@ -85,8 +85,6 @@ void mc_obj_initial()
     g_table = g_hash_table_new_full(g_str_hash, g_str_equal, mc_freeKey, mc_freeValue);
 
 	//mc_readConfig();
-
-	leancloud_getOBJ();
 }
 
 void mc_writeConfig(gpointer key, gpointer value, gpointer user_data)

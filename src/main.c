@@ -95,6 +95,8 @@ int main(int argc, char **argv)
 
     mc_obj_initial();
 
+	leancloud_getOBJ();
+
     struct evconnlistener* listener = server_mc_start(base, port);
     if (listener)
     {
