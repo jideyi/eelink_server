@@ -16,8 +16,10 @@
 #include "object_mc.h"
 
 /* global mc hash table */
-GHashTable *g_table = NULL;
+static GHashTable *g_table = NULL;
 
+
+#if 0
 #define CONFIG_FILE "../conf/config.dat"
 
 typedef struct
@@ -64,28 +66,6 @@ static int mc_readConfig()
     return 0;
 }
 
-void mc_freeKey(gpointer key)
-{
-    LOG_DEBUG("free key IMEI:%s", key);
-    g_free(key);
-}
-
-void mc_freeValue(gpointer value)
-{
-    OBJ_MC* obj = (OBJ_MC*)value;
-
-    LOG_DEBUG("free value IMEI:%s", get_IMEI_STRING(obj->IMEI));
-
-    g_free(obj);
-}
-
-void mc_obj_initial()
-{
-    /* create mc hash table */
-    g_table = g_hash_table_new_full(g_str_hash, g_str_equal, mc_freeKey, mc_freeValue);
-
-	//mc_readConfig();
-}
 
 void mc_writeConfig(gpointer key, gpointer value, gpointer user_data)
 {
@@ -127,11 +107,34 @@ int mc_saveConfig()
 
     return 0;
 }
+#endif
 
+void mc_freeKey(gpointer key)
+{
+    LOG_DEBUG("free key IMEI:%s", key);
+    g_free(key);
+}
+
+void mc_freeValue(gpointer value)
+{
+    OBJ_MC* obj = (OBJ_MC*)value;
+
+    LOG_DEBUG("free value IMEI:%s", get_IMEI_STRING(obj->IMEI));
+
+    g_free(obj);
+}
+
+void mc_obj_initial()
+{
+    /* create mc hash table */
+    g_table = g_hash_table_new_full(g_str_hash, g_str_equal, mc_freeKey, mc_freeValue);
+
+	//mc_readConfig();
+}
 
 void mc_obj_destruct()
 {
-	mc_saveConfig();
+//	mc_saveConfig();
 
     g_hash_table_destroy(g_table);
 }
