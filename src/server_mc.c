@@ -77,7 +77,6 @@ static void event_cb(struct bufferevent *bev, short events, void *arg)
 		{
 			obj->isOnline = 0;
 			obj->session = NULL;
-			app_unsubscribe(env_get()->mosq, obj);
 		}
 		free(ctx);
 
