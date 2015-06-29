@@ -8,9 +8,22 @@
 #ifndef SRC_MSG_ADMIN_H_
 #define SRC_MSG_ADMIN_H_
 
+#pragma pack(push,1)
 
-int handle_admin_msg(const char* m, size_t msgLen, void* arg);
 
+typedef struct
+{
+	short signature;
+	short cmd;
+	unsigned short length;
+	unsigned short seq;
+	char data[];
+}__attribute__((__packed__)) MSG_ADMIN;
+
+
+#define MC_MSG_HEADER_LEN (sizeof(MC_MSG_HEADER) - sizeof(short))
+
+#pragma pack(pop)
 
 
 #endif /* SRC_MSG_ADMIN_H_ */
