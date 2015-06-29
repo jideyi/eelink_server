@@ -5,7 +5,7 @@
  *      Author: jk
  */
 
-
+#include <stdio.h>
 
 
 int handle_admin_msg(const char* m, size_t msgLen, void* arg)

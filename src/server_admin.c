@@ -34,7 +34,7 @@ static void read_cb(struct bufferevent *bev, void *arg)
     	int rc = handle_admin_msg(buf, n, arg);
     	if (rc)
     	{
-    		LOG_ERROR("handle admin message error!")
+    		LOG_ERROR("handle admin message error!");
     	}
     }
 }

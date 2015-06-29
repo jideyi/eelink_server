@@ -7,7 +7,7 @@
 #include "log.h"
 #include "version.h"
 #include "server_mc.h"
-#include "admin.h"
+#include "server_admin.h"
 #include "curl.h"
 #include "yunba_push.h"
 #include "object_mc.h"
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
 
 //    sk_free(SSL_COMP_get_compression_methods());
     LOG_INFO("stop mc server...");
-    evconnlistener_free(slb);
+    evconnlistener_free(admin);
     evconnlistener_free(listener);
     event_base_free(base);
 
