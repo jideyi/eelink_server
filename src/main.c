@@ -7,7 +7,7 @@
 #include "log.h"
 #include "version.h"
 #include "server_mc.h"
-#include "slb.h"
+#include "admin.h"
 #include "curl.h"
 #include "yunba_push.h"
 #include "object_mc.h"
@@ -34,16 +34,27 @@ static void sig_usr(int signo)
 int main(int argc, char **argv)
 {
     int port = 9876;
+    int adminPort = 9870;
 
     setvbuf(stdout, NULL, _IONBF, 0);
 
-    if (argc == 2)
+    if (argc >= 2)
     {
     	char* strPort = argv[1];
     	int num = atoi(strPort);
     	if (num)
     	{
     		port = num;
+    	}
+    }
+
+    if (argc >= 3)
+    {
+    	char* strPort = argv[2];
+    	int num = atoi(strPort);
+    	if (num)
+    	{
+    		adminPort = num;
     	}
     }
 
@@ -109,14 +120,14 @@ int main(int argc, char **argv)
     	return 2;
     }
 
-    struct evconnlistener* slb = slb_start(base, 9870);
-    if (listener)
+    struct evconnlistener* admin = admin_start(base, adminPort);
+    if (admin)
     {
-        LOG_INFO("start SLB check server successfully at port:%d", 9870);
+        LOG_INFO("start admin server successfully at port:%d", adminPort);
     }
     else
     {
-        LOG_FATAL("start SLB check server failed at port:%d", 9870);
+        LOG_FATAL("start admin server failed at port:%d", adminPort);
         return 2;
     }
 

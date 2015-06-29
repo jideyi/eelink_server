@@ -1,7 +1,7 @@
 /*
- * slb.c
+ * server_admin.c
  *
- *  Created on: 2015Äê6ÔÂ5ÈÕ
+ *  Created on: 2015/6/25
  *      Author: jk
  */
 
@@ -16,10 +16,11 @@
 
 #include "log.h"
 
-#include "slb.h"
+#include "server_admin.h"
+#include "msg_admin.h"
 
 
-static void read_cb(struct bufferevent *bev, void *ctx)
+static void read_cb(struct bufferevent *bev, void *arg)
 {
 	char buf[1024] = {0};
 	size_t n = 0;
@@ -29,10 +30,16 @@ static void read_cb(struct bufferevent *bev, void *ctx)
     while ((n = bufferevent_read(bev, buf, sizeof(buf))) > 0)
     {
     	LOG_HEX(buf, n);
+
+    	int rc = handle_admin_msg(buf, n, arg);
+    	if (rc)
+    	{
+    		LOG_ERROR("handle admin message error!")
+    	}
     }
 }
 
-static void write_cb(struct bufferevent* bev, void *ctx)
+static void write_cb(struct bufferevent* bev, void *arg)
 {
 	return;
 }
@@ -112,7 +119,7 @@ static void accept_error_cb(struct evconnlistener *listener, void *ctx)
     event_base_loopexit(base, NULL);
 }
 
-struct evconnlistener* slb_start(struct event_base* base, int port)
+struct evconnlistener* admin_start(struct event_base* base, int port)
 {
     struct evconnlistener *listener;
     struct sockaddr_in sin;
