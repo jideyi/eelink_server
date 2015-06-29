@@ -82,8 +82,8 @@ int mc_login(const void* msg, CB_CTX* ctx)
 		LOG_DEBUG("mc IMEI(%s) already login", get_IMEI_STRING(req->IMEI));
 	}
 
-	obj->isOnline = 1;
-        obj->session = ctx;
+    obj->isOnline = 1;
+    obj->session = ctx;
 
 	MC_MSG_LOGIN_RSP *rsp = alloc_rspMsg(msg);
 	if (rsp)
@@ -128,7 +128,9 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 		return -1;
 	}
 	//no response message needed
-
+    obj->isOnline = 1;
+    obj->session = ctx;
+    
 	if (!isYeelinkDeviceCreated(obj))
 	{
 		yeelink_createDevice(obj, ctx);

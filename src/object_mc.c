@@ -16,8 +16,10 @@
 #include "object_mc.h"
 
 /* global mc hash table */
-GHashTable *g_table = NULL;
+static GHashTable *g_table = NULL;
 
+
+#ifdef __LOCAL_STORARY__
 #define CONFIG_FILE "../conf/config.dat"
 
 typedef struct
@@ -64,30 +66,6 @@ static int mc_readConfig()
     return 0;
 }
 
-void mc_freeKey(gpointer key)
-{
-    LOG_DEBUG("free key IMEI:%s", key);
-    g_free(key);
-}
-
-void mc_freeValue(gpointer value)
-{
-    OBJ_MC* obj = (OBJ_MC*)value;
-
-    LOG_DEBUG("free value IMEI:%s", get_IMEI_STRING(obj->IMEI));
-
-    g_free(obj);
-}
-
-void mc_obj_initial()
-{
-    /* create mc hash table */
-    g_table = g_hash_table_new_full(g_str_hash, g_str_equal, mc_freeKey, mc_freeValue);
-
-	//mc_readConfig();
-
-	leancloud_getOBJ();
-}
 
 void mc_writeConfig(gpointer key, gpointer value, gpointer user_data)
 {
@@ -129,11 +107,34 @@ int mc_saveConfig()
 
     return 0;
 }
+#endif
 
+void mc_freeKey(gpointer key)
+{
+    LOG_DEBUG("free key IMEI:%s", key);
+    g_free(key);
+}
+
+void mc_freeValue(gpointer value)
+{
+    OBJ_MC* obj = (OBJ_MC*)value;
+
+    LOG_DEBUG("free value IMEI:%s", get_IMEI_STRING(obj->IMEI));
+
+    g_free(obj);
+}
+
+void mc_obj_initial()
+{
+    /* create mc hash table */
+    g_table = g_hash_table_new_full(g_str_hash, g_str_equal, mc_freeKey, mc_freeValue);
+
+	//mc_readConfig();
+}
 
 void mc_obj_destruct()
 {
-	mc_saveConfig();
+//	mc_saveConfig();
 
     g_hash_table_destroy(g_table);
 }
@@ -189,11 +190,29 @@ OBJ_MC* mc_get(char IMEI[])
     return g_hash_table_lookup(g_table, IMEI);
 }
 
+#ifdef __GIZWITS_SUPPORT__
 int mc_obj_did_got(OBJ_MC* obj)
 {
 	return strlen(obj->DID) != 0;
 }
 
+const char* getMacFromIMEI(const unsigned char* IMEI)
+{
+	/*
+	 *
+	 * IMEI:  xx xx xx xx xx xx xx xx
+	 * MAC:         ~~ ~~ ~~ ~~ ~~ ~~
+	 */
+
+	static char mac[MAC_MAC_LEN * 2 + 1] = {0};
+
+    sprintf(mac,"%02X%02X%02X%02X%02X%02X", IMEI[2], IMEI[3],IMEI[4],IMEI[5],IMEI[6],IMEI[7]);
+
+
+	return mac;
+}
+
+#endif
 
 const char* get_IMEI_STRING(const unsigned char* IMEI)
 {
@@ -233,21 +252,6 @@ const unsigned char* get_IMEI(const char* strIMEI)
     return IMEI;
 }
 
-const char* getMacFromIMEI(const unsigned char* IMEI)
-{
-	/*
-	 *
-	 * IMEI:  xx xx xx xx xx xx xx xx
-	 * MAC:         ~~ ~~ ~~ ~~ ~~ ~~
-	 */
-
-	static char mac[MAC_MAC_LEN * 2 + 1] = {0};
-
-    sprintf(mac,"%02X%02X%02X%02X%02X%02X", IMEI[2], IMEI[3],IMEI[4],IMEI[5],IMEI[6],IMEI[7]);
-
-
-	return mac;
-}
 
 int isYeelinkDeviceCreated(OBJ_MC* obj)
 {
