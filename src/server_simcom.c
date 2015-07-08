@@ -1,5 +1,5 @@
 /*
- * server_admin.c
+ * server_simcom.c
  *
  *  Created on: 2015/6/25
  *      Author: jk
@@ -16,8 +16,8 @@
 
 #include "log.h"
 
-#include "server_admin.h"
-#include "msg_admin.h"
+#include "server_simcom.h"
+#include "msg_simcom.h"
 
 
 static void read_cb(struct bufferevent *bev, void *arg)
@@ -31,10 +31,10 @@ static void read_cb(struct bufferevent *bev, void *arg)
     {
     	LOG_HEX(buf, n);
 
-    	int rc = handle_admin_msg(buf, n, arg);
+    	int rc = handle_simcom_msg(buf, n, arg);
     	if (rc)
     	{
-    		LOG_ERROR("handle admin message error!");
+    		LOG_ERROR("handle simcom message error!");
     	}
     }
 }
@@ -119,7 +119,7 @@ static void accept_error_cb(struct evconnlistener *listener, void *ctx)
     event_base_loopexit(base, NULL);
 }
 
-struct evconnlistener* admin_start(struct event_base* base, int port)
+struct evconnlistener* server_simcom(struct event_base* base, int port)
 {
     struct evconnlistener *listener;
     struct sockaddr_in sin;

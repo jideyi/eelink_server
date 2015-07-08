@@ -7,7 +7,7 @@
 #include "log.h"
 #include "version.h"
 #include "server_mc.h"
-#include "server_admin.h"
+#include "server_simcom.h"
 #include "curl.h"
 #include "yunba_push.h"
 #include "object_mc.h"
@@ -34,7 +34,7 @@ static void sig_usr(int signo)
 int main(int argc, char **argv)
 {
     int port = 9876;
-    int adminPort = 9870;
+    int simcom_port= 9877;
 
     setvbuf(stdout, NULL, _IONBF, 0);
 
@@ -54,7 +54,7 @@ int main(int argc, char **argv)
     	int num = atoi(strPort);
     	if (num)
     	{
-    		adminPort = num;
+    		simcom_port = num;
     	}
     }
 
@@ -120,14 +120,14 @@ int main(int argc, char **argv)
     	return 2;
     }
 
-    struct evconnlistener* admin = admin_start(base, adminPort);
-    if (admin)
+    struct evconnlistener* listener_simcom = server_simcom(base, simcom_port);
+    if (listener_simcom)
     {
-        LOG_INFO("start admin server successfully at port:%d", adminPort);
+        LOG_INFO("start simcom server successfully at port:%d", simcom_port);
     }
     else
     {
-        LOG_FATAL("start admin server failed at port:%d", adminPort);
+        LOG_FATAL("start simcom server failed at port:%d", simcom_port);
         return 2;
     }
 
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
 
 //    sk_free(SSL_COMP_get_compression_methods());
     LOG_INFO("stop mc server...");
-    evconnlistener_free(admin);
+    evconnlistener_free(listener_simcom);
     evconnlistener_free(listener);
     event_base_free(base);
 

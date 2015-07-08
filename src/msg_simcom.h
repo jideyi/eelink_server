@@ -1,12 +1,12 @@
 /*
- * msg_admin.h
+ * msg_simcon.h
  *
  *  Created on: 2015/6/29
  *      Author: jk
  */
 
-#ifndef SRC_MSG_ADMIN_H_
-#define SRC_MSG_ADMIN_H_
+#ifndef SRC_MSG_SIMCOM_H_
+#define SRC_MSG_SIMCOM_H_
 
 #pragma pack(push,1)
 
@@ -18,7 +18,7 @@ typedef struct
 	unsigned short length;
 	unsigned short seq;
 	char data[];
-}__attribute__((__packed__)) MSG_ADMIN;
+}__attribute__((__packed__)) MSG_SIMCOM;
 
 
 #define MC_MSG_HEADER_LEN (sizeof(MC_MSG_HEADER) - sizeof(short))
@@ -26,4 +26,4 @@ typedef struct
 #pragma pack(pop)
 
 
-#endif /* SRC_MSG_ADMIN_H_ */
+#endif /* SRC_MSG_SIMCOM_H_ */
