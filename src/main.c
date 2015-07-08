@@ -7,6 +7,7 @@
 #include "log.h"
 #include "version.h"
 #include "server_mc.h"
+#include "server_admin.h"
 #include "curl.h"
 #include "yunba_push.h"
 #include "object_mc.h"
@@ -33,16 +34,27 @@ static void sig_usr(int signo)
 int main(int argc, char **argv)
 {
     int port = 9876;
+    int adminPort = 9870;
 
     setvbuf(stdout, NULL, _IONBF, 0);
 
-    if (argc == 2)
+    if (argc >= 2)
     {
     	char* strPort = argv[1];
     	int num = atoi(strPort);
     	if (num)
     	{
     		port = num;
+    	}
+    }
+
+    if (argc >= 3)
+    {
+    	char* strPort = argv[2];
+    	int num = atoi(strPort);
+    	if (num)
+    	{
+    		adminPort = num;
     	}
     }
 
@@ -108,6 +120,17 @@ int main(int argc, char **argv)
     	return 2;
     }
 
+    struct evconnlistener* admin = admin_start(base, adminPort);
+    if (admin)
+    {
+        LOG_INFO("start admin server successfully at port:%d", adminPort);
+    }
+    else
+    {
+        LOG_FATAL("start admin server failed at port:%d", adminPort);
+        return 2;
+    }
+
     //start the event loop
     LOG_INFO("start the event loop");
     event_base_dispatch(base);
@@ -115,6 +138,7 @@ int main(int argc, char **argv)
 
 //    sk_free(SSL_COMP_get_compression_methods());
     LOG_INFO("stop mc server...");
+    evconnlistener_free(admin);
     evconnlistener_free(listener);
     event_base_free(base);
 
