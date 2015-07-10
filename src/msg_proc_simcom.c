@@ -8,6 +8,7 @@
 
 #include "msg_proc_simcom.h"
 #include "protocol.h"
+#include "log.h"
 
 typedef int (*MSG_PROC)(const void* msg);
 typedef struct
