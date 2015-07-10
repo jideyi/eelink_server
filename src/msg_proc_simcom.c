@@ -11,6 +11,7 @@
 #include "log.h"
 #include "cb_ctx_simcom.h"
 #include "object_mc.h"
+#include "msg_simcom.h"
 
 typedef int (*MSG_PROC)(const void* msg, SIMCOM_CTX* ctx);
 typedef struct

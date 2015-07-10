@@ -8,22 +8,11 @@
 #ifndef SRC_MSG_SIMCOM_H_
 #define SRC_MSG_SIMCOM_H_
 
-#pragma pack(push,1)
+#include "protocol.h"
 
+MSG_HEADER* alloc_msg(char cmd, size_t length);
+MSG_HEADER* alloc_rspMsg(const MSG_HEADER* pMsg);
 
-typedef struct
-{
-	short signature;
-	short cmd;
-	unsigned short length;
-	unsigned short seq;
-	char data[];
-}__attribute__((__packed__)) MSG_SIMCOM;
-
-
-#define MC_MSG_HEADER_LEN (sizeof(MC_MSG_HEADER) - sizeof(short))
-
-#pragma pack(pop)
-
+void free_msg(MC_MSG_HEADER* msg);
 
 #endif /* SRC_MSG_SIMCOM_H_ */
