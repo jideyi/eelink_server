@@ -17,16 +17,16 @@ typedef struct
     MSG_PROC pfn;
 }MC_MSG_PROC;
 
-static int mc_login(const void* msg);
-static int mc_ping(const void* msg);
-static int mc_alarm(const void* msg);
+static int simcom_login(const void* msg);
+static int simcom_ping(const void* msg);
+static int simcom_alarm(const void* msg);
 
 
 static MC_MSG_PROC msgProcs[] =
 {
-        {CMD_LOGIN, mc_login},
-        {CMD_PING,  mc_ping},
-        {CMD_ALARM, mc_alarm},
+        {CMD_LOGIN, simcom_login},
+        {CMD_PING,  simcom_ping},
+        {CMD_ALARM, simcom_alarm},
 };
 
 
@@ -69,17 +69,17 @@ int handle_simcom_msg(const char* m, size_t msgLen, void* arg)
 }
 
 
-static int mc_login(const void* msg)
+static int simcom_login(const void* msg)
 {
     return 0;
 }
 
-static int mc_ping(const void* msg)
+static int simcom_ping(const void* msg)
 {
     return 0;
 }
 
-static int mc_alarm(const void* msg)
+static int simcom_alarm(const void* msg)
 {
     return 0;
 }
