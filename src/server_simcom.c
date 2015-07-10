@@ -18,7 +18,13 @@
 
 #include "server_simcom.h"
 #include "msg_simcom.h"
+#include "cb_ctx_simcom.h"
 
+static void send_msg(struct bufferevent* bev, const void* buf, size_t n)
+{
+	LOG_INFO("Send msg to simcom %p(len=%zu)", buf, n);
+	bufferevent_write(bev, buf, n);
+}
 
 static void read_cb(struct bufferevent *bev, void *arg)
 {
@@ -52,7 +58,7 @@ static void event_cb(struct bufferevent *bev, short events, void *arg)
 	}
 	else if (events & BEV_EVENT_TIMEOUT)
 	{
-		LOG_INFO("SLB connection timeout!");
+		LOG_INFO("simcom connection timeout!");
 
 		bufferevent_free(bev);
 		evutil_socket_t socket = bufferevent_getfd(bev);
@@ -69,7 +75,7 @@ static void event_cb(struct bufferevent *bev, short events, void *arg)
 			 }
 			LOG_ERROR("BEV_EVENT_ERROR:%s", evutil_socket_error_to_string(EVUTIL_SOCKET_ERROR()));
 		}
-		LOG_INFO("Closing the SLB connection");
+		LOG_INFO("Closing the simcom connection");
 
 		evutil_socket_t socket = bufferevent_getfd(bev);
 		EVUTIL_CLOSESOCKET(socket);
@@ -88,18 +94,30 @@ static void accept_conn_cb(struct evconnlistener *listener,
 	inet_ntop(address->sa_family, &p->sin_addr, addr, sizeof addr);
 
 	/* We got a new connection! Set up a bufferevent for it. */
-	LOG_INFO("SLB check from %s:%d", addr, ntohs(p->sin_port));
+	LOG_INFO("simcom connect from %s:%d", addr, ntohs(p->sin_port));
 	struct event_base *base = evconnlistener_get_base(listener);
 	struct bufferevent *bev = bufferevent_socket_new(base, fd, BEV_OPT_CLOSE_ON_FREE);
 	if (!bev)
 	{
-		LOG_FATAL("accept SLB's connection failed!");
+		LOG_FATAL("accept simcom connection failed!");
 		return;
 	}
 
+	SIMCOM_CTX* ctx = malloc(sizeof(SIMCOM_CTX));
+	if (!ctx)
+	{
+	    LOG_FATAL("memory alloc failed");
+	    return;
+	}
+	ctx->base = base;
+	ctx->bev = bev;
+	ctx->env = env_get();
+	ctx->obj = NULL;
+	ctx->pSendMsg = send_msg;
+
 
 	//TODO: set the water-mark and timeout
-	bufferevent_setcb(bev, read_cb, write_cb, event_cb, arg);
+	bufferevent_setcb(bev, read_cb, write_cb, event_cb, ctx);
 
 	bufferevent_enable(bev, EV_READ|EV_WRITE);
 
