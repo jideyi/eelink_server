@@ -5,9 +5,11 @@
  *      Author: jk
  */
 
+#include "msg_simcom.h"
+
 static unsigned short seq = 0;
 
-MSG_HEADER* alloc_msg(char cmd, size_t length)
+MSG_HEADER* alloc_simcom_msg(char cmd, size_t length)
 {
     MSG_HEADER* msg = malloc(length);
 
@@ -22,7 +24,7 @@ MSG_HEADER* alloc_msg(char cmd, size_t length)
     return msg;
 }
 
-MSG_HEADER* alloc_rspMsg(const MSG_HEADER* pMsg)
+MSG_HEADER* alloc_simcom_rspMsg(const MSG_HEADER* pMsg)
 {
     size_t msgLen = 0;
     switch (pMsg->cmd)
@@ -43,18 +45,18 @@ MSG_HEADER* alloc_rspMsg(const MSG_HEADER* pMsg)
         return NULL;
     }
 
-    MC_MSG_HEADER* msg = malloc(msgLen);
+    MSG_HEADER* msg = malloc(msgLen);
 
-    fill_msg_header(msg);
-    set_msg_cmd(msg, pMsg->cmd);
-    set_msg_len(msg, msgLen - MSG_HEADER_LEN);
-    set_msg_seq(msg, get_msg_seq(pMsg));
+    msg->signature = htons(START_FLAG);
+    msg->cmd = pMsg->cmd;
+    msg->length = htons(msgLen - MSG_HEADER_LEN);
+    msg->seq = htons(pMsg->seq);
 
     return msg;
 }
 
 
-void free_msg(MSG_HEADER* msg)
+void free_simcom_msg(MSG_HEADER* msg)
 {
     free(msg);
 }

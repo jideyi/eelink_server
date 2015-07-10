@@ -8,11 +8,13 @@
 #ifndef SRC_MSG_SIMCOM_H_
 #define SRC_MSG_SIMCOM_H_
 
+#include <stdio.h>
+
 #include "protocol.h"
 
-MSG_HEADER* alloc_msg(char cmd, size_t length);
-MSG_HEADER* alloc_rspMsg(const MSG_HEADER* pMsg);
+MSG_HEADER* alloc_simcom_msg(char cmd, size_t length);
+MSG_HEADER* alloc_simcom_rspMsg(const MSG_HEADER* pMsg);
 
-void free_msg(MC_MSG_HEADER* msg);
+void free_simcom_msg(MSG_HEADER* msg);
 
 #endif /* SRC_MSG_SIMCOM_H_ */

@@ -133,7 +133,7 @@ static int simcom_login(const void* msg, SIMCOM_CTX* ctx)
     obj->isOnline = 1;
 //    obj->session = ctx;
 
-    MSG_LOGIN_RSP *rsp = alloc_rspMsg(msg);
+    MSG_LOGIN_RSP *rsp = alloc_simcom_rspMsg(msg);
     if (rsp)
     {
         simcom_msg_send(rsp, sizeof(MSG_LOGIN_RSP), ctx);
