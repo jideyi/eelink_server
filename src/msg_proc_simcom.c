@@ -20,6 +20,7 @@ typedef struct
 }MC_MSG_PROC;
 
 static int simcom_login(const void* msg, SIMCOM_CTX* ctx);
+static int simcom_gps(const void* msg, SIMCOM_CTX* ctx);
 static int simcom_ping(const void* msg, SIMCOM_CTX* ctx);
 static int simcom_alarm(const void* msg, SIMCOM_CTX* ctx);
 
@@ -27,6 +28,7 @@ static int simcom_alarm(const void* msg, SIMCOM_CTX* ctx);
 static MC_MSG_PROC msgProcs[] =
 {
         {CMD_LOGIN, simcom_login},
+        {CMD_GPS,   simcom_gps},
         {CMD_PING,  simcom_ping},
         {CMD_ALARM, simcom_alarm},
 };
@@ -139,6 +141,72 @@ static int simcom_login(const void* msg, SIMCOM_CTX* ctx)
     {
         //TODO: LOG_ERROR
     }
+
+    return 0;
+}
+
+static int simcom_gps(const void* msg, SIMCOM_CTX* ctx)
+{
+    const MSG_GPS* req = msg;
+
+    if (!req)
+    {
+        LOG_ERROR("msg handle empty");
+        return -1;
+    }
+
+    if (req->header.length < sizeof(MSG_GPS) - MSG_HEADER_LEN)
+    {
+        LOG_ERROR("message length not enough");
+        return -1;
+    }
+
+    LOG_INFO("GPS: lat(%f), lng(%f)", req->gps.latitude, req->gps.longitude);
+
+    OBJ_MC* obj = ctx->obj;
+    if (!obj)
+    {
+        LOG_WARN("MC must first login");
+        return -1;
+    }
+    //no response message needed
+    obj->isOnline = 1;
+    obj->session = ctx;
+
+    if (!isYeelinkDeviceCreated(obj))
+    {
+        yeelink_createDevice(obj, ctx);
+    }
+
+    if(obj->lon != 0)   //TODO
+    {
+        LOG_INFO("no gps,only send to app");
+        time_t rawtime;
+        time ( &rawtime );
+        obj->timestamp = rawtime;
+        obj->isGPSlocated = 0;
+        app_sendGpsMsg2App(obj, ctx);
+        return 0;
+    }
+
+    if (obj->lat == ntohl(req->gps.latitude)
+        && obj->lon == ntohl(req->gps.longitude))
+    {
+        LOG_INFO("No need to save data to leancloud");
+        app_sendGpsMsg2App(obj, ctx);
+        return 0;
+    }
+
+    //update local object
+    obj->lat = ntohl(req->gps.latitude);
+    obj->lon = ntohl(req->gps.longitude);
+
+    app_sendGpsMsg2App(obj, ctx);
+
+    //stop upload data to yeelink
+    //yeelink_saveGPS(obj, ctx);
+
+    leancloud_saveGPS(obj);
 
     return 0;
 }
