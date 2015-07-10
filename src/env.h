@@ -12,19 +12,18 @@
 
 typedef struct
 {
-  char *memory;
-  size_t size;
-}MemroyBuf;
-
+    char *memory;
+    size_t size;
+} MemroyBuf;
 
 typedef struct
 {
-    	struct mosquitto *mosq;
+    struct mosquitto *mosq;
 
-	CURL* curl_leancloud;
-	CURL* curl_yeelink;
-	MemroyBuf chunk;
-}ENVIRONMENT;
+    CURL* curl_leancloud;
+    CURL* curl_yeelink;
+    MemroyBuf chunk;
+} ENVIRONMENT;
 
 void env_initial();
 void env_cleanup();
