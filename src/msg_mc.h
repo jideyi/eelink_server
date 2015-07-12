@@ -60,7 +60,7 @@ typedef struct
 	int lon;
 	char speed;
 	short course;
-	CGI cell;
+	CGI_MC cell;
 	char location;
 	short status;
 	short voltage;
@@ -89,7 +89,7 @@ typedef struct
 	int lon;
 	char speed;
 	short course;
-	CGI cell;
+	CGI_MC cell;
 	char location;
 	unsigned char type;
 }__attribute__((__packed__)) MC_MSG_ALARM_REQ;
@@ -122,7 +122,7 @@ typedef struct
 	int lon;
 	char speed;
 	short course;
-	CGI cell;
+	CGI_MC cell;
 	char location;
 	char type;
 	int deviceTime;
@@ -147,7 +147,7 @@ typedef struct
 	int lon;
 	char speed;
 	short course;
-	CGI cell;
+	CGI_MC cell;
 	char location;
 
 	char telphone[21];

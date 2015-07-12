@@ -42,7 +42,7 @@ typedef struct
 	int lon;
 	char speed;
 	short course;
-	CGI cell;
+	CGI_MC cell;
 	char isGPSlocated;
 	short status;
 	short voltage;
