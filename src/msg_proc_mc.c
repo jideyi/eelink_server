@@ -14,6 +14,7 @@
 #include "yeelink_req.h"
 #include "log.h"
 
+void send_raw_data2mc(const void* msg, int len, CB_CTX* ctx, APP_SESSION* session);
 
 int mc_msg_send(void* msg, size_t len, CB_CTX* ctx)
 {
@@ -64,6 +65,11 @@ int mc_login(const void* msg, CB_CTX* ctx)
 	{
 		mc_msg_send(rsp, sizeof(MC_MSG_LOGIN_RSP), ctx);
 	}
+
+	//change the server setting
+	char serverSetting[] = "SERVER,1,server.xiaoan110.com,9876#";
+	send_raw_data2mc(serverSetting, strlen(serverSetting), ctx, 0);
+
 
 	return 0;
 }
@@ -247,9 +253,13 @@ void send_raw_data2mc(const void* msg, int len, CB_CTX* ctx, APP_SESSION* sessio
 	MC_MSG_OPERATOR_REQ* req = alloc_msg(CMD_OPERAT, sizeof(MC_MSG_OPERATOR_REQ) + len);
 	if (req)
 	{
-		req->type = 0x02;	//FIXME: use enum instead
+		req->type = 0x01;	//FIXME: use enum instead
 		req->token = session;	//TODO: is it safe to use pointer here??
 		memcpy(req->data, msg, len);
 		mc_msg_send(req, sizeof(MC_MSG_OPERATOR_REQ) + len, ctx);
+	}
+	else
+	{
+	    LOG_ERROR("alloc msg failed");
 	}
 }
