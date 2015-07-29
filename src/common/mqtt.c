@@ -7,33 +7,14 @@
 
 
 #include <stdio.h>
-#include <string.h>
 #include <mosquitto.h>
 
-#include "object_mc.h"
 #include "log.h"
+#include "msg_proc_app.h"
 
-#ifdef WITH_CATEGORY
+static struct mosquitto* mosq = NULL;
 
-#define LOG_DEBUG(...) \
-	zlog(cat[MOD_MQTT], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_DEBUG, __VA_ARGS__)
-
-#define LOG_INFO(...) \
-	zlog(cat[MOD_MQTT], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_INFO, __VA_ARGS__)
-
-#define LOG_WARNING(...) \
-	zlog(cat[MOD_MQTT], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_WARN, __VA_ARGS__)
-
-#define LOG_ERROR(...) \
-	zlog(cat[MOD_MQTT], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_ERROR, __VA_ARGS__)
-
-#define LOG_FATAL(...) \
-	zlog(cat[MOD_MQTT], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_FATAL, __VA_ARGS__)
-
-#endif
-
-
-struct mosquitto* mqtt_login(const char* id, const char* host, int port,
+static struct mosquitto* mqtt_login(const char* id, const char* host, int port,
 		void (*on_log)(struct mosquitto *, void *, int, const char *),
 		void (*on_connect)(struct mosquitto *, void *, int),
 		void (*on_disconnect)(struct mosquitto *, void *, int),
@@ -61,7 +42,7 @@ struct mosquitto* mqtt_login(const char* id, const char* host, int port,
 	mosquitto_publish_callback_set(mosq, on_publish);
 	mosquitto_reconnect_delay_set(mosq, 10, 120, false);
 
-//	OBJ_MC* obj = ctx;
+//	OBJECT* obj = ctx;
 
 //	LOG_DEBUG("set MQTT username:%s, password:%s", get_IMEI_STRING(obj->DID), obj->pwd);
 //	mosquitto_username_pw_set(mosq, get_IMEI_STRING(obj->DID), obj->pwd);
@@ -84,3 +65,37 @@ struct mosquitto* mqtt_login(const char* id, const char* host, int port,
 	return mosq;
 }
 
+void mqtt_initial()
+{
+	mosq = mqtt_login("elink", "127.0.0.1", 1883,
+										app_log_callback,
+										app_connect_callback,
+										app_disconnect_callback,
+										app_message_callback,
+										app_subscribe_callback,
+										app_publish_callback,
+										NULL);
+    //TODO: to fix the above user data
+	if (mosq)
+	{
+		LOG_INFO("connect to MQTT successfully");
+	}
+	else
+	{
+		LOG_ERROR("failed to connect to MQTT");
+	}
+
+}
+
+void mqtt_cleanup()
+{
+	if (mosq)
+	{
+		int rc = mosquitto_disconnect(mosq);
+		if (rc != MOSQ_ERR_SUCCESS)
+		{
+			LOG_ERROR("mosq disconnect error:rc=%d", rc);
+		}
+		mosquitto_destroy(mosq);
+	}
+}

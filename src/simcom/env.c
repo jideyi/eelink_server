@@ -15,7 +15,6 @@
 #include "mqtt.h"
 
 ENVIRONMENT env = {
-    .mosq = NULL,
     .curl_leancloud = NULL,
     .curl_yeelink = NULL,
     .chunk = {NULL, 0},
@@ -29,24 +28,6 @@ void env_resetChunk(MemroyBuf* chunk)
 
 void env_initial()
 {
-    struct mosquitto* mosq = mqtt_login("elink", "127.0.0.1", 1883,
-                    app_log_callback,
-                    app_connect_callback,
-                    app_disconnect_callback,
-                    app_message_callback,
-                    app_subscribe_callback,
-                    app_publish_callback,
-                    &env);
-    if (mosq)
-    {
-        LOG_INFO("connect to MQTT successfully");
-        env.mosq = mosq;
-    }
-    else
-    {
-        LOG_ERROR("failed to connect to MQTT");
-    }
-
     env.curl_leancloud = initCurlHandleOfLeancloud();
     env.curl_yeelink = initCurlHandleOfYeelink();
 
@@ -63,17 +44,6 @@ void env_cleanup()
     cleanupYeelinkCurlHandle(env.curl_yeelink);
 
     free(env.chunk.memory);
-    
-    
-    if (env.mosq)
-    {
-        int rc = mosquitto_disconnect(env.mosq);
-        if (rc != MOSQ_ERR_SUCCESS)
-        {
-                LOG_ERROR("mosq disconnect error:rc=%d", rc);
-        }
-        mosquitto_destroy(env.mosq);
-    }
 }
 
 ENVIRONMENT* env_get()

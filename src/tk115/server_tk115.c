@@ -1,32 +1,25 @@
-/*
- * server_simcom.c
- *
- *  Created on: 2015/6/25
- *      Author: jk
- */
-
 #include <event2/listener.h>
 #include <event2/bufferevent.h>
 #include <event2/buffer.h>
 
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <errno.h>
+#include <arpa/inet.h>
 
 #include "log.h"
-
-#include "server_simcom.h"
-#include "msg_simcom.h"
-#include "cb_ctx_simcom.h"
+#include "server_tk115.h"
+#include "msg_sch_tk115.h"
+#include "object.h"
 
 static void send_msg(struct bufferevent* bev, const void* buf, size_t n)
 {
-	LOG_INFO("Send msg to simcom %p(len=%zu)", buf, n);
+	LOG_INFO("Send msg to TK115 %p(len=%zu)", buf, n);
 	bufferevent_write(bev, buf, n);
 }
 
-static void read_cb(struct bufferevent *bev, void *arg)
+
+static void read_cb(struct bufferevent *bev, void *ctx)
 {
 	char buf[1024] = {0};
 	size_t n = 0;
@@ -36,29 +29,31 @@ static void read_cb(struct bufferevent *bev, void *arg)
     while ((n = bufferevent_read(bev, buf, sizeof(buf))) > 0)
     {
     	LOG_HEX(buf, n);
-
-    	int rc = handle_simcom_msg(buf, n, arg);
-    	if (rc)
+    	if (handle_msg(buf, n, ctx))
     	{
-    		LOG_ERROR("handle simcom message error!");
+    		LOG_ERROR("handle incoming message error!");
     	}
     }
 }
 
-static void write_cb(struct bufferevent* bev, void *arg)
+static void write_cb(struct bufferevent* bev, void *ctx)
 {
 	return;
 }
 
 static void event_cb(struct bufferevent *bev, short events, void *arg)
 {
+	SESSION* ctx = arg;
+
 	if (events & BEV_EVENT_CONNECTED)
 	{
 		LOG_DEBUG("Connect okay.\n");
 	}
 	else if (events & BEV_EVENT_TIMEOUT)
 	{
-		LOG_INFO("simcom connection timeout!");
+		LOG_INFO("mc(%s) connection timeout!", get_IMEI_STRING(ctx->obj));
+
+		session_del(ctx);
 
 		bufferevent_free(bev);
 		evutil_socket_t socket = bufferevent_getfd(bev);
@@ -68,14 +63,17 @@ static void event_cb(struct bufferevent *bev, short events, void *arg)
 	{
 		if (events & BEV_EVENT_ERROR)
 		{
-			 int err = bufferevent_socket_get_dns_error(bev);
-			 if (err)
-			 {
-				 LOG_ERROR("DNS error: %s\n", evutil_gai_strerror(err));
-			 }
+//			 int err = bufferevent_socket_get_dns_error(bev);
+//			 if (err)
+//			 {
+//				 LOG_ERROR("DNS error: %s\n", evutil_gai_strerror(err));
+//			 }
 			LOG_ERROR("BEV_EVENT_ERROR:%s", evutil_socket_error_to_string(EVUTIL_SOCKET_ERROR()));
 		}
-		LOG_INFO("Closing the simcom connection");
+//		LOG_INFO("Closing the connection %s", get_IMEI_STRING(ctx->obj));
+		//FIXME: the above will coredump, why?
+		LOG_INFO("Closing the connection");
+		session_del(ctx);
 
 		evutil_socket_t socket = bufferevent_getfd(bev);
 		EVUTIL_CLOSESOCKET(socket);
@@ -94,27 +92,21 @@ static void accept_conn_cb(struct evconnlistener *listener,
 	inet_ntop(address->sa_family, &p->sin_addr, addr, sizeof addr);
 
 	/* We got a new connection! Set up a bufferevent for it. */
-	LOG_INFO("simcom connect from %s:%d", addr, ntohs(p->sin_port));
+	LOG_INFO("TK115 connect from %s:%d", addr, ntohs(p->sin_port));
 	struct event_base *base = evconnlistener_get_base(listener);
 	struct bufferevent *bev = bufferevent_socket_new(base, fd, BEV_OPT_CLOSE_ON_FREE);
 	if (!bev)
 	{
-		LOG_FATAL("accept simcom connection failed!");
+		LOG_FATAL("accept TK115's connection failed!");
 		return;
 	}
 
-	SIMCOM_CTX* ctx = malloc(sizeof(SIMCOM_CTX));
-	if (!ctx)
-	{
-	    LOG_FATAL("memory alloc failed");
-	    return;
-	}
+	SESSION* ctx = malloc(sizeof(SESSION));
 	ctx->base = base;
 	ctx->bev = bev;
-	ctx->env = env_get();
+
 	ctx->obj = NULL;
 	ctx->pSendMsg = send_msg;
-
 
 	//TODO: set the water-mark and timeout
 	bufferevent_setcb(bev, read_cb, write_cb, event_cb, ctx);
@@ -132,12 +124,12 @@ static void accept_error_cb(struct evconnlistener *listener, void *ctx)
 	struct event_base *base = evconnlistener_get_base(listener);
 	int err = EVUTIL_SOCKET_ERROR();
 	LOG_ERROR("Got an error %d (%s) on the listener. "
-            "Shutting down.\n", err, evutil_socket_error_to_string(err));
+            "Shutting down.", err, evutil_socket_error_to_string(err));
 
     event_base_loopexit(base, NULL);
 }
 
-struct evconnlistener* server_simcom(struct event_base* base, int port)
+struct evconnlistener* server_start(struct event_base *base, int port)
 {
     struct evconnlistener *listener;
     struct sockaddr_in sin;
@@ -164,3 +156,4 @@ struct evconnlistener* server_simcom(struct event_base* base, int port)
 
     return listener;
 }
+

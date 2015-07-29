@@ -7,7 +7,7 @@
 #include <arpa/inet.h>
 #include <stdio.h>
 
-#include "msg_mc.h"
+#include "msg_tk115.h"
 
 #define local_htons(x) ((unsigned short int)((((unsigned short int)(x) & 0x00ff)<<8)| \
                                             (((unsigned short int)(x) & 0xff00)>>8)))
@@ -35,7 +35,7 @@ void set_msg_cmd(MC_MSG_HEADER* msg, char cmd)
 }
 
 
-void set_msg_len(MC_MSG_HEADER* msg, short length)
+void set_msg_len(MC_MSG_HEADER* msg, size_t length)
 {
 	msg->length = htons(length);
 	//msg->length = local_htons(length);

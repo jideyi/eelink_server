@@ -8,38 +8,38 @@
 #include <stdlib.h>
 #include <string.h>
 #include <mosquitto.h>
+#include <netinet/in.h>
 
-#include "cb_ctx_mc.h"
-#include "object_mc.h"
 #include "msg_app.h"
-#include "msg_mc.h"
 #include "log.h"
-#include "cJSON.h"
+#include "macro.h"
 
 
-static void app_sendRawData2TK115(const void* msg, int len, OBJ_MC* obj, int token)
+static void app_sendRawData2TK115(const void* msg, int len, char* imei, int token)
 {
-    if (!obj->isOnline)
-    {
-        LOG_ERROR("obj %s offline", get_IMEI_STRING(obj->IMEI));
-        return;
-    }
-    
-    MC_MSG_OPERATOR_REQ* req = alloc_msg(CMD_OPERAT, sizeof(MC_MSG_OPERATOR_REQ) + len);
-    if (req)
-    {
-            req->type = 0x01;	//FIXME: use enum instead
-            req->token = token;
-            memcpy(req->data, msg, len);
-            mc_msg_send(req, sizeof(MC_MSG_OPERATOR_REQ) + len, obj->session);
-    }
-    else
-    {
-            LOG_FATAL("insufficient memory");
-    }
+    //TODO: TDB
+//    if (!obj->isOnline)
+//    {
+//        LOG_ERROR("obj %s offline", get_IMEI_STRING(obj->IMEI));
+//        return;
+//    }
+//
+//    MC_MSG_OPERATOR_REQ* req = alloc_msg(CMD_OPERAT, sizeof(MC_MSG_OPERATOR_REQ) + len);
+//    if (req)
+//    {
+//            req->type = 0x01;	//FIXME: use enum instead
+//            req->token = token;
+//            memcpy(req->data, msg, len);
+//            msg_send(req, sizeof(MC_MSG_OPERATOR_REQ) + len, obj->session);
+//    }
+//    else
+//    {
+//            LOG_FATAL("insufficient memory");
+//    }
 }
 
-static void app_sendRawData2App(const char* topic, const char* data, const int len, CB_CTX* ctx)
+//static void app_sendRawData2App(const char* topic, const char* data, const int len, CB_CTX* ctx)
+static void app_sendRawData2App(const char* topic, const char* data, const int len, void* ctx)
 {
 	if (!ctx)
 	{
@@ -47,22 +47,23 @@ static void app_sendRawData2App(const char* topic, const char* data, const int l
 		return;
 	}
 
-	OBJ_MC* obj = ctx->obj;
-	if (!obj)
-	{
-		LOG_FATAL("internal error: obj null");
-		return;
-	}
+//	OBJECT* obj = ctx->obj;
+//	if (!obj)
+//	{
+//		LOG_FATAL("internal error: obj null");
+//		return;
+//	}
 
 	LOG_HEX(data, len);
-	int rc = mosquitto_publish(ctx->env->mosq, NULL, topic, len, data, 0, false);	//TODO: determine the parameter
-	if (rc != MOSQ_ERR_SUCCESS)
-	{
-		LOG_ERROR("mosq pub error: rc = %d(%s)", rc, mosquitto_strerror(rc));
-	}
+//	int rc = mosquitto_publish(ctx->env->mosq, NULL, topic, len, data, 0, false);	//TODO: determine the parameter
+//	if (rc != MOSQ_ERR_SUCCESS)
+//	{
+//		LOG_ERROR("mosq pub error: rc = %d(%s)", rc, mosquitto_strerror(rc));
+//	}
 }
 
-void app_sendRspMsg2App(short cmd, short seq, const void* data, const int len, CB_CTX* ctx)
+//void app_sendRspMsg2App(short cmd, short seq, const void* data, const int len, CB_CTX* ctx)
+void app_sendRspMsg2App(short cmd, short seq, const void* data, const int len, void* ctx)
 {
 	if (!ctx)
 	{
@@ -70,12 +71,12 @@ void app_sendRspMsg2App(short cmd, short seq, const void* data, const int len, C
 		return;
 	}
 
-	OBJ_MC* obj = ctx->obj;
-	if (!obj)
-	{
-		LOG_FATAL("internal error: obj null");
-		return;
-	}
+//	OBJECT* obj = ctx->obj;
+//	if (!obj)
+//	{
+//		LOG_FATAL("internal error: obj null");
+//		return;
+//	}
 
 	APP_MSG* msg = malloc(sizeof(APP_MSG) + len);
 	if (!msg)
@@ -91,13 +92,15 @@ void app_sendRspMsg2App(short cmd, short seq, const void* data, const int len, C
 	memcpy(msg->data, data, len);
 
 	char topic[IMEI_LENGTH * 2 + 20] = {0};
-	snprintf(topic, IMEI_LENGTH * 2 + 20, "dev2app/%s/e2link/cmd", get_IMEI_STRING(obj->IMEI));
+    //TODO
+//	snprintf(topic, IMEI_LENGTH * 2 + 20, "dev2app/%s/e2link/cmd", get_IMEI_STRING(obj->IMEI));
 
-	app_sendRawData2App(topic, msg, sizeof(APP_MSG) + len, ctx);
+//	app_sendRawData2App(topic, msg, sizeof(APP_MSG) + len, ctx);
 }
 
 
-void app_sendGpsMsg2App(OBJ_MC* obj, void* ctx)
+//void app_sendGpsMsg2App(OBJECT* obj, void* ctx)
+void app_sendGpsMsg2App(void* obj, void* ctx)
 {
 	if (!obj)
 	{
@@ -113,17 +116,19 @@ void app_sendGpsMsg2App(OBJ_MC* obj, void* ctx)
 	}
 
 
+    //TODO:
 	msg->header = htons(0xAA55);
-	msg->timestamp = htonl(obj->timestamp);
-	msg->lat = htonl(obj->lat);
-	msg->lng = htonl(obj->lon);
-	msg->course = htons(obj->course);
-	msg->speed = obj->speed;
-	msg->isGPS = obj->isGPSlocated;
+//	msg->timestamp = htonl(obj->timestamp);
+//	msg->lat = htonl(obj->lat);
+//	msg->lng = htonl(obj->lon);
+//	msg->course = htons(obj->course);
+//	msg->speed = obj->speed;
+//	msg->isGPS = obj->isGPSlocated;
 
 
 	char topic[IMEI_LENGTH * 2 + 20] = {0};
-	snprintf(topic, IMEI_LENGTH * 2 + 20, "dev2app/%s/e2link/gps", get_IMEI_STRING(obj->IMEI));
+//TODO
+//	snprintf(topic, IMEI_LENGTH * 2 + 20, "dev2app/%s/e2link/gps", get_IMEI_STRING(obj->IMEI));
 
 	app_sendRawData2App(topic, msg, sizeof(GPS_MSG), ctx);
 }
@@ -144,12 +149,12 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 
 	strncpy(strIMEI, pStart, pEnd - pStart);
 
-	OBJ_MC* obj = mc_get(strIMEI);
-	if (!obj)
-	{
-		LOG_ERROR("obj %s not exist", strIMEI);
-		return -1;
-	}
+//	OBJECT* obj = obj_get(strIMEI);
+//	if (!obj)
+//	{
+//		LOG_ERROR("obj %s not exist", strIMEI);
+//		return -1;
+//	}
 
 	APP_MSG* pMsg = data;
 	if (!pMsg)
@@ -177,28 +182,28 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 	int token = (cmd << 16) + seq;
 
 	LOG_INFO("receive app CMD:%#x", ntohs(pMsg->cmd));
-	app_sendRawData2TK115(pMsg->data, ntohs(pMsg->length) - sizeof(pMsg->seq), obj, token);
+	app_sendRawData2TK115(pMsg->data, ntohs(pMsg->length) - sizeof(pMsg->seq), strIMEI, token);
 
 	return 0;
 }
 
-void app_subscribe(struct mosquitto *mosq, OBJ_MC *obj)
+void app_subscribe(struct mosquitto *mosq, void *obj)
 {
 	char topic[IMEI_LENGTH * 2 + 20];
 	memset(topic, 0, sizeof(topic));
 
-	snprintf(topic, IMEI_LENGTH * 2 + 20, "app2dev/%s/e2link/cmd", get_IMEI_STRING(obj->IMEI));
-        LOG_INFO("subscribe topic: %s", topic);
+/*	snprintf(topic, IMEI_LENGTH * 2 + 20, "app2dev/%s/e2link/cmd", get_IMEI_STRING(obj->IMEI));
+        LOG_INFO("subscribe topic: %s", topic);*/
 	mosquitto_subscribe(mosq, NULL, topic, 0);
 }
 
-void app_unsubscribe(struct mosquitto *mosq, OBJ_MC *obj)
+void app_unsubscribe(struct mosquitto *mosq, void *obj)
 {
 	char topic[IMEI_LENGTH * 2 + 20];
 	memset(topic, 0, sizeof(topic));
 
-	snprintf(topic, IMEI_LENGTH * 2 + 20, "app2dev/%s/e2link/cmd", get_IMEI_STRING(obj->IMEI));
-        LOG_INFO("unsubscribe topic: %s", topic);
+/*	snprintf(topic, IMEI_LENGTH * 2 + 20, "app2dev/%s/e2link/cmd", get_IMEI_STRING(obj->IMEI));
+        LOG_INFO("unsubscribe topic: %s", topic);*/
 	mosquitto_unsubscribe(mosq, NULL, topic);
 }
 

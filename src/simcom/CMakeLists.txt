@@ -1,0 +1,33 @@
+SET(SOURCE_FILE
+    ../common/log.c
+    ../common/log.h
+    ../common/msg_proc_app.c
+    ../common/msg_proc_app.h
+    ../common/mqtt.c
+    ../common/mqtt.h
+    ../common/yunba_push.c
+    ../common/yunba_push.h
+    ../common/curl.c
+    ../common/curl.h
+    ../common/session.h
+    ../common/session.c
+    ../common/object.c
+    ../common/object.h
+
+    ../3rd/cJSON/cJSON.c
+    ../3rd/cJSON/cJSON.h
+
+
+    main.c
+    server_simcom.c
+    server_simcom.h
+    msg_proc_simcom.c
+    msg_proc_simcom.h
+    msg_simcom.c
+    msg_simcom.h
+    env.c
+    env.h)
+
+MESSAGE(STATUS "configure Server for SIMCOM")
+add_executable(simcom_server ${SOURCE_FILE})
+TARGET_LINK_LIBRARIES(simcom_server m event zlog curl mosquitto paho-mqtt3c)

@@ -5,12 +5,12 @@
  *      Author: jk
  */
 
-#ifndef SRC_MSG_MC_H_
-#define SRC_MSG_MC_H_
+#ifndef SRC_MSG_TK115_H_
+#define SRC_MSG_TK115_H_
 
 #include <stdlib.h>
 
-#include "macro_mc.h"
+#include "macro.h"
 
 #define MSG_SIGNATURE_LENGTH (2)
 
@@ -186,4 +186,4 @@ MC_MSG_HEADER* alloc_rspMsg(const MC_MSG_HEADER* pMsg);
 
 void free_msg(MC_MSG_HEADER* msg);
 
-#endif /* SRC_MSG_MC_H_ */
+#endif /* SRC_MSG_TK115_H_ */

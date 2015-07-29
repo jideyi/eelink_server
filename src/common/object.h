@@ -5,11 +5,10 @@
  *      Author: jk
  */
 
-#ifndef SRC_OBJECT_MC_
-#define SRC_OBJECT_MC_
+#ifndef SRC_OBJECT_
+#define SRC_OBJECT_
 
-#include "macro_mc.h"
-#include "cb_ctx_mc.h"
+#include "macro.h"
 
 
 typedef struct
@@ -58,20 +57,16 @@ typedef struct
 
     int device_id;
     int sensor_id;
+} OBJECT;
 
-    int isOnline;
-    CB_CTX* session;
-}OBJ_MC;
+void obj_initial();
+OBJECT *obj_new();
+void obj_add(OBJECT *obj);
+OBJECT *obj_get(const char IMEI[]);
+void obj_destruct();
 
-void mc_obj_initial();
-OBJ_MC* mc_obj_new();
-void mc_obj_add(OBJ_MC* obj);
-OBJ_MC* mc_get(char IMEI[]);
-void mc_obj_destruct();
-
-int isYeelinkDeviceCreated(OBJ_MC* obj);
-int mc_obj_did_got(OBJ_MC* obj);
+int obj_did_got(OBJECT *obj);
 const char* get_IMEI_STRING(const unsigned char* IMEI);
 const char* getMacFromIMEI(const unsigned char* IMEI);
 
-#endif /* SRC_OBJECT_MC_ */
+#endif /* SRC_OBJECT_ */

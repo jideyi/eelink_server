@@ -6,28 +6,25 @@
  */
 #include <assert.h>
 #include <string.h>
+#include <time.h>
 
-#include "msg_proc_mc.h"
-#include "msg_mc.h"
-#include "leancloud_req.h"
-#include "object_mc.h"
-#include "yeelink_req.h"
-#include "mqtt.h"
+#include "msg_proc_tk115.h"
+#include "msg_tk115.h"
+#include "object.h"
 #include "msg_proc_app.h"
 #include "cJSON.h"
 #include "yunba_push.h"
-#include "time.h"
 #include "log.h"
 
 
-int mc_msg_send(void* msg, size_t len, CB_CTX* ctx)
+int msg_send(void *msg, size_t len, SESSION *ctx)
 {
     if (!ctx)
     {
         return -1;
     }
     
-    msg_send pfn = ctx->pSendMsg;
+    MSG_SEND pfn = ctx->pSendMsg;
     if (!pfn)
     {
             LOG_ERROR("device offline");
@@ -44,35 +41,36 @@ int mc_msg_send(void* msg, size_t len, CB_CTX* ctx)
     return 0;
 }
 
-int mc_login(const void* msg, CB_CTX* ctx)
+int tk115_login(const void *msg, SESSION *ctx)
 {
 	const MC_MSG_LOGIN_REQ* req = msg;
 
 
-	OBJ_MC* obj = ctx->obj;
+	OBJECT * obj = ctx->obj;
 	if (!obj)
 	{
 		LOG_DEBUG("mc IMEI(%s) login", get_IMEI_STRING(req->IMEI));
 
-		obj = mc_get(get_IMEI_STRING(req->IMEI));
+		obj = obj_get(req->IMEI);
 
 		if (!obj)
 		{
-			LOG_INFO("the first time of IMEI(%s)'s login: language(%s), locale(%d)",
-					get_IMEI_STRING(req->IMEI),
+			LOG_INFO("the first time of object(%s) login: language(%s), locale(%d)",
+					req->IMEI,
 					req->language ? "EN" : "CN",
 					req->locale / 4);
 
-			obj = mc_obj_new();
+			obj = obj_new();
 
-			memcpy(obj->IMEI, req->IMEI, IMEI_LENGTH);
 			const char* strIMEI = get_IMEI_STRING(req->IMEI);
+			memcpy(obj->IMEI, strIMEI, IMEI_LENGTH);
 			memcpy(obj->DID, strIMEI, strlen(strIMEI));
 			obj->language = req->language;
 			obj->locale = req->locale;
 
-			leancloud_saveDid(obj);
-			mc_obj_add(obj);
+//			leancloud_saveDid(obj);
+			//TODO: save the did to DB
+			obj_add(obj);
 		}
 
 		ctx->obj = obj;
@@ -82,13 +80,13 @@ int mc_login(const void* msg, CB_CTX* ctx)
 		LOG_DEBUG("mc IMEI(%s) already login", get_IMEI_STRING(req->IMEI));
 	}
 
-    obj->isOnline = 1;
-    obj->session = ctx;
+    session_add(ctx);
+
 
 	MC_MSG_LOGIN_RSP *rsp = alloc_rspMsg(msg);
 	if (rsp)
 	{
-		mc_msg_send(rsp, sizeof(MC_MSG_LOGIN_RSP), ctx);
+		msg_send(rsp, sizeof(MC_MSG_LOGIN_RSP), ctx);
 	}
 	else
 	{
@@ -98,7 +96,7 @@ int mc_login(const void* msg, CB_CTX* ctx)
 	return 0;
 }
 
-int mc_gps(const void* msg, CB_CTX* ctx)
+int tk115_gps(const void *msg, SESSION *ctx)
 {
 	const MC_MSG_GPS_REQ* req = msg;
 
@@ -121,19 +119,11 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 			ntohs(req->course),
 			req->location & 0x01 ? "YES" : "NO");
 
-	OBJ_MC* obj = ctx->obj;
+	OBJECT * obj = ctx->obj;
 	if (!obj)
 	{
 		LOG_WARN("MC must first login");
 		return -1;
-	}
-	//no response message needed
-    obj->isOnline = 1;
-    obj->session = ctx;
-    
-	if (!isYeelinkDeviceCreated(obj))
-	{
-		yeelink_createDevice(obj, ctx);
 	}
 
 	if(!(req->location&0x01) && obj->lon != 0)
@@ -172,12 +162,13 @@ int mc_gps(const void* msg, CB_CTX* ctx)
 	//stop upload data to yeelink
 	//yeelink_saveGPS(obj, ctx);
 
-	leancloud_saveGPS(obj);
+    //TODO:save GPS to database
+//	leancloud_saveGPS(obj);
 
 	return 0;
 }
 
-int mc_ping(const void* msg, CB_CTX* ctx)
+int tk115_ping(const void *msg, SESSION *ctx)
 {
 	const MC_MSG_PING_REQ *req = msg;
 
@@ -188,15 +179,15 @@ int mc_ping(const void* msg, CB_CTX* ctx)
 	MC_MSG_PING_RSP* rsp = alloc_rspMsg(msg);
 	if (rsp)
 	{
-		mc_msg_send(rsp, sizeof(MC_MSG_PING_RSP), ctx);
+		msg_send(rsp, sizeof(MC_MSG_PING_RSP), ctx);
 	}
 
 	return 0;
 }
 
-int mc_alarm(const void* msg, CB_CTX* ctx)
+int tk115_alarm(const void *msg, SESSION *ctx)
 {
-	OBJ_MC* obj = ctx->obj;
+	OBJECT * obj = ctx->obj;
 
 	if (!obj)
 	{
@@ -249,7 +240,7 @@ int mc_alarm(const void* msg, CB_CTX* ctx)
 	if (rsp)
 	{
 		set_msg_seq(&rsp->header, get_msg_seq(req));
-		mc_msg_send(&rsp->header, rspMsgLength, ctx);
+		msg_send(&rsp->header, rspMsgLength, ctx);
 	}
 	else
 	{
@@ -286,11 +277,11 @@ int mc_alarm(const void* msg, CB_CTX* ctx)
 	return 0;
 }
 
-int mc_status(const void* msg, CB_CTX* ctx)
+int tk115_status(const void *msg, SESSION *ctx)
 {
 	const MC_MSG_STATUS_REQ* req = msg;
 
-	OBJ_MC* obj = ctx->obj;
+	OBJECT * obj = ctx->obj;
 	if (!obj)
 	{
 		LOG_WARN("MC must first login");
@@ -315,13 +306,13 @@ int mc_status(const void* msg, CB_CTX* ctx)
 	MC_MSG_STATUS_RSP* rsp = alloc_rspMsg(msg);
 	if (rsp)
 	{
-		mc_msg_send(rsp, sizeof(MC_MSG_PING_RSP), ctx);
+		msg_send(rsp, sizeof(MC_MSG_PING_RSP), ctx);
 	}
 
 	return 0;
 }
 
-int mc_sms(const void* msg, CB_CTX* ctx)
+int tk115_sms(const void *msg, SESSION *ctx)
 {
 	const MC_MSG_SMS_REQ* req = msg;
 
@@ -330,14 +321,14 @@ int mc_sms(const void* msg, CB_CTX* ctx)
 	MC_MSG_SMS_RSP* rsp = alloc_rspMsg(msg);
 	if (rsp)
 	{
-		mc_msg_send(rsp, sizeof(MC_MSG_PING_RSP), ctx);
+		msg_send(rsp, sizeof(MC_MSG_PING_RSP), ctx);
 	}
 	return 0;
 }
 
-int mc_operator(const void* msg, CB_CTX* ctx)
+int tk115_operator(const void *msg, SESSION *ctx)
 {
-	OBJ_MC* obj = ctx->obj;
+	OBJECT * obj = ctx->obj;
 
 	const MC_MSG_OPERATOR_RSP* req = msg;
 
@@ -366,7 +357,7 @@ int mc_operator(const void* msg, CB_CTX* ctx)
 	return 0; //TODO:
 }
 
-int mc_data(const void* msg, CB_CTX* ctx __attribute__((unused)))
+int tk115_data(const void *msg, SESSION *ctx __attribute__((unused)))
 {
 	LOG_INFO("MC data message");
 

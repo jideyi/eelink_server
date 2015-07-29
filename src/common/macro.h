@@ -5,13 +5,11 @@
  *      Author: jk
  */
 
-#ifndef SRC_MACRO_MC_H_
-#define SRC_MACRO_MC_H_
+#ifndef SRC_MACRO_H_
+#define SRC_MACRO_H_
 
-#define IMEI_LENGTH (8)
+#define IMEI_LENGTH (15)
 #define MAX_DID_LEN (24)
-#define DID_LEN (22)
-#define CLIENT_ID_LEN (32)
 #define MAX_PWD_LEN (16)
 
 #define MAC_MAC_LEN 6
@@ -27,4 +25,4 @@ typedef struct
 	char ci[3]; //cell id, why the length is 3, not 2 ???
 }__attribute__((__packed__)) CGI_MC;
 
-#endif /* SRC_MACRO_MC_H_ */
+#endif /* SRC_MACRO_H_ */

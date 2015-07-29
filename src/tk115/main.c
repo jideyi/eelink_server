@@ -1,17 +1,14 @@
 #include <event2/event.h>
 #include <mosquitto.h>
-#include <curl/curl.h>
 #include <signal.h>
 #include <openssl/ssl.h>
+#include <event2/listener.h>
 
 #include "log.h"
 #include "version.h"
-#include "server_mc.h"
-#include "server_simcom.h"
-#include "curl.h"
+#include "object.h"
+#include "server_tk115.h"
 #include "yunba_push.h"
-#include "object_mc.h"
-#include "env.h"
 
 struct event_base *base = NULL;
 
@@ -34,7 +31,6 @@ static void sig_usr(int signo)
 int main(int argc, char **argv)
 {
     int port = 9876;
-    int simcom_port= 9877;
 
     setvbuf(stdout, NULL, _IONBF, 0);
 
@@ -48,21 +44,10 @@ int main(int argc, char **argv)
     	}
     }
 
-    if (argc >= 3)
-    {
-    	char* strPort = argv[2];
-    	int num = atoi(strPort);
-    	if (num)
-    	{
-    		simcom_port = num;
-    	}
-    }
-
-    printf("Electrombile Server %s, with event %s, mosquitto %d, curl %s\n",
+    printf("Electrombile Server %s, with event %s, mosquitto %d\n",
     		VERSION_STR,
 			LIBEVENT_VERSION,
-			mosquitto_lib_version(NULL, NULL, NULL),
-			curl_version());
+			mosquitto_lib_version(NULL, NULL, NULL));
 
     base = event_base_new();
     if (!base)
@@ -97,19 +82,11 @@ int main(int argc, char **argv)
     	return -1;
     }
 
-    rc = curl_global_init(CURL_GLOBAL_DEFAULT);
-    if (rc != CURLE_OK)
-    {
-    	LOG_FATAL("curl lib initial failed:%d", rc);
-    }
 
-    env_initial();
+    obj_initial();
 
-    mc_obj_initial();
 
-	leancloud_getOBJ();
-
-    struct evconnlistener* listener = server_mc_start(base, port);
+    struct evconnlistener* listener = server_start(base, port);
     if (listener)
     {
         LOG_INFO("start mc server successfully at port:%d", port);
@@ -120,32 +97,17 @@ int main(int argc, char **argv)
     	return 2;
     }
 
-    struct evconnlistener* listener_simcom = server_simcom(base, simcom_port);
-    if (listener_simcom)
-    {
-        LOG_INFO("start simcom server successfully at port:%d", simcom_port);
-    }
-    else
-    {
-        LOG_FATAL("start simcom server failed at port:%d", simcom_port);
-        return 2;
-    }
 
     //start the event loop
     LOG_INFO("start the event loop");
     event_base_dispatch(base);
 
 
-//    sk_free(SSL_COMP_get_compression_methods());
     LOG_INFO("stop mc server...");
-    evconnlistener_free(listener_simcom);
     evconnlistener_free(listener);
     event_base_free(base);
 
-    mc_obj_destruct();
-
-    env_cleanup();
-    curl_global_cleanup();
+    obj_destruct();
 
     yunba_disconnect();
 

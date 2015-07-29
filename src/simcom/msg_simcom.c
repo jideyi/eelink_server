@@ -5,6 +5,8 @@
  *      Author: jk
  */
 
+#include <malloc.h>
+#include <netinet/in.h>
 #include "msg_simcom.h"
 
 static unsigned short seq = 0;

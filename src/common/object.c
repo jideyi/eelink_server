@@ -7,13 +7,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include <time.h>
 #include <glib.h>
 
 #include "log.h"
-#include "object_mc.h"
+#include "object.h"
 
 /* global mc hash table */
 static GHashTable *g_table = NULL;
@@ -46,7 +44,7 @@ static int mc_readConfig()
 		ssize_t readlen = read(fd, &objBuf, sizeof(OBJ_SAVED));
 		if (readlen == sizeof(OBJ_SAVED))
 		{
-			OBJ_MC* obj = mc_obj_new();
+			OBJECT* obj = mc_obj_new();
 			memcpy(obj->IMEI, objBuf.IMEI, IMEI_LENGTH);
 			memcpy(obj->DID, objBuf.DID, MAX_DID_LEN);
 			memcpy(obj->pwd, objBuf.PWD, MAX_DID_LEN);
@@ -71,7 +69,7 @@ void mc_writeConfig(gpointer key, gpointer value, gpointer user_data)
 {
 	int fd = *(int*)user_data;
 
-    OBJ_MC* obj = (OBJ_MC*)value;
+    OBJECT* obj = (OBJECT*)value;
 
     OBJ_SAVED objBuf;
     memcpy(objBuf.IMEI, obj->IMEI, IMEI_LENGTH);
@@ -117,14 +115,14 @@ void mc_freeKey(gpointer key)
 
 void mc_freeValue(gpointer value)
 {
-    OBJ_MC* obj = (OBJ_MC*)value;
+    OBJECT * obj = (OBJECT *)value;
 
     LOG_DEBUG("free value IMEI:%s", get_IMEI_STRING(obj->IMEI));
 
     g_free(obj);
 }
 
-void mc_obj_initial()
+void obj_initial()
 {
     /* create mc hash table */
     g_table = g_hash_table_new_full(g_str_hash, g_str_equal, mc_freeKey, mc_freeValue);
@@ -132,7 +130,7 @@ void mc_obj_initial()
 	//mc_readConfig();
 }
 
-void mc_obj_destruct()
+void obj_destruct()
 {
 //	mc_saveConfig();
 
@@ -150,10 +148,10 @@ static void make_pwd(char pwd[])
     pwd[MAX_PWD_LEN - 1] = '\0';
 }
 
-OBJ_MC* mc_obj_new()
+OBJECT *obj_new()
 {
-	OBJ_MC* obj = g_malloc(sizeof(OBJ_MC));
-	memset(obj, 0, sizeof(OBJ_MC));
+	OBJECT * obj = g_malloc(sizeof(OBJECT));
+	memset(obj, 0, sizeof(OBJECT));
 
 	make_pwd(obj->pwd);
 
@@ -161,7 +159,7 @@ OBJ_MC* mc_obj_new()
 }
 
 /* add item into mc hash */
-void mc_obj_add(OBJ_MC* obj)
+void obj_add(OBJECT *obj)
 {
 	const char* strIMEI = get_IMEI_STRING(obj->IMEI);
 	gboolean rc = g_hash_table_insert(g_table, g_strdup(strIMEI), obj);
@@ -176,22 +174,22 @@ void mc_obj_add(OBJ_MC* obj)
 }
 
 
-void mc_obj_del(OBJ_MC* obj)
+void mc_obj_del(OBJECT * obj)
 {
-    OBJ_MC* t_obj = mc_get(obj->IMEI);
+    OBJECT * t_obj = obj_get(obj->IMEI);
     if(NULL != t_obj)
     {
         g_hash_table_remove(g_table, get_IMEI_STRING(obj->IMEI));
     }
 }
 
-OBJ_MC* mc_get(char IMEI[])
+OBJECT *obj_get(const char IMEI[])
 {
     return g_hash_table_lookup(g_table, IMEI);
 }
 
 #ifdef __GIZWITS_SUPPORT__
-int mc_obj_did_got(OBJ_MC* obj)
+int mc_obj_did_got(OBJECT* obj)
 {
 	return strlen(obj->DID) != 0;
 }
@@ -253,7 +251,7 @@ const unsigned char* get_IMEI(const char* strIMEI)
 }
 
 
-int isYeelinkDeviceCreated(OBJ_MC* obj)
+int isYeelinkDeviceCreated(OBJECT * obj)
 {
 	return obj->device_id != 0 && obj->sensor_id != 0 ;
 }

@@ -7,9 +7,9 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "msg_mc.h"
-#include "msg_sch_mc.h"
-#include "msg_proc_mc.h"
+#include "msg_tk115.h"
+#include "msg_sch_tk115.h"
+#include "msg_proc_tk115.h"
 
 #include "log.h"
 
@@ -31,28 +31,28 @@
 	zlog(cat[MOD_SCH_MC], __FILE__, sizeof(__FILE__) - 1, __func__, sizeof(__func__) - 1, __LINE__, ZLOG_LEVEL_FATAL, __VA_ARGS__)
 #endif
 
-typedef int (*MSG_PROC)(const void* msg, CB_CTX* ctx);
+typedef int (*MSG_PROC)(const void* msg, SESSION* ctx);
 typedef struct
 {
 	char cmd;
 	MSG_PROC pfn;
-}MC_MSG_PROC;
+} MSG_PROC_MAP;
 
 
 
-static MC_MSG_PROC msgProcs[] =
+static MSG_PROC_MAP msgProcs[] =
 {
-		{CMD_LOGIN,	mc_login},
-		{CMD_GPS,	mc_gps},
-		{CMD_PING,	mc_ping},
-		{CMD_ALARM, mc_alarm},
-		{CMD_STATUS,mc_status},
-		{CMD_SMS, 	mc_sms},
-		{CMD_OPERAT,mc_operator},
-		{CMD_DATA,	mc_data},
+		{CMD_LOGIN, tk115_login},
+		{CMD_GPS, tk115_gps},
+		{CMD_PING, tk115_ping},
+		{CMD_ALARM, tk115_alarm},
+		{CMD_STATUS, tk115_status},
+		{CMD_SMS, tk115_sms},
+		{CMD_OPERAT, tk115_operator},
+		{CMD_DATA, tk115_data},
 };
 
-int handle_one_msg(const void* m, CB_CTX* ctx)
+int handle_one_msg(const void* m, SESSION* ctx)
 {
 	MC_MSG_HEADER* msg = (MC_MSG_HEADER*)m;
 
@@ -72,7 +72,7 @@ int handle_one_msg(const void* m, CB_CTX* ctx)
 	return -1;
 }
 
-int handle_mc_msg(const char* m, size_t msgLen, CB_CTX* ctx)
+int handle_msg(const char *m, size_t msgLen, SESSION *ctx)
 {
 	MC_MSG_HEADER* msg = (MC_MSG_HEADER*)m;
 
