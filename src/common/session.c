@@ -20,7 +20,7 @@ void session_freeValue(gpointer value)
 {
 	SESSION * session = (SESSION *)value;
 
-    LOG_DEBUG("free value IMEI:%s of session_table", get_IMEI_STRING((OBJECT *)(session->obj)->IMEI));
+    LOG_DEBUG("free value IMEI:%s of session_table", get_IMEI_STRING(((OBJECT *)session->obj)->IMEI));
 
     g_free(session);
 }
@@ -37,7 +37,7 @@ void session_table_destruct()
 
 int session_add(SESSION *session)
 {
-    const char *strIMEI = get_IMEI_STRING((OBJECT *)(session->obj)->IMEI);
+    const char *strIMEI = get_IMEI_STRING(((OBJECT *)session->obj)->IMEI);
 	g_hash_table_insert(session_table, g_strdup(strIMEI), session);
     LOG_INFO("session %s added", strIMEI);
     return 0;
