@@ -19,8 +19,11 @@ typedef struct
     MSG_SEND pSendMsg;
 }SESSION;
 
-int session_add(SESSION*);
-int session_del(SESSION*);
+void session_table_initial();
+void session_table_destruct();
+
+int session_add(SESSION *);
+int session_del(SESSION *);
 SESSION* session_get(const char* imei);
 
 #endif //ELECTROMBILE_SESSION_H
