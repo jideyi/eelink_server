@@ -162,15 +162,9 @@ OBJECT *obj_new()
 void obj_add(OBJECT *obj)
 {
 	const char* strIMEI = get_IMEI_STRING(obj->IMEI);
-	gboolean rc = g_hash_table_insert(object_table, g_strdup(strIMEI), obj);
-    if(rc != TRUE)
-    {
-        LOG_WARN("duplicate IMEI(%s)", get_IMEI_STRING(obj->IMEI));
-    }
-    else
-    {
-    	LOG_INFO("obj %s added", strIMEI);
-    }
+	g_hash_table_insert(object_table, g_strdup(strIMEI), obj);
+    LOG_INFO("obj %s added", strIMEI);
+    
 }
 
 
