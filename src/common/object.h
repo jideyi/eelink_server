@@ -59,11 +59,14 @@ typedef struct
     int sensor_id;
 } OBJECT;
 
-void obj_initial();
+void obj_table_initial();
+void obj_table_destruct();
+
 OBJECT *obj_new();
 void obj_add(OBJECT *obj);
+void obj_del(OBJECT *obj);
 OBJECT *obj_get(const char IMEI[]);
-void obj_destruct();
+
 
 int obj_did_got(OBJECT *obj);
 const char* get_IMEI_STRING(const unsigned char* IMEI);

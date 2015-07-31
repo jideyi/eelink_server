@@ -95,7 +95,7 @@ int main(int argc, char **argv)
 
     env_initial();
 
-    obj_initial();
+    obj_table_initial();
 
 
     struct evconnlistener* listener_simcom = server_simcom(base, simcom_port);
@@ -120,7 +120,7 @@ int main(int argc, char **argv)
 
     event_base_free(base);
 
-    obj_destruct();
+    obj_table_destruct();
 
     env_cleanup();
     curl_global_cleanup();
