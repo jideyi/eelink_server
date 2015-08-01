@@ -13,6 +13,10 @@ SET(SOURCE_FILE
     ../common/session.c
     ../common/object.c
     ../common/object.h
+    ../common/db.c
+    ../common/db.h
+    ../common/conf.c
+    ../common/conf.h
 
     ../3rd/cJSON/cJSON.c
     ../3rd/cJSON/cJSON.h
@@ -30,4 +34,4 @@ SET(SOURCE_FILE
 
 MESSAGE(STATUS "configure Server for SIMCOM")
 add_executable(simcom_server ${SOURCE_FILE})
-TARGET_LINK_LIBRARIES(simcom_server m event zlog curl mosquitto paho-mqtt3c)
+TARGET_LINK_LIBRARIES(simcom_server m event zlog curl mosquitto paho-mqtt3c mysqlclient)
