@@ -83,7 +83,7 @@ int main(int argc, char **argv)
     }
 
 
-    obj_initial();
+    obj_table_initial();
 
 
     struct evconnlistener* listener = server_start(base, port);
@@ -107,7 +107,7 @@ int main(int argc, char **argv)
     evconnlistener_free(listener);
     event_base_free(base);
 
-    obj_destruct();
+    obj_table_destruct();
 
     yunba_disconnect();
 

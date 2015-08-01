@@ -11,6 +11,7 @@
 #include "server_tk115.h"
 #include "msg_sch_tk115.h"
 #include "object.h"
+#include "session.h"
 
 static void send_msg(struct bufferevent* bev, const void* buf, size_t n)
 {

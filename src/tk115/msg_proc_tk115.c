@@ -11,6 +11,7 @@
 #include "msg_proc_tk115.h"
 #include "msg_tk115.h"
 #include "object.h"
+#include "session.h"
 #include "msg_proc_app.h"
 #include "cJSON.h"
 #include "yunba_push.h"

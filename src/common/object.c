@@ -14,7 +14,7 @@
 #include "object.h"
 
 /* global mc hash table */
-static GHashTable *g_table = NULL;
+static GHashTable *object_table = NULL;
 
 
 #ifdef __LOCAL_STORARY__
@@ -99,7 +99,7 @@ int mc_saveConfig()
     }
 
     /* foreach mc hash */
-    g_hash_table_foreach(g_table, mc_writeConfig, &fd);
+    g_hash_table_foreach(object_table, mc_writeConfig, &fd);
 
     close(fd);
 
@@ -107,34 +107,34 @@ int mc_saveConfig()
 }
 #endif
 
-void mc_freeKey(gpointer key)
+void object_freeKey(gpointer key)
 {
-    LOG_DEBUG("free key IMEI:%s", key);
+    LOG_DEBUG("free key IMEI:%s of object_table", key);
     g_free(key);
 }
 
-void mc_freeValue(gpointer value)
+void object_freeValue(gpointer value)
 {
     OBJECT * obj = (OBJECT *)value;
 
-    LOG_DEBUG("free value IMEI:%s", get_IMEI_STRING(obj->IMEI));
+    LOG_DEBUG("free value IMEI:%s of object_table", get_IMEI_STRING(obj->IMEI));
 
     g_free(obj);
 }
 
-void obj_initial()
+void obj_table_initial()
 {
     /* create mc hash table */
-    g_table = g_hash_table_new_full(g_str_hash, g_str_equal, mc_freeKey, mc_freeValue);
+    object_table = g_hash_table_new_full(g_str_hash, g_str_equal, object_freeKey, object_freeValue);
 
 	//mc_readConfig();
 }
 
-void obj_destruct()
+void obj_table_destruct()
 {
 //	mc_saveConfig();
 
-    g_hash_table_destroy(g_table);
+    g_hash_table_destroy(object_table);
 }
 
 static void make_pwd(char pwd[])
@@ -162,30 +162,24 @@ OBJECT *obj_new()
 void obj_add(OBJECT *obj)
 {
 	const char* strIMEI = get_IMEI_STRING(obj->IMEI);
-	gboolean rc = g_hash_table_insert(g_table, g_strdup(strIMEI), obj);
-    if(rc != TRUE)
-    {
-        LOG_WARN("duplicate IMEI(%s)", get_IMEI_STRING(obj->IMEI));
-    }
-    else
-    {
-    	LOG_INFO("obj %s added", strIMEI);
-    }
+	g_hash_table_insert(object_table, g_strdup(strIMEI), obj);
+    LOG_INFO("obj %s added", strIMEI);
+    
 }
 
 
-void mc_obj_del(OBJECT * obj)
+void obj_del(OBJECT *obj)
 {
     OBJECT * t_obj = obj_get(obj->IMEI);
     if(NULL != t_obj)
     {
-        g_hash_table_remove(g_table, get_IMEI_STRING(obj->IMEI));
+        g_hash_table_remove(object_table, get_IMEI_STRING(obj->IMEI));
     }
 }
 
 OBJECT *obj_get(const char IMEI[])
 {
-    return g_hash_table_lookup(g_table, IMEI);
+    return g_hash_table_lookup(object_table, IMEI);
 }
 
 #ifdef __GIZWITS_SUPPORT__
