@@ -1,5 +1,5 @@
 /*
- * object_mc.c
+ * object.c
  *
  *  Created on: Apr 19, 2015
  *      Author: jk
@@ -12,108 +12,53 @@
 
 #include "log.h"
 #include "object.h"
+#include "db.h"
 
-/* global mc hash table */
+/* global hash table */
 static GHashTable *object_table = NULL;
 
-
-#ifdef __LOCAL_STORARY__
-#define CONFIG_FILE "../conf/config.dat"
-
-typedef struct
+static void obj_add_hash(OBJECT *obj)
 {
-	char IMEI[IMEI_LENGTH];
-	char DID[MAX_DID_LEN];
-	char PWD[MAX_PWD_LEN];
-    int device_id;
-    int sensor_id;
-}OBJ_SAVED;
+	const char* strIMEI = get_IMEI_STRING(obj->IMEI);
+	g_hash_table_insert(object_table, g_strdup(strIMEI), obj);
+    LOG_INFO("obj %s added to hashtable", strIMEI);
+}
 
-static int mc_readConfig()
+static void obj_add_db(OBJECT *obj)
 {
-	int fd = open(CONFIG_FILE, O_RDONLY);
-	if (fd == -1)
-	{
-        LOG_FATAL("open file for read fail");
-        return -1;
-	}
+	db_insertOBJ(obj->IMEI, obj->timestamp);
+	LOG_INFO("obj %s added to DB", obj->IMEI);
+}
 
-	while(1)
-	{
-		OBJ_SAVED objBuf;
-		ssize_t readlen = read(fd, &objBuf, sizeof(OBJ_SAVED));
-		if (readlen == sizeof(OBJ_SAVED))
-		{
-			OBJECT* obj = mc_obj_new();
-			memcpy(obj->IMEI, objBuf.IMEI, IMEI_LENGTH);
-			memcpy(obj->DID, objBuf.DID, MAX_DID_LEN);
-			memcpy(obj->pwd, objBuf.PWD, MAX_DID_LEN);
-            obj->device_id = objBuf.device_id;
-            obj->sensor_id = objBuf.sensor_id;
+/* It is a callback function to initialize object_table.Func db_doWithOBJ needs it to handle with every result(imei, lastlogintime).*/
+static void obj_initial(const char *imei, int timestamp)
+{
+	OBJECT *obj = obj_new();
+	memcpy(obj->IMEI, imei, IMEI_LENGTH);
+	obj->timestamp = timestamp;
+	obj_add_hash(obj);
+}
 
-            /* add to mc hash */
-            mc_obj_add(obj);
-		}
-		else
-		{
-			break;
-		}
-	};
+static void obj_update(gpointer key, gpointer value, gpointer user_data)
+{
+	OBJECT *obj = (OBJECT *)value;
+	db_updateOBJ(obj->IMEI, obj->timestamp);
+}
 
-    close(fd);
-    return 0;
+static void obj_table_save()
+{
+    /* foreach hash */
+    g_hash_table_foreach(object_table, obj_update, NULL);
 }
 
 
-void mc_writeConfig(gpointer key, gpointer value, gpointer user_data)
-{
-	int fd = *(int*)user_data;
-
-    OBJECT* obj = (OBJECT*)value;
-
-    OBJ_SAVED objBuf;
-    memcpy(objBuf.IMEI, obj->IMEI, IMEI_LENGTH);
-	memcpy(objBuf.DID, obj->DID, MAX_DID_LEN);
-	memcpy(objBuf.PWD, obj->pwd, MAX_PWD_LEN);
-    objBuf.device_id = obj->device_id;
-    objBuf.sensor_id = obj->sensor_id;
-
-	ssize_t written = write(fd, &objBuf, sizeof(OBJ_SAVED));
-	if (written == -1)
-	{
-		LOG_ERROR("save config error");
-		return;
-	}
-
-	return;
-}
-
-
-int mc_saveConfig()
-{
-    int fd = open(CONFIG_FILE, O_RDWR | O_CREAT, S_IRWXU);
-    if(-1 == fd)
-    {
-        LOG_FATAL("open file for write fail");
-        return -1;
-    }
-
-    /* foreach mc hash */
-    g_hash_table_foreach(object_table, mc_writeConfig, &fd);
-
-    close(fd);
-
-    return 0;
-}
-#endif
-
-void object_freeKey(gpointer key)
+void obj_freeKey(gpointer key)
 {
     LOG_DEBUG("free key IMEI:%s of object_table", key);
     g_free(key);
 }
 
-void object_freeValue(gpointer value)
+void obj_freeValue(gpointer value)
 {
     OBJECT * obj = (OBJECT *)value;
 
@@ -124,16 +69,15 @@ void object_freeValue(gpointer value)
 
 void obj_table_initial()
 {
-    /* create mc hash table */
-    object_table = g_hash_table_new_full(g_str_hash, g_str_equal, object_freeKey, object_freeValue);
-
-	//mc_readConfig();
+    /* create hash table */
+    object_table = g_hash_table_new_full(g_str_hash, g_str_equal, obj_freeKey, obj_freeValue);
+    /* read imei data from db*/
+	db_doWithOBJ(obj_initial);
 }
 
 void obj_table_destruct()
 {
-//	mc_saveConfig();
-
+	obj_table_save();
     g_hash_table_destroy(object_table);
 }
 
@@ -158,15 +102,12 @@ OBJECT *obj_new()
 	return obj;
 }
 
-/* add item into mc hash */
+/* add item into hash and db */
 void obj_add(OBJECT *obj)
 {
-	const char* strIMEI = get_IMEI_STRING(obj->IMEI);
-	g_hash_table_insert(object_table, g_strdup(strIMEI), obj);
-    LOG_INFO("obj %s added", strIMEI);
-    
+	obj_add_hash(obj);
+	obj_add_db(obj);
 }
-
 
 void obj_del(OBJECT *obj)
 {
@@ -183,7 +124,7 @@ OBJECT *obj_get(const char IMEI[])
 }
 
 #ifdef __GIZWITS_SUPPORT__
-int mc_obj_did_got(OBJECT* obj)
+int obj_did_got(OBJECT* obj)
 {
 	return strlen(obj->DID) != 0;
 }

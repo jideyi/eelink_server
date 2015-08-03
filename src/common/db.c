@@ -112,6 +112,52 @@ int db_saveCGI(const char *imeiName, int timestamp, short mcc, short mnc, short 
         LOG_ERROR("can't insert into cgi_%s", imeiName);
         return -1;
     }
-
     return 0;
 }
+
+/*Object db
+Names of the table and columns need modifing*/
+
+int db_doWithOBJ(void (*func)(const char*, int))
+{
+    char query[] = "select imei, lastlogintime from object";
+    if(mysql_query(conn, query))
+    {
+        LOG_FATAL("can't get objects from db");
+        return -1;
+    }
+    MYSQL_RES *result;
+    MYSQL_ROW row;
+    result = mysql_use_result();
+    while(row= mysql_fetch_row(result))
+    {
+        func(row[0], row[1]);
+    }
+    mysql_free_result(result);
+    return 0;
+}
+
+int db_insertOBJ(const char *imeiName, int lastlogintime)
+{
+    char query[MAX_QUERY];
+    sprintf(query, "insert into object(imei, lastlogintime) values(\'%s\', %d)", imeiName, lastlogintime);
+    if(mysql_query(conn, query))
+    {
+        LOG_ERROR("can't insert %s into object", imei);
+        return -1;
+    }
+    return 0;
+}
+
+int db_updateOBJ(const char *imeiName, int lastLoginTime)
+{
+    char query[MAX_QUERY];
+    sprintf(query, "update object set lastlogintime = %d where imei = \'%s\'", lastLoginTime, imeiName);
+    if(mysql_query(conn, query))
+    {
+        LOG_ERROR("can't update Obj where imei = %s", imeiName);
+        return -1;
+    }
+    return 0;
+}
+
