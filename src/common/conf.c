@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <glib.h>
+#include "log.h"
 
 static GKeyFile *conf;
 static GError *conf_error;
@@ -30,7 +31,7 @@ gchar *conf_get_string(const gchar *group_name, const gchar *key)
 	result = g_key_file_get_string(conf, group_name, key, &conf_error);
 	if(NULL == result)
 	{
-		LOG_ERR("can't get [%s]:%s from the configuration file :%s", group_name, key, conf_error->message);
+		LOG_ERROR("can't get [%s]:%s from the configuration file :%s", group_name, key, conf_error->message);
 		return NULL;
 	}
 	return result;
@@ -42,7 +43,7 @@ gint conf_get_integer(const gchar *group_name, const gchar *key)
 	result = g_key_file_get_integer(conf, group_name, key, &conf_error);
 	if(!result && conf_error && (conf_error->code == G_KEY_FILE_ERROR_KEY_NOT_FOUND || conf_error->code == G_KEY_FILE_ERROR_INVALID_VALUE))
 	{
-		LOG_ERR("can't get [%s]:%s from the configuration file :%s", group_name, key, conf_error->message);
+		LOG_ERROR("can't get [%s]:%s from the configuration file :%s", group_name, key, conf_error->message);
 		return 0;
 	}
 	return result;
@@ -69,7 +70,7 @@ gint conf_save_and_close(const gchar *conf_file)
 	FILE *fp = fopen(conf_file, "w");
 	if(NULL == fp)
 	{
-		LOG_ERR("can't open the configuration file: %s", conf_file);
+		LOG_ERROR("can't open the configuration file: %s", conf_file);
 		return -1;
 	}
 	fwrite(conf_update, 1, length, fp);
