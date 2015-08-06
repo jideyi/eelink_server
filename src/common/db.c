@@ -12,7 +12,7 @@
 
 #include "db.h"
 #include "log.h"
-#include "macro_mc.h"
+#include "macro.h"
 
 static MYSQL *conn;
 
@@ -128,7 +128,7 @@ int db_doWithOBJ(void (*func)(const char*, int))
     }
     MYSQL_RES *result;
     MYSQL_ROW row;
-    result = mysql_use_result();
+    result = mysql_use_result(conn);
     while(row= mysql_fetch_row(result))
     {
         func(row[0], row[1]);
