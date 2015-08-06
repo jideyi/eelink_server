@@ -137,13 +137,14 @@ int tk115_gps(const void *msg, SESSION *ctx)
 		app_sendGpsMsg2App(obj, ctx);
 		return 0;
 	}
+	
 	if (obj->lat == ntohl(req->lat)
 		&& obj->lon == ntohl(req->lon)
 		&& obj->speed == req->speed
 		&& obj->course == ntohs(req->course))
 	{
 		LOG_INFO("No need to save data to leancloud");
-	        obj->timestamp = ntohl(req->timestamp);
+		obj->timestamp = ntohl(req->timestamp);
 		obj->isGPSlocated = req->location & 0x01;
 		app_sendGpsMsg2App(obj, ctx);
 		return 0;
