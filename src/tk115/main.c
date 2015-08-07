@@ -9,6 +9,9 @@
 #include "object.h"
 #include "server_tk115.h"
 #include "yunba_push.h"
+#include "db.h"
+#include "session.h"
+
 
 struct event_base *base = NULL;
 
@@ -82,9 +85,15 @@ int main(int argc, char **argv)
     	return -1;
     }
 
+    rc = db_initial();
+    if(rc)
+    {
+        LOG_FATAL("connect to mysql failed");
+        return -1;
+    }
 
     obj_table_initial();
-
+    session_table_initial();
 
     struct evconnlistener* listener = server_start(base, port);
     if (listener)
@@ -107,7 +116,10 @@ int main(int argc, char **argv)
     evconnlistener_free(listener);
     event_base_free(base);
 
+    session_table_destruct();
     obj_table_destruct();
+
+    db_destruct();
 
     yunba_disconnect();
 
