@@ -175,13 +175,12 @@ int tk115_gps(const void *msg, SESSION *ctx)
 	if (req->location & 0x01)
     {
         //int db_saveGPS(const char *name, int timestamp, int lat, int lon, char speed, short course)
-        db_saveGPS(obj->IMEI, req->timestamp, req->lat, req->lon, req->speed, req->course);
-        
+        db_saveGPS(obj->IMEI, obj->timestamp, obj->lat, obj->lon, obj->speed, obj->course);
     }
     else
     {
         //int db_saveCGI(const char *name, int timestamp, short mcc, short mnc, short lac, char ci[])
-        db_saveCGI(obj->IMEI, req->timestamp, req->cell.mcc, req->cell.mnc, req->cell.lac, req->cell.ci);
+        db_saveCGI(obj->IMEI, obj->timestamp, obj>cell.mcc, obj->cell.mnc, obj->cell.lac, obj->cell.ci);
     }
 
 
