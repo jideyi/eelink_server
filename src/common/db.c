@@ -137,10 +137,10 @@ int db_doWithOBJ(void (*func)(const char*, int))
     return 0;
 }
 
-int db_insertOBJ(const char *imeiName, int lastlogintime)
+int db_insertOBJ(const char *imeiName, int lastLoginTime)
 {
     char query[MAX_QUERY];
-    sprintf(query, "insert into object(imei, lastlogintime) values(\'%s\', %d)", imeiName, lastlogintime);
+    sprintf(query, "insert into object(imei, lastlogintime) values(\'%s\', %d)", imeiName, lastLoginTime);
     if(mysql_query(conn, query))
     {
         LOG_ERROR("can't insert %s into object", imei);
