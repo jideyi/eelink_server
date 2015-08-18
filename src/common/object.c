@@ -19,7 +19,7 @@ static GHashTable *object_table = NULL;
 
 static void obj_add_hash(OBJECT *obj)
 {
-	const char* strIMEI = get_IMEI_STRING(obj->IMEI);
+	const char* strIMEI = obj->IMEI;
 	g_hash_table_insert(object_table, g_strdup(strIMEI), obj);
     LOG_INFO("obj %s added to hashtable", strIMEI);
 }
@@ -30,15 +30,17 @@ static void obj_add_db(OBJECT *obj)
 	LOG_INFO("obj %s added to DB", obj->IMEI);
 }
 
-/* It is a callback function to initialize object_table.Func db_doWithOBJ needs it to handle with every result(imei, lastlogintime).*/
+/* it is a callback to initialize object_table.Func db_doWithOBJ needs it to handle with every result(imei, lastlogintime).*/
 static void obj_initial(const char *imei, int timestamp)
 {
 	OBJECT *obj = obj_new();
 	memcpy(obj->IMEI, imei, IMEI_LENGTH);
+	obj->IMEI[IMEI_LENGTH] = 0;
 	obj->timestamp = timestamp;
 	obj_add_hash(obj);
 }
 
+//it is a callback to update obj into db
 static void obj_update(gpointer key, gpointer value, gpointer user_data)
 {
 	OBJECT *obj = (OBJECT *)value;
@@ -114,7 +116,7 @@ void obj_del(OBJECT *obj)
     OBJECT * t_obj = obj_get(obj->IMEI);
     if(NULL != t_obj)
     {
-        g_hash_table_remove(object_table, get_IMEI_STRING(obj->IMEI));
+        g_hash_table_remove(object_table, obj->IMEI);
     }
 }
 
@@ -147,32 +149,33 @@ const char* getMacFromIMEI(const unsigned char* IMEI)
 
 #endif
 
+//imei of 8 bits to imei of 16 bits, the result ends by '\0'
 const char* get_IMEI_STRING(const unsigned char* IMEI)
 {
-	static char strIMEI[IMEI_LENGTH * 2 + 1];
+	static char strIMEI[IMEI_LENGTH + 1];
 	strcpy(strIMEI, "unknown imei");
 
 	if (!IMEI)
 	{
 		return strIMEI;
 	}
-
-	for (int i = 0; i < IMEI_LENGTH; i++)
+	for (int i = 0; i < ((IMEI_LENGTH + 1) / 2); i++)
 	{
 		sprintf(strIMEI + i * 2, "%02x", IMEI[i]);
 	}
-	strIMEI[IMEI_LENGTH * 2] = 0;
+	strIMEI[IMEI_LENGTH] = 0;
 
 	return strIMEI;
 }
 
+//imei of 16 bits to imei of 8 bits, the result ends by '\0'
 const unsigned char* get_IMEI(const char* strIMEI)
 {
-    static unsigned char IMEI[IMEI_LENGTH];
+    static unsigned char IMEI[IMEI_LENGTH / 2 + 1];
     unsigned char temp[2] = {0};
     int temp_a, temp_b;
 
-    for (int i = 0; i < IMEI_LENGTH * 2; )
+    for (int i = 0; i < IMEI_LENGTH; )
     {
         temp[0] = strIMEI[i];
         temp_a = atoi(temp);
@@ -181,6 +184,7 @@ const unsigned char* get_IMEI(const char* strIMEI)
         IMEI[i / 2] = temp_a * 16 + temp_b;
         i += 2;
     }
+    IMEI[IMEI_LENGTH / 2] = 0;
 
     return IMEI;
 }
