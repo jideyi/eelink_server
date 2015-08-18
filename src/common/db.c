@@ -61,10 +61,10 @@ int db_createGPS(const char* tableName) //okay
 {
     char query[MAX_QUERY];
     //create table gps_IMEI(timestamp INT, lat INT, lon INT, speed TINYINT, course SMALLINT)
-    sprintf(query, "create table %s(timestamp INT,lat INT,lon INT,speed TINYINT,course SMALLINT,primary key(timestamp))", tableName);
+    sprintf(query, "create table gps_%s(timestamp INT,lat INT,lon INT,speed TINYINT,course SMALLINT,primary key(timestamp))", tableName);
     if(mysql_query(conn, query))
     {
-        LOG_ERROR("can't create table: %s", tableName);
+        LOG_ERROR("can't create table: gps_%s", tableName);
         return -1;
     }
     return 0;
@@ -74,10 +74,10 @@ int db_createCGI(const char* tableName)
 {
     char query[MAX_QUERY];
     //create table cgi_IMEI(timestamp INT, mcc SMALLINT, mnc SMALLINT, lac SMALLINT, ci CHAR(3))
-    sprintf(query, "create table %s(timestamp INT,mcc SMALLINT,mnc SMALLINT,lac SMALLINT,ci CHAR(3),primary key(timestamp))", tableName);
+    sprintf(query, "create table cgi_%s(timestamp INT,mcc SMALLINT,mnc SMALLINT,lac SMALLINT,ci CHAR(3),primary key(timestamp))", tableName);
     if(mysql_query(conn, query))
     {
-        LOG_ERROR("can't create table: %s", tableName);
+        LOG_ERROR("can't create table: cgi_%s", tableName);
         return -1;
     }
     return 0;

@@ -95,6 +95,12 @@ int tk115_login(const void *msg, SESSION *ctx)
 		//TODO: LOG_ERROR
 	}
 
+	if (!db_isTableCreated(obj->IMEI))
+    {
+        db_createGPS(obj->IMEI);
+        db_createCGI(obj->IMEI);
+    }
+
 	return 0;
 }
 
