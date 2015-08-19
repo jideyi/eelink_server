@@ -50,27 +50,28 @@ int tk115_login(const void *msg, SESSION *ctx)
 	OBJECT * obj = ctx->obj;
 	if (!obj)
 	{
-		LOG_DEBUG("mc IMEI(%s) login", get_IMEI_STRING(req->IMEI));
+		const char* strIMEI = get_IMEI_STRING(req->IMEI);
+		LOG_DEBUG("mc IMEI(%s) login", strIMEI);
 
-		obj = obj_get(req->IMEI);
+		obj = obj_get(strIMEI);
 
 		if (!obj)
 		{
 			LOG_INFO("the first time of object(%s) login: language(%s), locale(%d)",
-					req->IMEI,
+					strIMEI,
 					req->language ? "EN" : "CN",
 					req->locale / 4);
 
 			obj = obj_new();
 
-			const char* strIMEI = get_IMEI_STRING(req->IMEI);
-			memcpy(obj->IMEI, strIMEI, IMEI_LENGTH);
+			memcpy(obj->IMEI, strIMEI, IMEI_LENGTH + 1);
 			memcpy(obj->DID, strIMEI, strlen(strIMEI));
 			obj->language = req->language;
 			obj->locale = req->locale;
 
 //			leancloud_saveDid(obj);
-			//TODO: save the did to DB
+
+			//add object to table and db
 			obj_add(obj);
 		}
 
@@ -93,6 +94,12 @@ int tk115_login(const void *msg, SESSION *ctx)
 	{
 		//TODO: LOG_ERROR
 	}
+
+	if (!db_isTableCreated(obj->IMEI))
+    {
+        db_createGPS(obj->IMEI);
+        db_createCGI(obj->IMEI);
+    }
 
 	return 0;
 }
@@ -137,13 +144,14 @@ int tk115_gps(const void *msg, SESSION *ctx)
 		app_sendGpsMsg2App(obj, ctx);
 		return 0;
 	}
+	
 	if (obj->lat == ntohl(req->lat)
 		&& obj->lon == ntohl(req->lon)
 		&& obj->speed == req->speed
 		&& obj->course == ntohs(req->course))
 	{
 		LOG_INFO("No need to save data to leancloud");
-	        obj->timestamp = ntohl(req->timestamp);
+		obj->timestamp = ntohl(req->timestamp);
 		obj->isGPSlocated = req->location & 0x01;
 		app_sendGpsMsg2App(obj, ctx);
 		return 0;
@@ -164,6 +172,18 @@ int tk115_gps(const void *msg, SESSION *ctx)
 	//yeelink_saveGPS(obj, ctx);
 
     //TODO:save GPS to database
+	if (req->location & 0x01)
+    {
+        //int db_saveGPS(const char *name, int timestamp, int lat, int lon, char speed, short course)
+        db_saveGPS(obj->IMEI, obj->timestamp, obj->lat, obj->lon, obj->speed, obj->course);
+    }
+    else
+    {
+        //int db_saveCGI(const char *name, int timestamp, short mcc, short mnc, short lac, char ci[])
+        db_saveCGI(obj->IMEI, obj->timestamp, obj->cell.mcc, obj->cell.mnc, obj->cell.lac, obj->cell.ci);
+    }
+
+
 //	leancloud_saveGPS(obj);
 
 	return 0;
