@@ -12,7 +12,7 @@
 #define DB_HOST "localhost"
 #define DB_USER "eelink"
 #define DB_PWD  "eelink"
-#define DB_PORT 3306
+#define DB_PORT (3306)
 #define DB_NAME "gps"
 #define MAX_QUERY 170
 
