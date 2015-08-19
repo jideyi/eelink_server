@@ -60,8 +60,8 @@ int db_isTableCreated(const char* imeiName)
 int db_createGPS(const char* tableName)
 {
     char query[MAX_QUERY];
-    //create table gps_IMEI(timestamp INT, lat INT, lon INT, speed TINYINT, course SMALLINT)
-    sprintf(query, "create table gps_%s(timestamp INT,lat INT,lon INT,speed TINYINT UNSIGNED,course SMALLINT,primary key(timestamp))", tableName);
+    //create table gps_IMEI(timestamp INT, lat DOUBLE, lon DOUBLE, speed TINYINT, course SMALLINT)
+    sprintf(query, "create table gps_%s(timestamp INT,lat DOUBLE(8,5),lon DOUBLE(8,5),speed TINYINT UNSIGNED,course SMALLINT,primary key(timestamp))", tableName);
     if(mysql_query(conn, query))
     {
         LOG_ERROR("can't create table: gps_%s", tableName);
@@ -83,11 +83,11 @@ int db_createCGI(const char* tableName)
     return 0;
 }
 
-int db_saveGPS(const char *imeiName, int timestamp, int lat, int lon, char speed, short course)
+int db_saveGPS(const char *imeiName, int timestamp, double lat, double lon, char speed, short course)
 {
-    //timestamp INT, lat INT, lon INT, speed TINYINT, course SMALLINT
+    //timestamp INT, lat DOUBLE, lon DOUBLE, speed TINYINT, course SMALLINT
     char query[MAX_QUERY];
-    sprintf(query, "insert into gps_%s(timestamp,lat,lon,speed,course) values(%d,%d,%d,%u,%d)",imeiName, timestamp, lat, lon, speed, course);
+    sprintf(query, "insert into gps_%s(timestamp,lat,lon,speed,course) values(%d,%f,%f,%u,%d)",imeiName, timestamp, lat, lon, speed, course);
     if(mysql_query(conn, query))
     {
         LOG_ERROR("can't insert into gps_%s", imeiName);

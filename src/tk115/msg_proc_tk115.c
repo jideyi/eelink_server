@@ -174,8 +174,11 @@ int tk115_gps(const void *msg, SESSION *ctx)
     //TODO:save GPS to database
 	if (req->location & 0x01)
     {
+    	//transform gps from int to double
+    	const double transGps = 1800000;
+    	
         //int db_saveGPS(const char *name, int timestamp, int lat, int lon, char speed, short course)
-        db_saveGPS(obj->IMEI, obj->timestamp, obj->lat, obj->lon, obj->speed, obj->course);
+        db_saveGPS(obj->IMEI, obj->timestamp, obj->lat / transGps, obj->lon / transGps, obj->speed, obj->course);
     }
     else
     {
