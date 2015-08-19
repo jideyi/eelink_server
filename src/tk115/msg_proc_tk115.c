@@ -97,8 +97,8 @@ int tk115_login(const void *msg, SESSION *ctx)
 
 	if (!db_isTableCreated(obj->IMEI))
     {
-        db_createGPS(obj->IMEI);
         db_createCGI(obj->IMEI);
+        db_createGPS(obj->IMEI);
     }
 
 	return 0;
