@@ -99,3 +99,13 @@ void mqtt_cleanup()
 		mosquitto_destroy(mosq);
 	}
 }
+
+void mqtt_subcribe(const char *imei)
+{
+	app_subcribe(mosq, imei);
+}
+
+void mqtt_unsubcribe(const char *imei)
+{
+	app_unsubcribe(mosq, imei);
+}

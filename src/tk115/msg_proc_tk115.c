@@ -16,6 +16,7 @@
 #include "cJSON.h"
 #include "yunba_push.h"
 #include "log.h"
+#include "mqtt.h"
 
 
 int msg_send(void *msg, size_t len, SESSION *ctx)
@@ -73,6 +74,7 @@ int tk115_login(const void *msg, SESSION *ctx)
 
 			//add object to table and db
 			obj_add(obj);
+			mqtt_subcribe(obj->IMEI);
 		}
 
 		ctx->obj = obj;

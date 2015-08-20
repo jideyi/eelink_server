@@ -12,5 +12,7 @@
 void mqtt_initial();
 void mqtt_cleanup();
 
+void mqtt_subscibe(const char *imei);
+void mqtt_unsubscibe(const char *imei);
 
 #endif /* SRC_MQTT_H_ */
