@@ -185,8 +185,15 @@ void app_subscribe(struct mosquitto *mosq, void *imei)
 	memset(topic, 0, sizeof(topic));
 
 	snprintf(topic, IMEI_LENGTH + 20, "app2dev/%s/e2link/cmd", (char *)imei);
-    LOG_INFO("subscribe topic: %s", topic);
-	mosquitto_subscribe(mosq, NULL, topic, 0);
+	int rc = mosquitto_subscribe(mosq, NULL, topic, 0);
+	if(MOSQ_ERR_SUCCESS)
+	{
+		LOG_INFO("subscribe topic: %s", topic);
+	}
+	else
+	{
+		LOG_ERROR("subscribe topic: %s error", topic);
+	}
 }
 
 void app_unsubscribe(struct mosquitto *mosq, void *imei)
