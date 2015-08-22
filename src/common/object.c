@@ -38,7 +38,7 @@ static void obj_initial(const char *imei, int timestamp)
 	obj->IMEI[IMEI_LENGTH] = 0;
 	obj->timestamp = timestamp;
 	obj_add_hash(obj);
-	mqtt_subcribe(imei);
+	mqtt_subscribe(imei);
 }
 
 //it is a callback to update obj into db
