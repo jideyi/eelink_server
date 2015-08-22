@@ -11,8 +11,8 @@
 #include <netinet/in.h>
 
 #include "msg_app.h"
-#include "../tk115/msg_tk115.h"
-#include "../tk115/msg_proc_tk115.h"
+#include "msg_tk115.h"
+#include "msg_proc_tk115.h"
 #include "log.h"
 #include "macro.h"
 #include "session.h"
