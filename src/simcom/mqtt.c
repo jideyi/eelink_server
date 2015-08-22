@@ -100,12 +100,21 @@ void mqtt_cleanup()
 	}
 }
 
-void mqtt_subcribe(const char *imei)
+void mqtt_publish(const char *topic, const void *payload, int payloadlen)
 {
-	app_subcribe(mosq, imei);
+	int rc = mosquitto_publish(mosq, NULL, topic, payloadlen, payload, 0, false);
+	if (rc != MOSQ_ERR_SUCCESS)
+	{
+		LOG_ERROR("mosq pub error: rc = %d(%s)", rc, mosquitto_strerror(rc));
+	}
 }
 
-void mqtt_unsubcribe(const char *imei)
+void mqtt_subscribe(const char *imei)
 {
-	app_unsubcribe(mosq, imei);
+	app_subscribe(mosq, imei);
+}
+
+void mqtt_unsubscribe(const char *imei)
+{
+	app_unsubscribe(mosq, imei);
 }
