@@ -11,6 +11,7 @@
 #include "yunba_push.h"
 #include "db.h"
 #include "session.h"
+#include "mqtt.h"
 
 
 struct event_base *base = NULL;
@@ -92,7 +93,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    obj_table_initial();
+    obj_table_initial(mqtt_subscribe);
     session_table_initial();
 
     struct evconnlistener* listener = server_start(base, port);

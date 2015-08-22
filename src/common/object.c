@@ -38,7 +38,6 @@ static void obj_initial(const char *imei, int timestamp)
 	obj->IMEI[IMEI_LENGTH] = 0;
 	obj->timestamp = timestamp;
 	obj_add_hash(obj);
-	mqtt_subscribe(imei);
 }
 
 //it is a callback to update obj into db
@@ -70,12 +69,12 @@ void obj_freeValue(gpointer value)
     g_free(obj);
 }
 
-void obj_table_initial()
+void obj_table_initial(void (*mqtt_sub)(const char *))
 {
     /* create hash table */
     object_table = g_hash_table_new_full(g_str_hash, g_str_equal, obj_freeKey, obj_freeValue);
     /* read imei data from db*/
-	db_doWithOBJ(obj_initial);
+	db_doWithOBJ(obj_initial, mqtt_sub);
 }
 
 void obj_table_destruct()

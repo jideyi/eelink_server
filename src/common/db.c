@@ -123,7 +123,7 @@ int db_saveCGI(const char *imeiName, int timestamp, short mcc, short mnc, short 
 /*Object db
 Names of the table and columns need modifing*/
 
-int db_doWithOBJ(void (*func)(const char*, int))
+int db_doWithOBJ(void (*func1)(const char*, int), void (*func2)(const char *))
 {
     char query[] = "select imei, lastlogintime from object";
     if(mysql_query(conn, query))
@@ -136,7 +136,8 @@ int db_doWithOBJ(void (*func)(const char*, int))
     result = mysql_use_result(conn);
     while(row= mysql_fetch_row(result))
     {
-        func(row[0], row[1]);
+        func1(row[0], row[1]);
+        func2(row[0]);
     }
     mysql_free_result(result);
     return 0;
