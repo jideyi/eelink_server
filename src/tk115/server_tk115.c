@@ -115,7 +115,11 @@ static void accept_conn_cb(struct evconnlistener *listener,
 	bufferevent_enable(bev, EV_READ|EV_WRITE);
 
 	//set the timeout for the connection, when timeout close the connectiont
+<<<<<<< HEAD:src/tk115/server_tk115.c
 	struct timeval tm = {300, 0};
+=======
+	struct timeval tm = {600, 0};
+>>>>>>> 7f418a4ebe9bfdb71f87071fd651cee2f8dd93f8:src/server_mc.c
 
 	bufferevent_set_timeouts(bev, &tm, &tm);
 }

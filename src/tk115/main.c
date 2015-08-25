@@ -33,7 +33,7 @@ static void sig_usr(int signo)
 
 int main(int argc, char **argv)
 {
-    int port = 9876;
+    int port = 9877;
 
     setvbuf(stdout, NULL, _IONBF, 0);
 
