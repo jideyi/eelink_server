@@ -25,7 +25,7 @@ typedef struct
 	short header;
 	int timestamp;
 	int lat;
-	int lng;
+	int lon;
 	short course;
 	char speed;
 	char isGPS;

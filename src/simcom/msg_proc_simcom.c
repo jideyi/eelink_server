@@ -182,7 +182,7 @@ static int simcom_gps(const void* msg, SIMCOM_CTX* ctx)
         time ( &rawtime );
         obj->timestamp = rawtime;
         obj->isGPSlocated = 0;
-        app_sendGpsMsg2App(obj, ctx);
+        app_sendGpsMsg2App(ctx);
         return 0;
     }
 
@@ -190,7 +190,7 @@ static int simcom_gps(const void* msg, SIMCOM_CTX* ctx)
         && obj->lon == ntohl(req->gps.longitude))
     {
         LOG_INFO("No need to save data to leancloud");
-        app_sendGpsMsg2App(obj, ctx);
+        app_sendGpsMsg2App(ctx);
         return 0;
     }
 
@@ -198,7 +198,7 @@ static int simcom_gps(const void* msg, SIMCOM_CTX* ctx)
     obj->lat = ntohl(req->gps.latitude);
     obj->lon = ntohl(req->gps.longitude);
 
-    app_sendGpsMsg2App(obj, ctx);
+    app_sendGpsMsg2App(ctx);
 
     //stop upload data to yeelink
     //yeelink_saveGPS(obj, ctx);

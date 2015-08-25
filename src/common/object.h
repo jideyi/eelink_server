@@ -59,7 +59,7 @@ typedef struct
     int sensor_id;
 } OBJECT;
 
-void obj_table_initial();
+void obj_table_initial(void (*func)(const char *));
 void obj_table_destruct();
 
 OBJECT *obj_new();
