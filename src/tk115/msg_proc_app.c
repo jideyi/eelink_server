@@ -179,33 +179,6 @@ int app_handleApp2devMsg(const char* topic, const char* data, const int len, voi
 	return 0;
 }
 
-void app_subscribe(struct mosquitto *mosq, void *imei)
-{
-	char topic[IMEI_LENGTH + 20];
-	memset(topic, 0, sizeof(topic));
-
-	snprintf(topic, IMEI_LENGTH + 20, "app2dev/%s/e2link/cmd", (char *)imei);
-	int rc = mosquitto_subscribe(mosq, NULL, topic, 0);
-	if(MOSQ_ERR_SUCCESS)
-	{
-		LOG_INFO("subscribe topic: %s", topic);
-	}
-	else
-	{
-		LOG_ERROR("subscribe topic: %s error", topic);
-	}
-}
-
-void app_unsubscribe(struct mosquitto *mosq, void *imei)
-{
-	char topic[IMEI_LENGTH + 20];
-	memset(topic, 0, sizeof(topic));
-
-	snprintf(topic, IMEI_LENGTH + 20, "app2dev/%s/e2link/cmd", (char *)imei);
-    LOG_INFO("unsubscribe topic: %s", topic);
-	mosquitto_unsubscribe(mosq, NULL, topic);
-}
-
 void app_message_callback(struct mosquitto *mosq __attribute__((unused)), void *userdata, const struct mosquitto_message *message)
 {
 	if(message->payloadlen){
