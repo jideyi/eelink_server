@@ -1,10 +1,6 @@
 SET(SOURCE_FILE
     ../common/log.c
     ../common/log.h
-    ../common/msg_proc_app.c
-    ../common/msg_proc_app.h
-    ../common/mqtt.c
-    ../common/mqtt.h
     ../common/yunba_push.c
     ../common/yunba_push.h
     ../common/curl.c
@@ -23,8 +19,12 @@ SET(SOURCE_FILE
 
 
     main.c
+    mqtt.c
+    mqtt.h
     server_simcom.c
     server_simcom.h
+    msg_proc_app.c
+    msg_proc_app.h
     msg_proc_simcom.c
     msg_proc_simcom.h
     msg_simcom.c

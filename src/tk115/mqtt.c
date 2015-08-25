@@ -8,9 +8,11 @@
 
 #include <stdio.h>
 #include <mosquitto.h>
+#include <string.h>
 
-#include "log.h"
 #include "msg_proc_app.h"
+#include "log.h"
+#include "macro.h"
 
 static struct mosquitto* mosq = NULL;
 
@@ -99,3 +101,41 @@ void mqtt_cleanup()
 		mosquitto_destroy(mosq);
 	}
 }
+
+void mqtt_publish(const char *topic, const void *payload, int payloadlen)
+{
+	int rc = mosquitto_publish(mosq, NULL, topic, payloadlen, payload, 0, false);
+	if (rc != MOSQ_ERR_SUCCESS)
+	{
+		LOG_ERROR("mosq pub error: rc = %d(%s)", rc, mosquitto_strerror(rc));
+	}
+}
+
+void mqtt_subscribe(const char *imei)
+{
+	char topic[IMEI_LENGTH + 20];
+	memset(topic, 0, sizeof(topic));
+
+	snprintf(topic, IMEI_LENGTH + 20, "app2dev/%s/e2link/cmd", (char *)imei);
+	int rc = mosquitto_subscribe(mosq, NULL, topic, 0);
+	if(MOSQ_ERR_SUCCESS == rc)
+	{
+		LOG_INFO("subscribe topic: %s", topic);
+	}
+	else
+	{
+		LOG_ERROR("subscribe topic: %s error", topic);
+	}
+}
+
+void mqtt_unsubscribe(const char *imei)
+{
+	char topic[IMEI_LENGTH + 20];
+	memset(topic, 0, sizeof(topic));
+
+	snprintf(topic, IMEI_LENGTH + 20, "app2dev/%s/e2link/cmd", (char *)imei);
+    LOG_INFO("unsubscribe topic: %s", topic);
+	mosquitto_unsubscribe(mosq, NULL, topic);
+}
+
+

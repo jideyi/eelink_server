@@ -16,6 +16,7 @@
 #include "cJSON.h"
 #include "yunba_push.h"
 #include "log.h"
+#include "mqtt.h"
 
 
 int msg_send(void *msg, size_t len, SESSION *ctx)
@@ -36,8 +37,6 @@ int msg_send(void *msg, size_t len, SESSION *ctx)
 
     LOG_DEBUG("send msg(cmd=%d), length(%ld)", get_msg_cmd(msg), len);
     LOG_HEX(msg, len);
-
-    free(msg);
 
     return 0;
 }
@@ -73,6 +72,7 @@ int tk115_login(const void *msg, SESSION *ctx)
 
 			//add object to table and db
 			obj_add(obj);
+			mqtt_subscribe(obj->IMEI);
 		}
 
 		ctx->obj = obj;
@@ -127,7 +127,7 @@ int tk115_gps(const void *msg, SESSION *ctx)
 			ntohs(req->course),
 			req->location & 0x01 ? "YES" : "NO");
 
-	OBJECT * obj = ctx->obj;
+	OBJECT * obj = (OBJECT *)ctx->obj;
 	if (!obj)
 	{
 		LOG_WARN("MC must first login");
@@ -141,7 +141,7 @@ int tk115_gps(const void *msg, SESSION *ctx)
 		time ( &rawtime );
 		obj->timestamp = rawtime;
 		obj->isGPSlocated = 0;
-		app_sendGpsMsg2App(obj, ctx);
+		app_sendGpsMsg2App(ctx);
 		return 0;
 	}
 	
@@ -153,7 +153,7 @@ int tk115_gps(const void *msg, SESSION *ctx)
 		LOG_INFO("No need to save data to leancloud");
 		obj->timestamp = ntohl(req->timestamp);
 		obj->isGPSlocated = req->location & 0x01;
-		app_sendGpsMsg2App(obj, ctx);
+		app_sendGpsMsg2App(ctx);
 		return 0;
 	}
 
@@ -166,7 +166,7 @@ int tk115_gps(const void *msg, SESSION *ctx)
 	obj->timestamp = ntohl(req->timestamp);
 	obj->isGPSlocated = req->location & 0x01;
 
-	app_sendGpsMsg2App(obj, ctx);
+	app_sendGpsMsg2App(ctx);
 
 	//stop upload data to yeelink
 	//yeelink_saveGPS(obj, ctx);

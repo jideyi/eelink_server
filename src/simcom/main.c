@@ -12,6 +12,7 @@
 #include "yunba_push.h"
 #include "object.h"
 #include "env.h"
+#include "mqtt.h"
 
 struct event_base *base = NULL;
 
@@ -95,7 +96,7 @@ int main(int argc, char **argv)
 
     env_initial();
 
-    obj_table_initial();
+    obj_table_initial(mqtt_subscribe);
 
 
     struct evconnlistener* listener_simcom = server_simcom(base, simcom_port);

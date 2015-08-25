@@ -16,13 +16,10 @@ void app_subscribe_callback(struct mosquitto *mosq, void *userdata, int mid, int
 void app_log_callback(struct mosquitto *mosq, void *userdata, int level, const char *str);
 void app_publish_callback(struct mosquitto *mosq, void *userdata, int mid);
 
-//void app_sendGpsMsg2App(OBJECT* obj, void* ctx);
-//void app_sendRspMsg2App(short cmd, short seq, const void* data, const int len, CB_CTX* ctx);
-//
-//void app_unsubscribe(struct mosquitto *mosq, void *userdata);
-void app_sendGpsMsg2App(void* obj, void* ctx);
-void app_sendRspMsg2App(short cmd, short seq, const void* data, const int len, void* ctx);
+void app_sendGpsMsg2App(void *session);
+void app_sendRspMsg2App(short cmd, short seq, void *data, int len, void *session);
 
-void app_unsubscribe(struct mosquitto *mosq, void *userdata);
+void app_subscribe(struct mosquitto *mosq, void *imei);
+void app_unsubscribe(struct mosquitto *mosq, void *imei);
 
 #endif /* SRC_MSG_PROC_APP_H_ */
